@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dashboard - Priti's Cake</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="sidebar-logo">
+      <a href="index.html" class="logo">Priti's <span>Cake</span></a>
+      <p>My Account</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Menu</div>
+      <button class="sidebar-link" id="clink-overview" onclick="showClientSection('overview')"><span class="icon">🏠</span> Overview</button>
+      <button class="sidebar-link" id="clink-browse" onclick="showClientSection('browse')"><span class="icon">🎂</span> Browse Cakes</button>
+      <button class="sidebar-link" id="clink-orders" onclick="showClientSection('orders')"><span class="icon">📦</span> My Orders</button>
+      <button class="sidebar-link" id="clink-profile" onclick="showClientSection('profile')"><span class="icon">👤</span> My Profile</button>
+      <div class="nav-section-title">More</div>
+      <button class="sidebar-link" onclick="window.location.href='catalog.html'"><span class="icon">🛍️</span> Full Catalog</button>
+      <button class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> Logout</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="clientInitial">U</div>
+        <div class="user-details"><h4 id="clientName">User</h4><p>Customer</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:15px">
+        <button class="hamburger-dash" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-left">
+          <h1 id="pageTitle">My Dashboard</h1>
+          <p>Manage your orders and profile</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="showClientSection('browse')" title="Browse Cakes">🎂</button>
+        <a href="index.html" class="topbar-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center" title="Home">🏠</a>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- OVERVIEW -->
+      <div class="dash-section active" id="csec-overview">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon pink">📦</div>
+            <div class="stat-info"><h3 id="myOrderCount">0</h3><p>Total Orders</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info"><h3 id="mySpent">₹0</h3><p>Total Spent</p></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">⏳</div>
+            <div class="stat-info"><h3 id="myPending">0</h3><p>Active Orders</p></div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>🎂 Featured Cakes</h3>
+            <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showClientSection('browse')">Browse All</button>
+          </div>
+          <div class="client-cakes-grid" id="featuredCakesGrid"></div>
+        </div>
+
+        <div class="dash-card">
+          <div class="card-header">
+            <h3>📋 Recent Orders</h3>
+            <button class="btn btn-outline" style="padding:8px 16px;font-size:0.85rem" onclick="showClientSection('orders')">View All</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="clientRecentOrders"><tr><td colspan="5" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- BROWSE CAKES -->
+      <div class="dash-section" id="csec-browse">
+        <div style="margin-bottom:20px">
+          <h2 style="font-size:1.3rem;margin-bottom:15px">🎂 Browse Cakes</h2>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn cat-filter-btn active" data-cat="All" onclick="loadBrowseCakes('All')">All</button>
+            <button class="btn cat-filter-btn" data-cat="Birthday" onclick="loadBrowseCakes('Birthday')">🎂 Birthday</button>
+            <button class="btn cat-filter-btn" data-cat="Wedding" onclick="loadBrowseCakes('Wedding')">💍 Wedding</button>
+            <button class="btn cat-filter-btn" data-cat="Anniversary" onclick="loadBrowseCakes('Anniversary')">💕 Anniversary</button>
+            <button class="btn cat-filter-btn" data-cat="Kids" onclick="loadBrowseCakes('Kids')">🦄 Kids</button>
+            <button class="btn cat-filter-btn" data-cat="Custom" onclick="loadBrowseCakes('Custom')">📸 Custom</button>
+            <button class="btn cat-filter-btn" data-cat="Seasonal" onclick="loadBrowseCakes('Seasonal')">🌸 Seasonal</button>
+          </div>
+        </div>
+        <div class="client-cakes-grid" id="browseCakesGrid"></div>
+
+        <!-- CART SUMMARY -->
+        <div class="dash-card" style="margin-top:25px" id="cartSummaryCard">
+          <div class="card-header">
+            <h3>🛒 Your Cart</h3>
+            <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="placeOrderDash()">Place Order</button>
+          </div>
+          <div id="dashCartItems"></div>
+        </div>
+      </div>
+
+      <!-- MY ORDERS -->
+      <div class="dash-section" id="csec-orders">
+        <div style="margin-bottom:20px">
+          <h2 style="font-size:1.3rem">📦 My Orders</h2>
+          <p style="color:#999;font-size:0.85rem">Track all your cake orders</p>
+        </div>
+        <div id="clientOrdersList"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="dash-section" id="csec-profile">
+        <div class="profile-header">
+          <div class="profile-avatar-lg" id="profileInitial">U</div>
+          <div>
+            <h2 id="profileName">User</h2>
+            <p id="profileEmail">email@example.com</p>
+          </div>
+        </div>
+        <div class="dash-card" style="max-width:600px">
+          <h3 style="margin-bottom:25px">✏️ Edit Profile</h3>
+          <div class="form-group"><label>Full Name</label><input type="text" id="editName"></div>
+          <div class="form-group"><label>Email Address</label><input type="email" id="editEmail" disabled style="background:#f5f5f5;cursor:not-allowed"></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" id="editPhone"></div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" placeholder="Leave blank to keep current">
+          </div>
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- CAKE DETAIL MODAL -->
+<div class="modal-overlay" id="cakeDetailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('cakeDetailModal')">✕</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/client.js"></script>
+<script>
+  // Style filter buttons
+  document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+    btn.style.cssText = 'padding:8px 18px;border-radius:25px;border:2px solid #e91e8c;background:transparent;color:#e91e8c;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all 0.3s';
+  });
+  document.querySelector('.cat-filter-btn.active').style.cssText += 'background:#e91e8c;color:#fff';
+
+  function placeOrderDash() {
+    if (DB.cart.length === 0) { showToast('Cart is empty! Add some cakes first 🎂', 'error'); return; }
+    placeOrder();
+    loadClientDashboard();
+    loadClientOrders();
+    showClientSection('orders');
+  }
+
+  // Update cart summary in browse section
+  const origAddToCart = addToCart;
+  function addToCart(id, qty) {
+    origAddToCart(id, qty);
+    updateDashCart();
+  }
+
+  function updateDashCart() {
+    const el = document.getElementById('dashCartItems');
+    if (!el) return;
+    if (DB.cart.length === 0) {
+      el.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Cart is empty. Add some cakes!</p>';
+      return;
+    }
+    el.innerHTML = DB.cart.map(i => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">
+        <span>${i.emoji} ${i.name} ×${i.qty}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-weight:700;color:#e91e8c">₹${i.price * i.qty}</span>
+          <button onclick="removeFromCart(${i.cakeId});updateDashCart()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem">✕</button>
+        </div>
+      </div>
+    `).join('') + `<div style="display:flex;justify-content:space-between;padding:15px 0;font-weight:800;font-size:1.1rem;color:#e91e8c"><span>Total</span><span>₹${getCartTotal() + 50}</span></div>`;
+  }
+</script>
+</body>
+</html>

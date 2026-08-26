@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Cakes - Priti's Cake</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="catalog.html">Cakes</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-btns" id="navBtns"></div>
+  <span class="hamburger" id="hamburger">☰</span>
+</nav>
+
+<div class="catalog-hero">
+  <h1>Our <span>Cake Collection</span> 🎂</h1>
+  <p style="color:#666;margin-top:10px">Handcrafted with love — find your perfect cake</p>
+</div>
+
+<div class="catalog-layout">
+  <!-- SIDEBAR FILTERS -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h3>🏷️ Categories</h3>
+      <div class="checkbox-item"><input type="checkbox" id="catAll" checked onchange="filterCakes()"> <label for="catAll">All Categories</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catBirthday" onchange="filterCakes()"> <label for="catBirthday">🎂 Birthday</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catWedding" onchange="filterCakes()"> <label for="catWedding">💍 Wedding</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catAnniversary" onchange="filterCakes()"> <label for="catAnniversary">💕 Anniversary</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catKids" onchange="filterCakes()"> <label for="catKids">🦄 Kids</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catCustom" onchange="filterCakes()"> <label for="catCustom">📸 Custom</label></div>
+      <div class="checkbox-item"><input type="checkbox" id="catSeasonal" onchange="filterCakes()"> <label for="catSeasonal">🌸 Seasonal</label></div>
+    </div>
+    <div class="sidebar-section">
+      <h3>💰 Price Range</h3>
+      <div class="price-range">
+        <input type="range" id="priceRange" min="500" max="5000" value="5000" oninput="updatePrice(this.value)">
+        <div class="price-display"><span>₹500</span><span id="priceVal">₹5000</span></div>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <h3>⭐ Rating</h3>
+      <div class="checkbox-item"><input type="radio" name="rating" value="0" checked onchange="filterCakes()"> <label>All Ratings</label></div>
+      <div class="checkbox-item"><input type="radio" name="rating" value="4.5" onchange="filterCakes()"> <label>4.5+ Stars</label></div>
+      <div class="checkbox-item"><input type="radio" name="rating" value="4.8" onchange="filterCakes()"> <label>4.8+ Stars</label></div>
+    </div>
+    <button class="btn btn-outline" style="width:100%" onclick="resetFilters()">Reset Filters</button>
+  </aside>
+
+  <!-- CAKES GRID -->
+  <div>
+    <div class="catalog-header">
+      <h2 id="cakeCount">Showing all cakes</h2>
+      <select class="sort-select" id="sortSelect" onchange="filterCakes()">
+        <option value="default">Sort: Default</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="rating">Top Rated</option>
+        <option value="popular">Most Popular</option>
+      </select>
+    </div>
+    <div class="cakes-grid" id="cakesGrid"></div>
+  </div>
+</div>
+
+<!-- CAKE DETAIL MODAL -->
+<div class="modal-overlay" id="cakeModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2>🛒 Your Cart</h2>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div id="cartItems"></div>
+  <div class="cart-total" id="cartTotal" style="display:none">
+    <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
+    <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder()">Place Order 🎉</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+<script>
+  let currentQty = 1;
+  let currentCakeId = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat');
+    if (cat) {
+      document.getElementById('catAll').checked = false;
+      const el = document.getElementById('cat' + cat);
+      if (el) el.checked = true;
+    }
+    filterCakes();
+  });
+
+  function updatePrice(val) {
+    document.getElementById('priceVal').textContent = '₹' + val;
+    filterCakes();
+  }
+
+  function filterCakes() {
+    const allChecked = document.getElementById('catAll').checked;
+    const cats = ['Birthday','Wedding','Anniversary','Kids','Custom','Seasonal'].filter(c => document.getElementById('cat'+c)?.checked);
+    const maxPrice = parseInt(document.getElementById('priceRange').value);
+    const minRating = parseFloat(document.querySelector('input[name="rating"]:checked')?.value || 0);
+    const sort = document.getElementById('sortSelect').value;
+
+    let cakes = DB.cakes.filter(c => {
+      const catOk = allChecked || cats.includes(c.category);
+      const priceOk = c.price <= maxPrice;
+      const ratingOk = c.rating >= minRating;
+      return catOk && priceOk && ratingOk;
+    });
+
+    if (sort === 'price-low') cakes.sort((a,b) => a.price - b.price);
+    else if (sort === 'price-high') cakes.sort((a,b) => b.price - a.price);
+    else if (sort === 'rating') cakes.sort((a,b) => b.rating - a.rating);
+    else if (sort === 'popular') cakes.sort((a,b) => b.reviews - a.reviews);
+
+    document.getElementById('cakeCount').textContent = `Showing ${cakes.length} cake${cakes.length !== 1 ? 's' : ''}`;
+    renderCakes(cakes);
+  }
+
+  function resetFilters() {
+    document.getElementById('catAll').checked = true;
+    ['Birthday','Wedding','Anniversary','Kids','Custom','Seasonal'].forEach(c => { const el = document.getElementById('cat'+c); if(el) el.checked = false; });
+    document.getElementById('priceRange').value = 5000;
+    document.getElementById('priceVal').textContent = '₹5000';
+    document.querySelector('input[name="rating"][value="0"]').checked = true;
+    document.getElementById('sortSelect').value = 'default';
+    filterCakes();
+  }
+
+  function renderCakes(cakes) {
+    const grid = document.getElementById('cakesGrid');
+    if (cakes.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999"><div style="font-size:4rem">🔍</div><p style="margin-top:15px">No cakes found. Try adjusting filters.</p></div>';
+      return;
+    }
+    grid.innerHTML = cakes.map(cake => `
+      <div class="cake-card">
+        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal(${cake.id})">
+          ${cake.emoji}
+          ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
+        </div>
+        <div class="cake-info">
+          <h3>${cake.name}</h3>
+          <p>${cake.desc.substring(0,80)}...</p>
+          <div class="cake-footer">
+            <span class="price">₹${cake.price}</span>
+            <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal(${cake.id})">Details</button>
+            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart(${cake.id})">🛒 Add</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openCakeModal(id) {
+    const cake = DB.cakes.find(c => c.id === id);
+    if (!cake) return;
+    currentCakeId = id;
+    currentQty = 1;
+    document.getElementById('modalContent').innerHTML = `
+      <div class="modal-cake-img">${cake.emoji}</div>
+      <h2>${cake.name}</h2>
+      <div style="font-size:0.85rem;color:#e91e8c;margin-bottom:5px">${cake.category}</div>
+      <div class="price">₹${cake.price}</div>
+      <p>${cake.desc}</p>
+      <div class="modal-details">
+        <div class="detail-item"><span>Weight</span><p>${cake.weight}</p></div>
+        <div class="detail-item"><span>Serves</span><p>${cake.serves}</p></div>
+        <div class="detail-item"><span>Prep Time</span><p>${cake.time}</p></div>
+        <div class="detail-item"><span>Rating</span><p>⭐ ${cake.rating} (${cake.reviews} reviews)</p></div>
+      </div>
+      <div class="qty-control">
+        <span style="font-weight:600">Quantity:</span>
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <span class="qty-num" id="qtyNum">1</span>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="addToCartModal()">Add to Cart 🛒</button>
+    `;
+    document.getElementById('cakeModal').classList.add('active');
+  }
+
+  function changeQty(d) {
+    currentQty = Math.max(1, currentQty + d);
+    document.getElementById('qtyNum').textContent = currentQty;
+  }
+
+  function addToCartModal() {
+    addToCart(currentCakeId, currentQty);
+    closeModal();
+  }
+
+  function closeModal() { document.getElementById('cakeModal').classList.remove('active'); }
+  document.getElementById('cakeModal').addEventListener('click', e => { if(e.target === document.getElementById('cakeModal')) closeModal(); });
+</script>
+</body>
+</html>

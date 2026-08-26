@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Priti's Cake</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<div class="dash-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="dash-sidebar" id="dashSidebar">
+    <div class="sidebar-logo">
+      <a href="index.html" class="logo">Priti's <span>Cake</span></a>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <button class="sidebar-link" id="link-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</button>
+      <button class="sidebar-link" id="link-cakes" onclick="showSection('cakes')"><span class="icon">🎂</span> Manage Cakes</button>
+      <button class="sidebar-link" id="link-orders" onclick="showSection('orders')"><span class="icon">📦</span> Orders</button>
+      <button class="sidebar-link" id="link-customers" onclick="showSection('customers')"><span class="icon">👥</span> Customers</button>
+      <div class="nav-section-title">Account</div>
+      <button class="sidebar-link" id="link-settings" onclick="showSection('settings')"><span class="icon">⚙️</span> Settings</button>
+      <button class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> Logout</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">A</div>
+        <div class="user-details"><h4 id="adminName">Admin</h4><p>Administrator</p></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="dash-main">
+    <div class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:15px">
+        <button class="hamburger-dash" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-left">
+          <h1 id="pageTitle">Dashboard Overview</h1>
+          <p>Welcome back, Admin! 👋</p>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="Notifications">🔔<span class="notif-badge">3</span></button>
+        <a href="index.html" class="topbar-btn" title="View Site" style="text-decoration:none;display:flex;align-items:center;justify-content:center">🌐</a>
+      </div>
+    </div>
+
+    <div class="dash-content">
+
+      <!-- DASHBOARD OVERVIEW -->
+      <div class="dash-section active" id="sec-dashboard">
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-icon pink">📦</div>
+            <div class="stat-info"><h3 id="totalOrders">0</h3><p>Total Orders</p><div class="stat-change up">↑ This month</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">💰</div>
+            <div class="stat-info"><h3 id="totalRevenue">₹0</h3><p>Total Revenue</p><div class="stat-change up">↑ Growing</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">🎂</div>
+            <div class="stat-info"><h3 id="totalCakes">0</h3><p>Cake Varieties</p><div class="stat-change up">Active menu</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">👥</div>
+            <div class="stat-info"><h3 id="totalCustomers">0</h3><p>Customers</p><div class="stat-change up">↑ Registered</div></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:25px;flex-wrap:wrap">
+          <div class="dash-card">
+            <div class="card-header"><h3>📈 Weekly Sales</h3><span style="font-size:0.8rem;color:#999">Last 7 days</span></div>
+            <div class="mini-chart" id="miniChart"></div>
+            <div style="display:flex;justify-content:space-around;margin-top:10px;font-size:0.75rem;color:#999">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="card-header"><h3>🏆 Top Categories</h3></div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span>🎂 Birthday</span><span>42%</span></div><div style="height:8px;background:#f0f0f0;border-radius:4px"><div style="height:100%;width:42%;background:linear-gradient(to right,#e91e8c,#ff6ec7);border-radius:4px"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span>💍 Wedding</span><span>28%</span></div><div style="height:8px;background:#f0f0f0;border-radius:4px"><div style="height:100%;width:28%;background:linear-gradient(to right,#e91e8c,#ff6ec7);border-radius:4px"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span>📸 Custom</span><span>18%</span></div><div style="height:8px;background:#f0f0f0;border-radius:4px"><div style="height:100%;width:18%;background:linear-gradient(to right,#e91e8c,#ff6ec7);border-radius:4px"></div></div></div>
+              <div><div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:5px"><span>🦄 Kids</span><span>12%</span></div><div style="height:8px;background:#f0f0f0;border-radius:4px"><div style="height:100%;width:12%;background:linear-gradient(to right,#e91e8c,#ff6ec7);border-radius:4px"></div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card" style="margin-top:25px">
+          <div class="card-header"><h3>📋 Recent Orders</h3><button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showSection('orders')">View All</button></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="recentOrdersBody"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANAGE CAKES -->
+      <div class="dash-section" id="sec-cakes">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px">
+          <div>
+            <h2 style="font-size:1.3rem">🎂 Cake Menu</h2>
+            <p style="color:#999;font-size:0.85rem">Add, edit or remove cakes from your menu</p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddCakeModal()">+ Add New Cake</button>
+        </div>
+        <div class="admin-cakes-grid" id="cakesGrid"></div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="dash-section" id="sec-orders">
+        <div style="margin-bottom:25px">
+          <h2 style="font-size:1.3rem">📦 All Orders</h2>
+          <p style="color:#999;font-size:0.85rem">Manage and update order statuses</p>
+        </div>
+        <div class="dash-card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+              <tbody id="ordersBody"><tr><td colspan="7" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="dash-section" id="sec-customers">
+        <div style="margin-bottom:25px">
+          <h2 style="font-size:1.3rem">👥 Customers</h2>
+          <p style="color:#999;font-size:0.85rem">All registered customers</p>
+        </div>
+        <div class="dash-card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Joined</th><th>Status</th></tr></thead>
+              <tbody id="customersBody"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No customers yet</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="dash-section" id="sec-settings">
+        <div class="dash-card" style="max-width:600px">
+          <h3 style="margin-bottom:25px">⚙️ Shop Settings</h3>
+          <div class="form-group"><label>Shop Name</label><input type="text" value="Priti's Cake"></div>
+          <div class="form-group"><label>Contact Email</label><input type="email" value="hello@priticake.com"></div>
+          <div class="form-group"><label>Phone Number</label><input type="tel" value="+91 98765 43210"></div>
+          <div class="form-group"><label>Address</label><input type="text" value="123 Sweet Street, Pune, Maharashtra"></div>
+          <div class="form-group"><label>Delivery Charge (₹)</label><input type="number" value="50"></div>
+          <div class="form-group"><label>Min Order Amount (₹)</label><input type="number" value="500"></div>
+          <button class="btn btn-primary" onclick="showToast('Settings saved! ✅','success')">Save Settings</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ADD/EDIT CAKE MODAL -->
+<div class="modal-overlay" id="cakeModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('cakeModal')">✕</button>
+    <h2 id="cakeModalTitle">Add New Cake</h2>
+    <input type="hidden" id="editCakeId">
+    <div class="form-grid">
+      <div class="form-group"><label>Cake Name *</label><input type="text" id="cakeName" placeholder="e.g. Chocolate Fudge"></div>
+      <div class="form-group"><label>Category *</label>
+        <select id="cakeCategory">
+          <option>Birthday</option><option>Wedding</option><option>Anniversary</option>
+          <option>Kids</option><option>Custom</option><option>Seasonal</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Price (₹) *</label><input type="number" id="cakePrice" placeholder="850"></div>
+      <div class="form-group"><label>Emoji Icon</label><input type="text" id="cakeEmoji" placeholder="🎂"></div>
+      <div class="form-group"><label>Weight</label><input type="text" id="cakeWeight" placeholder="1 kg"></div>
+      <div class="form-group"><label>Serves</label><input type="text" id="cakeServes" placeholder="8-10"></div>
+      <div class="form-group"><label>Prep Time</label><input type="text" id="cakeTime" placeholder="2-3 hrs"></div>
+      <div class="form-group"><label>Badge/Tag</label><input type="text" id="cakeTag" placeholder="Bestseller"></div>
+      <div class="form-group form-full"><label>Description *</label><textarea id="cakeDesc" placeholder="Describe the cake..."></textarea></div>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:10px">
+      <button class="btn btn-primary" style="flex:1;padding:12px" onclick="saveCake()">Save Cake</button>
+      <button class="btn btn-outline" style="flex:1;padding:12px" onclick="closeModal('cakeModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('orderDetailModal')">✕</button>
+    <h2>Order Details</h2>
+    <div id="orderDetailContent"></div>
+    <button class="btn btn-outline" style="width:100%;margin-top:20px;padding:12px" onclick="closeModal('orderDetailModal')">Close</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Priti's Cake</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="catalog.html">Cakes</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-btns" id="navBtns"></div>
+  <span class="hamburger" id="hamburger">☰</span>
+</nav>
+
+<div class="contact-hero">
+  <h1>Get in <span>Touch</span> 💌</h1>
+  <p style="color:#666;margin-top:10px">We'd love to hear from you! Reach out for orders, custom cakes or any queries.</p>
+</div>
+
+<section>
+  <div class="contact-grid">
+    <div class="contact-info">
+      <h2>Let's Talk! 💬</h2>
+      <div class="contact-item">
+        <div class="contact-icon">📍</div>
+        <div><h4>Visit Us</h4><p>123 Sweet Street, Koregaon Park<br>Pune, Maharashtra 411001</p></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">📞</div>
+        <div><h4>Call Us</h4><p>+91 98765 43210<br>+91 87654 32109</p></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">✉️</div>
+        <div><h4>Email Us</h4><p>hello@priticake.com<br>orders@priticake.com</p></div>
+      </div>
+      <div class="contact-item">
+        <div class="contact-icon">🕐</div>
+        <div><h4>Working Hours</h4><p>Monday - Sunday<br>8:00 AM - 9:00 PM</p></div>
+      </div>
+      <div style="margin-top:30px;background:#fff0f8;padding:25px;border-radius:15px">
+        <h3 style="margin-bottom:15px">📍 Find Us on Map</h3>
+        <div style="height:200px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem">🗺️</div>
+        <p style="font-size:0.85rem;color:#666;margin-top:10px;text-align:center">123 Sweet Street, Koregaon Park, Pune</p>
+      </div>
+    </div>
+
+    <div class="contact-form">
+      <h2>Send a Message 📩</h2>
+      <div class="form-row">
+        <div class="form-group"><label>Your Name *</label><input type="text" id="cName" placeholder="Full name"></div>
+        <div class="form-group"><label>Phone Number</label><input type="tel" id="cPhone" placeholder="+91 98765 43210"></div>
+      </div>
+      <div class="form-group"><label>Email Address *</label><input type="email" id="cEmail" placeholder="your@email.com"></div>
+      <div class="form-group">
+        <label>Subject *</label>
+        <select id="cSubject">
+          <option value="">Select a subject</option>
+          <option>Place a Custom Order</option>
+          <option>Order Inquiry</option>
+          <option>Delivery Query</option>
+          <option>Feedback</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Message *</label><textarea id="cMessage" placeholder="Tell us about your cake requirements, occasion, date needed, etc..."></textarea></div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="sendMessage()">Send Message 📩</button>
+    </div>
+  </div>
+</section>
+
+<section style="background:#fff0f8;padding:60px 5%">
+  <div class="section-title">
+    <h2>Frequently Asked <span>Questions</span></h2>
+  </div>
+  <div style="max-width:800px;margin:0 auto">
+    <div id="faqList"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+      <p>Handcrafted cakes baked with love and passion.</p>
+      <div class="social-links"><a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a></div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="catalog.html">Our Cakes</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <p>📍 123 Sweet Street, Pune</p>
+      <p style="margin-top:10px">📞 +91 98765 43210</p>
+      <p style="margin-top:10px">✉️ hello@priticake.com</p>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>© 2024 Priti's Cake. All rights reserved. Made with ❤️</p></div>
+</footer>
+
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header"><h2>🛒 Your Cart</h2><button class="cart-close" onclick="toggleCart()">✕</button></div>
+  <div id="cartItems"></div>
+  <div class="cart-total" id="cartTotal" style="display:none">
+    <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
+    <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder()">Place Order 🎉</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+<script>
+  const faqs = [
+    { q: "How far in advance should I order?", a: "We recommend ordering at least 2-3 days in advance for regular cakes and 5-7 days for custom/wedding cakes." },
+    { q: "Do you deliver to my area?", a: "We currently deliver within Pune city limits. Delivery charges are ₹50 for orders above ₹500." },
+    { q: "Can I customize the cake design?", a: "Absolutely! We love creating custom cakes. Contact us with your design ideas and we'll make it happen." },
+    { q: "What payment methods do you accept?", a: "We accept UPI, credit/debit cards, net banking and cash on delivery." },
+    { q: "Can I cancel or modify my order?", a: "Orders can be modified or cancelled up to 24 hours before the delivery date. Contact us immediately." }
+  ];
+
+  document.getElementById('faqList').innerHTML = faqs.map((f, i) => `
+    <div style="background:#fff;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+      <div style="padding:18px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600" onclick="toggleFaq(${i})">
+        <span>${f.q}</span>
+        <span id="faqIcon${i}" style="color:#e91e8c;font-size:1.2rem">+</span>
+      </div>
+      <div id="faqAns${i}" style="display:none;padding:0 20px 18px;color:#666;line-height:1.7">${f.a}</div>
+    </div>
+  `).join('');
+
+  function toggleFaq(i) {
+    const ans = document.getElementById('faqAns' + i);
+    const icon = document.getElementById('faqIcon' + i);
+    const open = ans.style.display === 'block';
+    ans.style.display = open ? 'none' : 'block';
+    icon.textContent = open ? '+' : '−';
+  }
+
+  function sendMessage() {
+    const name = document.getElementById('cName').value.trim();
+    const email = document.getElementById('cEmail').value.trim();
+    const subject = document.getElementById('cSubject').value;
+    const msg = document.getElementById('cMessage').value.trim();
+    if (!name || !email || !subject || !msg) { showToast('Please fill all required fields', 'error'); return; }
+    showToast('Message sent! We\'ll get back to you soon 😊', 'success');
+    document.getElementById('cName').value = '';
+    document.getElementById('cEmail').value = '';
+    document.getElementById('cPhone').value = '';
+    document.getElementById('cSubject').value = '';
+    document.getElementById('cMessage').value = '';
+  }
+</script>
+</body>
+</html>

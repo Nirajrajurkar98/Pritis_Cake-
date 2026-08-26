@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Priti's Cake - Baked with Love 🎂</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="catalog.html">Cakes</a></li>
+    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="contact.html">Contact</a></li>
+  </ul>
+  <div class="nav-btns" id="navBtns"></div>
+  <span class="hamburger" id="hamburger">☰</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>Cakes Baked with <span>Love & Passion</span> 🎂</h1>
+    <p>Handcrafted custom cakes for every occasion — birthdays, weddings, anniversaries and more. Made fresh with premium ingredients, delivered to your door.</p>
+    <div class="hero-btns">
+      <a href="catalog.html" class="btn btn-primary">Order Now 🛒</a>
+      <a href="gallery.html" class="btn btn-outline">View Gallery</a>
+    </div>
+  </div>
+  <div class="hero-img">
+    <div class="hero-cake-placeholder">
+      🎂
+      <p>Priti's Special</p>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="categories">
+  <div class="section-title">
+    <h2>Shop by <span>Category</span></h2>
+    <p>Find the perfect cake for every occasion</p>
+  </div>
+  <div class="cat-grid">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Birthday'">
+      <div class="icon">🎂</div><h3>Birthday</h3>
+    </div>
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Wedding'">
+      <div class="icon">💍</div><h3>Wedding</h3>
+    </div>
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Anniversary'">
+      <div class="icon">💕</div><h3>Anniversary</h3>
+    </div>
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Kids'">
+      <div class="icon">🦄</div><h3>Kids</h3>
+    </div>
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Custom'">
+      <div class="icon">📸</div><h3>Custom</h3>
+    </div>
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Seasonal'">
+      <div class="icon">🌸</div><h3>Seasonal</h3>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURED CAKES -->
+<section>
+  <div class="section-title">
+    <h2>Our <span>Bestsellers</span></h2>
+    <p>Most loved cakes by our customers</p>
+  </div>
+  <div class="cakes-grid" id="featuredCakes"></div>
+  <div style="text-align:center;margin-top:40px">
+    <a href="catalog.html" class="btn btn-primary">View All Cakes →</a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="background:#fff0f8">
+  <div class="section-title">
+    <h2>How It <span>Works</span></h2>
+    <p>Order your dream cake in 4 simple steps</p>
+  </div>
+  <div class="steps-grid">
+    <div class="step-card"><div class="step-num">1</div><h3>Browse Cakes</h3><p>Explore our wide range of handcrafted cakes by category, occasion or price.</p></div>
+    <div class="step-card"><div class="step-num">2</div><h3>Place Order</h3><p>Select your cake, choose quantity and place your order online securely.</p></div>
+    <div class="step-card"><div class="step-num">3</div><h3>We Bake Fresh</h3><p>Our expert bakers prepare your cake fresh with premium quality ingredients.</p></div>
+    <div class="step-card"><div class="step-num">4</div><h3>Delivered to You</h3><p>Your cake is carefully packed and delivered fresh to your doorstep.</p></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats">
+  <div class="stats-grid">
+    <div class="stat-item"><h2>5000+</h2><p>Happy Customers</p></div>
+    <div class="stat-item"><h2>50+</h2><p>Cake Varieties</p></div>
+    <div class="stat-item"><h2>8+</h2><p>Years Experience</p></div>
+    <div class="stat-item"><h2>4.9★</h2><p>Average Rating</p></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="section-title">
+    <h2>What Our <span>Customers Say</span></h2>
+    <p>Real reviews from real cake lovers</p>
+  </div>
+  <div class="test-grid">
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <p>"The Strawberry Dream cake was absolutely divine! My daughter's birthday was made extra special. Will definitely order again!"</p>
+      <div class="reviewer"><div class="reviewer-avatar">P</div><div class="reviewer-info"><h4>Priya Sharma</h4><span>Birthday Cake</span></div></div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <p>"Ordered the Royal Wedding Cake and it was beyond our expectations. Beautiful design, amazing taste. All guests loved it!"</p>
+      <div class="reviewer"><div class="reviewer-avatar">R</div><div class="reviewer-info"><h4>Rahul & Sneha</h4><span>Wedding Cake</span></div></div>
+    </div>
+    <div class="test-card">
+      <div class="stars">★★★★★</div>
+      <p>"The custom photo cake was perfect! The edible print was so clear and the cake was moist and delicious. Highly recommend!"</p>
+      <div class="reviewer"><div class="reviewer-avatar">A</div><div class="reviewer-info"><h4>Anjali Mehta</h4><span>Custom Cake</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+      <p>Handcrafted cakes baked with love and passion. Making every celebration sweeter since 2016.</p>
+      <div class="social-links">
+        <a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="catalog.html">Our Cakes</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Categories</h4>
+      <ul>
+        <li><a href="catalog.html?cat=Birthday">Birthday Cakes</a></li>
+        <li><a href="catalog.html?cat=Wedding">Wedding Cakes</a></li>
+        <li><a href="catalog.html?cat=Custom">Custom Cakes</a></li>
+        <li><a href="catalog.html?cat=Kids">Kids Cakes</a></li>
+        <li><a href="catalog.html?cat=Seasonal">Seasonal Cakes</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <p>📍 123 Sweet Street, Pune, Maharashtra 411001</p>
+      <p style="margin-top:10px">📞 +91 98765 43210</p>
+      <p style="margin-top:10px">✉️ hello@priticake.com</p>
+      <p style="margin-top:10px">🕐 Mon-Sun: 8AM - 9PM</p>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 Priti's Cake. All rights reserved. Made with ❤️</p>
+  </div>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h2>🛒 Your Cart</h2>
+    <button class="cart-close" onclick="toggleCart()">✕</button>
+  </div>
+  <div id="cartItems"></div>
+  <div class="cart-total" id="cartTotal" style="display:none">
+    <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
+    <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
+    <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder()">Place Order 🎉</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/main.js"></script>
+<script>
+  // Load featured cakes
+  document.addEventListener('DOMContentLoaded', () => {
+    const featured = DB.cakes.filter(c => c.tag === 'Bestseller' || c.tag === 'Popular' || c.tag === 'Premium').slice(0, 6);
+    const cakes = featured.length >= 3 ? featured : DB.cakes.slice(0, 6);
+    document.getElementById('featuredCakes').innerHTML = cakes.map(cake => `
+      <div class="cake-card">
+        <div class="cake-img">
+          ${cake.emoji}
+          ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
+        </div>
+        <div class="cake-info">
+          <h3>${cake.name}</h3>
+          <p>${cake.desc.substring(0, 80)}...</p>
+          <div class="cake-footer">
+            <span class="price">₹${cake.price}</span>
+            <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart(${cake.id})">Add to Cart 🛒</button>
+        </div>
+      </div>
+    `).join('');
+  });
+</script>
+</body>
+</html>
