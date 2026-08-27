@@ -231,6 +231,9 @@ tr:hover td { background: #fafafa; }
 .order-detail-item span { font-size: 0.75rem; color: var(--gray); }
 .order-detail-item p { font-weight: 600; margin-top: 3px; font-size: 0.9rem; }
 
+/* CAKE IMAGES (uploaded) */
+.admin-cake-img img, .client-cake-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
 /* CLIENT CAKE GRID */
 .client-cakes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
 .client-cake-card {

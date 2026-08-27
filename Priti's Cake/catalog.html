@@ -159,7 +159,7 @@
     grid.innerHTML = cakes.map(cake => `
       <div class="cake-card">
         <div class="cake-img" style="cursor:pointer" onclick="openCakeModal(${cake.id})">
-          ${cake.emoji}
+          ${cakeMedia(cake)}
           ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
         </div>
         <div class="cake-info">
@@ -184,7 +184,7 @@
     currentCakeId = id;
     currentQty = 1;
     document.getElementById('modalContent').innerHTML = `
-      <div class="modal-cake-img">${cake.emoji}</div>
+      <div class="modal-cake-img">${cakeMedia(cake)}</div>
       <h2>${cake.name}</h2>
       <div style="font-size:0.85rem;color:#e91e8c;margin-bottom:5px">${cake.category}</div>
       <div class="price">₹${cake.price}</div>

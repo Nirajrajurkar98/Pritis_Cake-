@@ -51,7 +51,7 @@ function loadClientDashboard() {
   if (featGrid) {
     featGrid.innerHTML = DB.cakes.slice(0, 4).map(cake => `
       <div class="client-cake-card" onclick="openCakeDetail(${cake.id})">
-        <div class="client-cake-img">${cake.emoji}</div>
+        <div class="client-cake-img">${cakeMedia(cake)}</div>
         <div class="client-cake-info">
           <h4>${cake.name}</h4>
           <div class="price">₹${cake.price}</div>
@@ -66,10 +66,10 @@ function loadBrowseCakes(filter = 'All') {
   const grid = document.getElementById('browseCakesGrid');
   grid.innerHTML = cakes.map(cake => `
     <div class="client-cake-card" onclick="openCakeDetail(${cake.id})">
-      <div class="client-cake-img">${cake.emoji}</div>
-      <div class="client-cake-info">
-        <h4>${cake.name}</h4>
-        <div style="font-size:0.75rem;color:#999;margin-bottom:5px">${cake.category}</div>
+        <div class="client-cake-img">${cakeMedia(cake)}</div>
+        <div class="client-cake-info">
+          <h4>${cake.name}</h4>
+          <div style="font-size:0.75rem;color:#999;margin-bottom:5px">${cake.category}</div>
         <div style="display:flex;justify-content:space-between;align-items:center">
           <div class="price">₹${cake.price}</div>
           <div style="font-size:0.75rem;color:#ffa500">⭐ ${cake.rating}</div>
@@ -93,7 +93,7 @@ function openCakeDetail(id) {
   const cake = DB.cakes.find(c => c.id === id);
   if (!cake) return;
   document.getElementById('detailContent').innerHTML = `
-    <div style="height:180px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:6rem;margin-bottom:20px">${cake.emoji}</div>
+    <div style="height:180px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:6rem;margin-bottom:20px;overflow:hidden">${cakeMedia(cake)}</div>
     <h2>${cake.name}</h2>
     <div style="font-size:1.8rem;font-weight:800;color:#e91e8c;margin:10px 0">₹${cake.price}</div>
     <p style="color:#666;line-height:1.7;margin-bottom:20px">${cake.desc}</p>

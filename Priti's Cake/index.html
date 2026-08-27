@@ -198,7 +198,7 @@
     document.getElementById('featuredCakes').innerHTML = cakes.map(cake => `
       <div class="cake-card">
         <div class="cake-img">
-          ${cake.emoji}
+          ${cakeMedia(cake)}
           ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
         </div>
         <div class="cake-info">

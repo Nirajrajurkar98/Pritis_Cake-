@@ -181,6 +181,14 @@
       </div>
       <div class="form-group"><label>Price (₹) *</label><input type="number" id="cakePrice" placeholder="850"></div>
       <div class="form-group"><label>Emoji Icon</label><input type="text" id="cakeEmoji" placeholder="🎂"></div>
+      <div class="form-group form-full">
+        <label>Cake Image</label>
+        <input type="file" id="cakeImage" accept="image/*">
+        <div id="cakeImagePreview" style="margin-top:10px;display:none">
+          <img id="cakeImagePreviewImg" style="max-width:120px;border-radius:10px;display:block">
+          <small style="color:#999">Current image (leave file empty to keep it)</small>
+        </div>
+      </div>
       <div class="form-group"><label>Weight</label><input type="text" id="cakeWeight" placeholder="1 kg"></div>
       <div class="form-group"><label>Serves</label><input type="text" id="cakeServes" placeholder="8-10"></div>
       <div class="form-group"><label>Prep Time</label><input type="text" id="cakeTime" placeholder="2-3 hrs"></div>

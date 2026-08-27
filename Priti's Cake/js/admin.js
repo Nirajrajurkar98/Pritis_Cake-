@@ -60,7 +60,7 @@ function loadCakes() {
   const grid = document.getElementById('cakesGrid');
   grid.innerHTML = DB.cakes.map(cake => `
     <div class="admin-cake-card">
-      <div class="admin-cake-img">${cake.emoji}</div>
+      <div class="admin-cake-img">${cakeMedia(cake)}</div>
       <div class="admin-cake-info">
         <h4>${cake.name}</h4>
         <div style="font-size:0.8rem;color:#999;margin-bottom:5px">${cake.category}</div>
@@ -76,8 +76,18 @@ function loadCakes() {
 
 function openAddCakeModal() {
   document.getElementById('cakeModalTitle').textContent = 'Add New Cake';
-  document.getElementById('cakeForm').reset();
+  const form = document.getElementById('cakeForm');
+  if (form) form.reset();
   document.getElementById('editCakeId').value = '';
+  ['cakeName', 'cakePrice', 'cakeEmoji', 'cakeWeight', 'cakeServes', 'cakeTime', 'cakeTag', 'cakeDesc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('cakeCategory').value = 'Birthday';
+  const fileInput = document.getElementById('cakeImage');
+  if (fileInput) fileInput.value = '';
+  const preview = document.getElementById('cakeImagePreview');
+  if (preview) preview.style.display = 'none';
   openModal('cakeModal');
 }
 
@@ -95,6 +105,14 @@ function editCake(id) {
   document.getElementById('cakeTime').value = cake.time;
   document.getElementById('cakeTag').value = cake.tag || '';
   document.getElementById('cakeDesc').value = cake.desc;
+  const fileInput = document.getElementById('cakeImage');
+  if (fileInput) fileInput.value = '';
+  const preview = document.getElementById('cakeImagePreview');
+  const previewImg = document.getElementById('cakeImagePreviewImg');
+  if (preview && previewImg) {
+    if (cake.image) { previewImg.src = cake.image; preview.style.display = 'block'; }
+    else preview.style.display = 'none';
+  }
   openModal('cakeModal');
 }
 
@@ -113,19 +131,29 @@ function saveCake() {
     rating: 4.5, reviews: 0
   };
   if (!data.name || !data.price) { showToast('Please fill required fields', 'error'); return; }
-  if (id) {
-    const idx = DB.cakes.findIndex(c => c.id == id);
-    if (idx !== -1) DB.cakes[idx] = { ...DB.cakes[idx], ...data };
-    showToast('Cake updated successfully! ✅', 'success');
+  const existing = id ? DB.cakes.find(c => c.id == id) : null;
+  const fileInput = document.getElementById('cakeImage');
+  const finish = (image) => {
+    data.image = image || (existing ? existing.image : '');
+    if (id) {
+      const idx = DB.cakes.findIndex(c => c.id == id);
+      if (idx !== -1) DB.cakes[idx] = { ...DB.cakes[idx], ...data };
+      showToast('Cake updated successfully! ✅', 'success');
+    } else {
+      data.id = Date.now();
+      DB.cakes.push(data);
+      showToast('Cake added successfully! 🎂', 'success');
+    }
+    saveData();
+    closeModal('cakeModal');
+    loadCakes();
+    loadDashboard();
+  };
+  if (fileInput && fileInput.files && fileInput.files[0]) {
+    resizeImageFile(fileInput.files[0], finish);
   } else {
-    data.id = Date.now();
-    DB.cakes.push(data);
-    showToast('Cake added successfully! 🎂', 'success');
+    finish(null);
   }
-  saveData();
-  closeModal('cakeModal');
-  loadCakes();
-  loadDashboard();
 }
 
 function deleteCake(id) {

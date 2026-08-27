@@ -36,6 +36,38 @@ function saveData() {
 const storedCakes = localStorage.getItem('pc_cakes');
 if (storedCakes) DB.cakes = JSON.parse(storedCakes);
 
+// ===== IMAGE HELPERS =====
+// Returns the inner HTML for a cake's visual (real image or emoji fallback)
+function cakeMedia(cake) {
+  if (cake && cake.image) return `<img src="${cake.image}" alt="${cake.name}">`;
+  return (cake && cake.emoji) ? cake.emoji : '🎂';
+}
+
+// Reads an uploaded image file and returns a compressed data URL (max dim 800px, JPEG)
+function resizeImageFile(file, cb) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      const maxDim = 800;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      try { cb(canvas.toDataURL('image/jpeg', 0.8)); }
+      catch (err) { cb(e.target.result); }
+    };
+    img.onerror = () => cb(e.target.result);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 // ===== AUTH =====
 function login(email, password) {
   if (email === ADMIN.email && password === ADMIN.password) {
@@ -77,7 +109,7 @@ function addToCart(cakeId, qty = 1) {
   if (!cake) return;
   const existing = DB.cart.find(i => i.cakeId === cakeId);
   if (existing) existing.qty += qty;
-  else DB.cart.push({ cakeId, qty, name: cake.name, price: cake.price, emoji: cake.emoji });
+  else DB.cart.push({ cakeId, qty, name: cake.name, price: cake.price, emoji: cake.emoji, image: cake.image || '' });
   saveData();
   updateCartUI();
   showToast(`${cake.name} added to cart! 🎂`, 'success');
@@ -111,7 +143,7 @@ function renderCartItems() {
   if (totalEl) totalEl.style.display = 'block';
   container.innerHTML = DB.cart.map(item => `
     <div class="cart-item">
-      <div class="cart-item-img">${item.emoji}</div>
+      <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}">` : item.emoji}</div>
       <div class="cart-item-info">
         <h4>${item.name}</h4>
         <div class="price">₹${item.price} × ${item.qty}</div>
