@@ -15,8 +15,13 @@ connectDB();
 
 const app = express();
 
+const path = require('path');
+
 // Middleware
 app.use(express.json());
+
+// Serve uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // CORS configuration (allow local dev frontend)
 app.use(cors({
