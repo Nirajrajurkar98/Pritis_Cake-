@@ -102,138 +102,209 @@ function getCakeMediaHtml(cake) {
 }
 
 // ===== CAKES =====
+let allCakes = [];
+let cakeToDeleteId = null;
+
 async function loadCakes() {
   const grid = document.getElementById('cakesGrid');
-  grid.innerHTML = '<div style="text-align:center;width:100%;padding:30px;color:#999">Loading cakes...</div>';
+  grid.innerHTML = '<div class="state-loading" style="grid-column:1/-1;">Loading cakes...</div>';
   
   try {
-    const cakes = await api.get('/admin/cakes');
-    
-    if (cakes.length === 0) {
-      grid.innerHTML = '<div style="text-align:center;width:100%;padding:30px;color:#999">No cakes available.</div>';
-      return;
-    }
-
-    grid.innerHTML = cakes.map(cake => `
-      <div class="admin-cake-card">
-        <div class="admin-cake-img">${getCakeMediaHtml(cake)}</div>
-        <div class="admin-cake-info">
-          <h4>${cake.name}</h4>
-          <div style="font-size:0.8rem;color:#999;margin-bottom:5px">${cake.category}</div>
-          <div class="price">₹${cake.price}</div>
-          <div class="admin-cake-actions">
-            <button class="btn-sm btn-edit" onclick="editCake('${cake._id}')">✏️ Edit</button>
-            <button class="btn-sm btn-delete" onclick="deleteCake('${cake._id}')">🗑️ Delete</button>
-          </div>
-        </div>
-      </div>
-    `).join('');
+    allCakes = await api.get('/admin/cakes');
+    renderCakes(allCakes);
   } catch(err) {
-    grid.innerHTML = '<div style="text-align:center;width:100%;padding:30px;color:#e91e8c">Failed to load cakes</div>';
+    console.error(err);
+    grid.innerHTML = '<div class="state-error" style="grid-column:1/-1;">Unable to load cakes. Please try again.</div>';
   }
 }
 
+function renderCakes(cakesToRender) {
+  const grid = document.getElementById('cakesGrid');
+  if (cakesToRender.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;border-radius:8px;border:1px solid #e5e7eb;">No cakes available.<br><small style="color:#9ca3af;margin-top:4px;display:block;">Add your first cake to start building the catalog.</small></div>';
+    return;
+  }
+
+  grid.innerHTML = cakesToRender.map(cake => `
+    <div class="admin-cake-card">
+      <div class="admin-cake-img" style="height:180px;background:#f9fafb;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e5e7eb;overflow:hidden">
+        ${cake.image 
+          ? `<img src="${cake.image}" alt="${cake.name}" style="width:100%;height:100%;object-fit:cover;">` 
+          : `<span style="font-size:0.875rem;color:#9ca3af;">No image</span>`
+        }
+      </div>
+      <div class="admin-cake-info" style="padding:16px;">
+        <h4 style="font-size:1rem;font-weight:600;color:#111827;margin:0 0 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${cake.name}">${cake.name}</h4>
+        <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:8px;text-transform:capitalize;">${cake.category}</div>
+        <div class="price" style="font-size:1.125rem;font-weight:700;color:#111827;margin-bottom:16px;">${formatCurrency(cake.price)}</div>
+        <div class="admin-cake-actions" style="display:flex;gap:8px;">
+          <button class="btn-sm btn-edit" style="flex:1" onclick="editCake('${cake._id}')">Edit</button>
+          <button class="btn-sm btn-delete" style="flex:1" onclick="deleteCake('${cake._id}', '${cake.name.replace(/'/g, "\'")}')">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCakes(e) {
+  const query = e.target.value.toLowerCase().trim();
+  if (!query) return renderCakes(allCakes);
+  
+  const filtered = allCakes.filter(c => 
+    c.name.toLowerCase().includes(query) || 
+    c.category.toLowerCase().includes(query)
+  );
+  renderCakes(filtered);
+}
+
 function openAddCakeModal() {
-  document.getElementById('cakeModalTitle').textContent = 'Add New Cake';
-  const form = document.getElementById('cakeForm');
-  if (form) form.reset();
+  document.getElementById('cakeModalTitle').textContent = 'Add Cake';
   document.getElementById('editCakeId').value = '';
-  ['cakeName', 'cakePrice', 'cakeEmoji', 'cakeWeight', 'cakeServes', 'cakeTime', 'cakeTag', 'cakeDesc'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
+  document.getElementById('cakeName').value = '';
   document.getElementById('cakeCategory').value = 'Birthday';
+  document.getElementById('cakePrice').value = '';
+  document.getElementById('cakeDesc').value = '';
+  document.getElementById('cakeWeight').value = '';
+  document.getElementById('cakeTime').value = '';
+  document.getElementById('cakeServes').value = '';
+  
   const fileInput = document.getElementById('cakeImage');
-  if (fileInput) fileInput.value = '';
-  const preview = document.getElementById('cakeImagePreview');
-  if (preview) preview.style.display = 'none';
+  fileInput.value = '';
+  document.getElementById('cakeImagePreview').style.display = 'none';
+  document.getElementById('cakeImageRequired').textContent = '(Required)';
+  document.getElementById('cakeFormError').style.display = 'none';
+  
   openModal('cakeModal');
 }
 
 async function editCake(id) {
-  try {
-    const cake = await api.get(`/admin/cakes/${id}`);
-    document.getElementById('cakeModalTitle').textContent = 'Edit Cake';
-    document.getElementById('editCakeId').value = id;
-    document.getElementById('cakeName').value = cake.name;
-    document.getElementById('cakeCategory').value = cake.category;
-    document.getElementById('cakePrice').value = cake.price;
-    document.getElementById('cakeEmoji').value = cake.emoji || '';
-    document.getElementById('cakeWeight').value = cake.weight || '';
-    document.getElementById('cakeServes').value = cake.serves || '';
-    document.getElementById('cakeTime').value = cake.time || '';
-    document.getElementById('cakeTag').value = cake.tag || '';
-    document.getElementById('cakeDesc').value = cake.desc || '';
-    
-    const fileInput = document.getElementById('cakeImage');
-    if (fileInput) fileInput.value = '';
-    
-    const preview = document.getElementById('cakeImagePreview');
-    const previewImg = document.getElementById('cakeImagePreviewImg');
-    
-    if (preview && previewImg) {
-      if (cake.image) { 
-        previewImg.src = cake.image.startsWith('http') ? cake.image : `http://localhost:5000${cake.image}`; 
-        preview.style.display = 'block'; 
-      }
-      else preview.style.display = 'none';
-    }
-    openModal('cakeModal');
-  } catch(err) {
-    showToast('Failed to load cake details', 'error');
+  const cake = allCakes.find(c => c._id === id);
+  if (!cake) return;
+  
+  document.getElementById('cakeModalTitle').textContent = 'Edit Cake';
+  document.getElementById('editCakeId').value = id;
+  document.getElementById('cakeName').value = cake.name || '';
+  document.getElementById('cakeCategory').value = cake.category || 'Birthday';
+  document.getElementById('cakePrice').value = cake.price || 0;
+  document.getElementById('cakeDesc').value = cake.desc || '';
+  document.getElementById('cakeWeight').value = cake.weight || '';
+  document.getElementById('cakeTime').value = cake.time || '';
+  document.getElementById('cakeServes').value = cake.serves || '';
+  
+  const fileInput = document.getElementById('cakeImage');
+  fileInput.value = '';
+  document.getElementById('cakeImageRequired').textContent = '(Optional)';
+  document.getElementById('cakeFormError').style.display = 'none';
+  
+  const previewDiv = document.getElementById('cakeImagePreview');
+  const previewImg = document.getElementById('cakeImagePreviewImg');
+  
+  if (cake.image) {
+    previewImg.src = cake.image;
+    previewDiv.style.display = 'flex';
+  } else {
+    previewDiv.style.display = 'none';
   }
+  
+  openModal('cakeModal');
 }
 
 async function saveCake() {
+  const errDiv = document.getElementById('cakeFormError');
+  errDiv.style.display = 'none';
+  errDiv.textContent = '';
+  
   const id = document.getElementById('editCakeId').value;
   const name = document.getElementById('cakeName').value.trim();
   const category = document.getElementById('cakeCategory').value;
-  const price = parseInt(document.getElementById('cakePrice').value);
-  
-  if (!name || isNaN(price) || price < 0) { 
-    showToast('Please fill required fields (Valid Name & Price)', 'error'); 
-    return; 
-  }
-
-  const formData = new FormData();
-  formData.append('name', name);
-  formData.append('category', category);
-  formData.append('price', price);
-  formData.append('emoji', document.getElementById('cakeEmoji').value.trim() || '');
-  formData.append('weight', document.getElementById('cakeWeight').value.trim());
-  formData.append('serves', document.getElementById('cakeServes').value.trim());
-  formData.append('time', document.getElementById('cakeTime').value.trim());
-  formData.append('tag', document.getElementById('cakeTag').value.trim());
-  formData.append('desc', document.getElementById('cakeDesc').value.trim());
-  
+  const price = document.getElementById('cakePrice').value;
+  const desc = document.getElementById('cakeDesc').value.trim();
   const fileInput = document.getElementById('cakeImage');
-  if (fileInput && fileInput.files && fileInput.files[0]) {
-    formData.append('image', fileInput.files[0]);
+  
+  if (!name) {
+    errDiv.textContent = 'Cake Name is required.';
+    errDiv.style.display = 'block';
+    return;
   }
+  if (!price || parseFloat(price) < 0) {
+    errDiv.textContent = 'Price must be a valid positive number.';
+    errDiv.style.display = 'block';
+    return;
+  }
+  if (!desc) {
+    errDiv.textContent = 'Description is required.';
+    errDiv.style.display = 'block';
+    return;
+  }
+  if (!id && !fileInput.files[0]) {
+    errDiv.textContent = 'Cake Image is required for new cakes.';
+    errDiv.style.display = 'block';
+    return;
+  }
+  
+  const btn = document.getElementById('btnSaveCake');
+  const originalText = btn.textContent;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+  document.getElementById('btnCancelCake').disabled = true;
 
   try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('price', price);
+    formData.append('desc', desc);
+    formData.append('weight', document.getElementById('cakeWeight').value.trim());
+    formData.append('time', document.getElementById('cakeTime').value.trim());
+    formData.append('serves', document.getElementById('cakeServes').value.trim());
+    
+    if (fileInput.files[0]) {
+      formData.append('image', fileInput.files[0]);
+    }
+    
     if (id) {
       await api.putMultipart(`/admin/cakes/${id}`, formData);
-      showToast('Cake updated successfully! ✅', 'success');
+      showToast('Cake updated successfully.');
     } else {
       await api.postMultipart(`/admin/cakes`, formData);
-      showToast('Cake added successfully!', 'success');
+      showToast('Cake added successfully.');
     }
     closeModal('cakeModal');
     loadCakes();
   } catch(err) {
-    showToast(err.message || 'Failed to save cake', 'error');
+    errDiv.textContent = err.message || 'Failed to save cake.';
+    errDiv.style.display = 'block';
+  } finally {
+    btn.textContent = originalText;
+    btn.disabled = false;
+    document.getElementById('btnCancelCake').disabled = false;
   }
 }
 
-async function deleteCake(id) {
-  if (!confirm('Delete this cake?')) return;
+function deleteCake(id, name) {
+  cakeToDeleteId = id;
+  document.getElementById('deleteConfirmText').innerHTML = `Are you sure you want to delete <strong>"${name}"</strong>?<br>This action cannot be undone.`;
+  openModal('deleteConfirmModal');
+}
+
+async function executeDeleteCake() {
+  if (!cakeToDeleteId) return;
+  
+  const btn = document.getElementById('btnConfirmDelete');
+  btn.textContent = 'Deleting...';
+  btn.disabled = true;
+  
   try {
-    await api.delete(`/admin/cakes/${id}`);
-    showToast('Cake deleted', 'success');
+    await api.delete(`/admin/cakes/${cakeToDeleteId}`);
+    showToast('Cake deleted successfully.');
+    closeModal('deleteConfirmModal');
     loadCakes();
   } catch(err) {
-    showToast(err.message || 'Failed to delete cake', 'error');
+    showToast(err.message || 'Failed to delete cake.', 'error');
+  } finally {
+    btn.textContent = 'Delete Cake';
+    btn.disabled = false;
+    cakeToDeleteId = null;
   }
 }
 
@@ -435,4 +506,22 @@ function closeModal(id) { document.getElementById(id).classList.remove('active')
 // ===== SIDEBAR TOGGLE =====
 function toggleSidebar() {
   document.getElementById('dashSidebar').classList.toggle('open');
+}
+
+// Cake Image Preview Listener
+const cakeImageInput = document.getElementById('cakeImage');
+if (cakeImageInput) {
+  cakeImageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    const previewDiv = document.getElementById('cakeImagePreview');
+    const previewImg = document.getElementById('cakeImagePreviewImg');
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewDiv.style.display = 'flex';
+      };
+      reader.readAsDataURL(file);
+    }
+  });
 }
