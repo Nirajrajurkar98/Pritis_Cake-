@@ -35,7 +35,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
 .sidebar-logo .logo span { color: var(--pink); }
 .sidebar-logo p { font-size: 0.75rem; color: #9ca3af; margin-top: 4px; }
 .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
-.nav-section-title { font-size: 0.7rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 24px 8px; font-weight: 600; }
+.nav-section-title { font-size: 0.7rem; color: #6b7280; text-transform: capitalize; letter-spacing: 0; letter-spacing: 0.5px; padding: 16px 24px 8px; font-weight: 600; }
 .sidebar-link {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 24px;
@@ -149,13 +149,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
 /* TABLE */
 .table-wrap { overflow-x: auto; margin: -1px; }
 table { width: 100%; border-collapse: separate; border-spacing: 0; }
-th { background: #f9fafb; padding: 12px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; border-top: 1px solid #e5e7eb; }
+th { background: #f9fafb; padding: 12px 16px; text-align: left; font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: none; letter-spacing: normal; letter-spacing: 0.05em; border-bottom: 1px solid #e5e7eb; border-top: 1px solid #e5e7eb; }
 td { padding: 16px; border-bottom: 1px solid #e5e7eb; font-size: 0.875rem; color: #374151; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f9fafb; }
 
 /* BADGES */
-.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; display: inline-block; text-align: center; }
+.badge { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; text-transform: capitalize; letter-spacing: 0; letter-spacing: 0.05em; display: inline-block; text-align: center; }
 .badge-pending { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
 .badge-confirmed { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
 .badge-baking { background: var(--pink-pale); color: var(--pink); }
@@ -244,7 +244,7 @@ tr:hover td { background: #f9fafb; }
 /* ORDER DETAIL */
 .order-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
 .order-detail-item { background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; }
-.order-detail-item span { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+.order-detail-item span { font-size: 0.75rem; font-weight: 600; color: #6b7280; text-transform: capitalize; letter-spacing: 0; letter-spacing: 0.05em; }
 .order-detail-item p { font-weight: 500; margin-top: 6px; font-size: 0.9375rem; color: #111827; }
 
 /* CAKE IMAGES (uploaded) */
@@ -346,4 +346,60 @@ tr:hover td { background: #f9fafb; }
 input:disabled, select:disabled, textarea:disabled, button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* REFINED DASHBOARD UX */
+.stat-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 110px;
+}
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 8px;
+  text-transform: capitalize; letter-spacing: 0;
+  letter-spacing: 0.025em;
+}
+.stat-value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+/* REFINED TABLES */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+th.col-id { width: 12%; }
+th.col-amount { text-align: right; }
+td.col-amount { text-align: right; font-weight: 500; }
+
+.empty-state {
+  text-align: center;
+  color: #6b7280;
+  padding: 48px 24px;
+  font-size: 0.9375rem;
+  background: #f9fafb;
+}
+
+/* SUBTLE LOADING/ERROR STATES */
+.state-loading {
+  color: #6b7280;
+  font-size: 0.875rem;
+  padding: 24px;
+  text-align: center;
+}
+.state-error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  padding: 16px;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  margin-bottom: 24px;
 }

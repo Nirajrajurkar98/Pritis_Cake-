@@ -57,19 +57,19 @@
         <div class="stats-row">
           <div class="stat-card">
             
-            <div class="stat-info"><h3 id="totalOrders">0</h3><p>Total Orders</p></div>
+            <div class="stat-info"><p class="stat-label">Total Orders</p><h3 class="stat-value" id="totalOrders">0</h3></div>
           </div>
           <div class="stat-card">
             
-            <div class="stat-info"><h3 id="totalRevenue">₹0</h3><p>Total Revenue</p></div>
+            <div class="stat-info"><p class="stat-label">Total Revenue</p><h3 class="stat-value" id="totalRevenue">₹0</h3></div>
           </div>
           <div class="stat-card">
             
-            <div class="stat-info"><h3 id="totalCakes">0</h3><p>Cake Varieties</p></div>
+            <div class="stat-info"><p class="stat-label">Cake Varieties</p><h3 class="stat-value" id="totalCakes">0</h3></div>
           </div>
           <div class="stat-card">
             
-            <div class="stat-info"><h3 id="totalCustomers">0</h3><p>Customers</p></div>
+            <div class="stat-info"><p class="stat-label">Customers</p><h3 class="stat-value" id="totalCustomers">0</h3></div>
           </div>
         </div>
 
@@ -77,8 +77,8 @@
           <div class="card-header"><h3>Recent Orders</h3><button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showSection('orders')">View All</button></div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-              <tbody id="recentOrdersBody"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+              <thead><tr><th class="col-id">Order ID</th><th>Customer</th><th>Items</th><th class="col-amount">Amount</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="recentOrdersBody"><tr><td colspan="6" class="empty-state">No recent orders found.</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -105,7 +105,7 @@
         <div class="dash-card">
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+              <thead><tr><th class="col-id">Order ID</th><th>Customer</th><th>Items</th><th class="col-amount">Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
               <tbody id="ordersBody"><tr><td colspan="7" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
             </table>
           </div>

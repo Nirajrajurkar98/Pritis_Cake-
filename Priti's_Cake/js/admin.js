@@ -1,3 +1,4 @@
+const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 document.addEventListener('DOMContentLoaded', async () => {
   // Auth check
   const token = localStorage.getItem('pc_token');
@@ -56,10 +57,10 @@ async function showSection(id) {
 }
 
 async function loadDashboard() {
-  document.getElementById('totalOrders').textContent = '...';
-  document.getElementById('totalRevenue').textContent = '...';
-  document.getElementById('totalCakes').textContent = '...';
-  document.getElementById('totalCustomers').textContent = '...';
+  document.getElementById('totalOrders').textContent = '-';
+  document.getElementById('totalRevenue').textContent = '-';
+  document.getElementById('totalCakes').textContent = '-';
+  document.getElementById('totalCustomers').textContent = '-';
 
   try {
     const stats = await api.get('/admin/stats');
@@ -84,7 +85,7 @@ async function loadDashboard() {
         <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       </tr>
-    `).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr>';
+    `).join('') : '<tr><td colspan="6" class="empty-state">No recent orders found.</td></tr>';
 
     // Mini chart bars
       } catch(err) {
@@ -258,9 +259,9 @@ async function loadOrders() {
         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
         <td><button class="btn-sm btn-view" onclick="viewOrder('${o._id}')">View</button></td>
       </tr>
-    `).join('') : '<tr><td colspan="7" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr>';
+    `).join('') : '<tr><td colspan="7" class="empty-state">No orders found.</td></tr>';
   } catch(err) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#e91e8c;padding:30px">Failed to load orders</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="state-error" style="display:table-cell;">Failed to load orders</td></tr>';
   }
 }
 
@@ -301,7 +302,7 @@ async function viewOrder(orderId) {
 let searchTimeout;
 async function loadCustomers(search = '') {
   const tbody = document.getElementById('customersBody');
-  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;padding:30px">Loading customers...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="state-loading">Loading customers...</td></tr>';
   
   const query = search ? `?search=${encodeURIComponent(search)}` : '';
   
@@ -320,9 +321,9 @@ async function loadCustomers(search = '') {
           <td><span class="badge badge-active">Active</span></td>
         </tr>
       `;
-    }).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No customers found</td></tr>';
+    }).join('') : '<tr><td colspan="6" class="empty-state">No customers found.</td></tr>';
   } catch(err) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e91e8c;padding:30px">Failed to load customers</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="state-error" style="display:table-cell;">Failed to load customers</td></tr>';
   }
 }
 
