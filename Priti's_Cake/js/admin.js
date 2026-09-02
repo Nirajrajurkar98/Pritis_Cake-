@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const adminData = JSON.parse(localStorage.getItem('pc_admin') || 'null');
   
   if (!token || !adminData || adminData.role !== 'admin') {
-    window.location.href = 'login.html';
+    window.location.href = 'admin-login.html';
     return;
   }
 
@@ -429,7 +429,7 @@ async function saveSettings() {
 function logout() {
   localStorage.removeItem('pc_token');
   localStorage.removeItem('pc_admin');
-  window.location.href = 'login.html';
+  window.location.href = 'admin-login.html';
 }
 
 // ===== MODAL HELPERS =====

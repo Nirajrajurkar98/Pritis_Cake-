@@ -13,7 +13,7 @@ const api = {
     if (response.status === 401) {
       localStorage.removeItem('pc_token');
       localStorage.removeItem('pc_admin');
-      window.location.href = 'login.html';
+      window.location.href = 'admin-login.html';
       throw new Error('Session expired. Please login again.');
     }
     

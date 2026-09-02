@@ -35,6 +35,9 @@
       <div class="forgot-link"><a href="#">Forgot Password?</a></div>
       <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="handleLogin()">Login →</button>
       <div class="auth-divider">or</div>
+      <div style="text-align:center;margin-top:15px">
+        <a href="admin-login.html" style="color:#e91e8c;font-size:0.9rem;font-weight:600;text-decoration:none">🛡️ Admin Portal Login</a>
+      </div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -90,24 +93,10 @@
     document.getElementById('registerForm').classList.toggle('active', tab === 'register');
   }
 
-  async function handleLogin() {
+  function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
-
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      if (res.user && res.user.role === 'admin') {
-        localStorage.setItem('pc_token', res.token);
-        localStorage.setItem('pc_admin', JSON.stringify(res.user));
-        showToast('Admin login successful! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1000);
-        return;
-      }
-    } catch (err) {
-      // If API fails or user is not admin, fallback to local DB for customers
-      console.log('API login failed or not admin, falling back to local DB:', err.message);
-    }
 
     const result = login(email, password);
     if (result.success) {
