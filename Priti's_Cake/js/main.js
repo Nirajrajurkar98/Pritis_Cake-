@@ -70,11 +70,8 @@ function resizeImageFile(file, cb) {
 
 // ===== AUTH =====
 function login(email, password) {
-  if (email === ADMIN.email && password === ADMIN.password) {
-    DB.currentUser = { email, name: ADMIN.name, role: 'admin' };
-    saveData();
-    return { success: true, role: 'admin' };
-  }
+  // Admin login is now handled via API.
+  // This function is for customer local fallback only.
   const user = DB.users.find(u => u.email === email && u.password === password);
   if (user) {
     DB.currentUser = { ...user, role: 'client' };
@@ -102,8 +99,8 @@ function logout() {
 function isLoggedIn() { return DB.currentUser !== null; }
 function isAdmin() { 
   const apiAdmin = JSON.parse(localStorage.getItem('pc_admin') || 'null');
-  if (apiAdmin && apiAdmin.role === 'admin') return true;
-  return DB.currentUser && DB.currentUser.role === 'admin'; 
+  const token = localStorage.getItem('pc_token');
+  return !!(token && apiAdmin && apiAdmin.role === 'admin');
 }
 
 // ===== CART =====

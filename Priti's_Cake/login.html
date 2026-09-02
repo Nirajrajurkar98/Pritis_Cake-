@@ -115,14 +115,8 @@
 
     const result = login(email, password);
     if (result.success) {
-      if (result.role === 'admin') {
-        // Just in case local admin
-        showToast('Local Admin login successful! Redirecting...', 'success');
-        setTimeout(() => window.location.href = 'admin-dashboard.html', 1000);
-      } else {
-        showToast('Login successful! Redirecting...', 'success');
-        setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
-      }
+      showToast('Login successful! Redirecting...', 'success');
+      setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
     } else {
       showToast('Invalid email or password', 'error');
     }
