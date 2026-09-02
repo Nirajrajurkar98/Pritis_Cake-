@@ -87,12 +87,7 @@ async function loadDashboard() {
     `).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr>';
 
     // Mini chart bars
-    const chartEl = document.getElementById('miniChart');
-    if (chartEl) {
-      const heights = [40, 65, 50, 80, 60, 90, 75];
-      chartEl.innerHTML = heights.map(h => `<div class="bar" style="height:${h}%"></div>`).join('');
-    }
-  } catch(err) {
+      } catch(err) {
     showToast('Failed to load dashboard data', 'error');
   }
 }
@@ -102,7 +97,7 @@ function getCakeMediaHtml(cake) {
     const imgUrl = cake.image.startsWith('http') ? cake.image : `http://localhost:5000${cake.image}`;
     return `<img src="${imgUrl}" alt="${cake.name}">`;
   }
-  return cake.emoji || '🎂';
+  return cake.emoji || '';
 }
 
 // ===== CAKES =====
@@ -203,7 +198,7 @@ async function saveCake() {
   formData.append('name', name);
   formData.append('category', category);
   formData.append('price', price);
-  formData.append('emoji', document.getElementById('cakeEmoji').value.trim() || '🎂');
+  formData.append('emoji', document.getElementById('cakeEmoji').value.trim() || '');
   formData.append('weight', document.getElementById('cakeWeight').value.trim());
   formData.append('serves', document.getElementById('cakeServes').value.trim());
   formData.append('time', document.getElementById('cakeTime').value.trim());
@@ -221,7 +216,7 @@ async function saveCake() {
       showToast('Cake updated successfully! ✅', 'success');
     } else {
       await api.postMultipart(`/admin/cakes`, formData);
-      showToast('Cake added successfully! 🎂', 'success');
+      showToast('Cake added successfully!', 'success');
     }
     closeModal('cakeModal');
     loadCakes();
@@ -294,7 +289,7 @@ async function viewOrder(orderId) {
       </div>
       <h4 style="margin-bottom:12px">Items Ordered</h4>
       <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
-      <tbody>${o.items.map(i => `<tr><td>${i.emoji || '🎂'} ${i.name}</td><td>${i.qty}</td><td>₹${i.price}</td><td>₹${i.price * i.qty}</td></tr>`).join('')}</tbody></table>
+      <tbody>${o.items.map(i => `<tr><td>${i.name}</td><td>${i.qty}</td><td>₹${i.price}</td><td>₹${i.price * i.qty}</td></tr>`).join('')}</tbody></table>
     `;
     openModal('orderDetailModal');
   } catch(err) {

@@ -18,13 +18,13 @@
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-title">Main</div>
-      <button class="sidebar-link" id="link-dashboard" onclick="showSection('dashboard')"><span class="icon">📊</span> Dashboard</button>
-      <button class="sidebar-link" id="link-cakes" onclick="showSection('cakes')"><span class="icon">🎂</span> Manage Cakes</button>
-      <button class="sidebar-link" id="link-orders" onclick="showSection('orders')"><span class="icon">📦</span> Orders</button>
-      <button class="sidebar-link" id="link-customers" onclick="showSection('customers')"><span class="icon">👥</span> Customers</button>
+      <button class="sidebar-link" id="link-dashboard" onclick="showSection('dashboard')">Dashboard</button>
+      <button class="sidebar-link" id="link-cakes" onclick="showSection('cakes')">Manage Cakes</button>
+      <button class="sidebar-link" id="link-orders" onclick="showSection('orders')">Orders</button>
+      <button class="sidebar-link" id="link-customers" onclick="showSection('customers')">Customers</button>
       <div class="nav-section-title">Account</div>
-      <button class="sidebar-link" id="link-settings" onclick="showSection('settings')"><span class="icon">⚙️</span> Settings</button>
-      <button class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> Logout</button>
+      <button class="sidebar-link" id="link-settings" onclick="showSection('settings')">Settings</button>
+      <button class="sidebar-link" onclick="logout()">Logout</button>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info">
@@ -38,15 +38,15 @@
   <main class="dash-main">
     <div class="dash-topbar">
       <div style="display:flex;align-items:center;gap:15px">
-        <button class="hamburger-dash" onclick="toggleSidebar()">☰</button>
+        <button class="hamburger-dash" onclick="toggleSidebar()"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
         <div class="topbar-left">
           <h1 id="pageTitle">Dashboard Overview</h1>
-          <p>Welcome back, Admin! 👋</p>
+          <p>Welcome back, Admin!</p>
         </div>
       </div>
       <div class="topbar-right">
-        <button class="topbar-btn" title="Notifications">🔔<span class="notif-badge">3</span></button>
-        <a href="index.html" class="topbar-btn" title="View Site" style="text-decoration:none;display:flex;align-items:center;justify-content:center">🌐</a>
+        <button class="topbar-btn" title="Notifications"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg><span class="notif-badge">3</span></button>
+        <a href="index.html" class="topbar-btn" title="View Site" style="text-decoration:none;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
       </div>
     </div>
 
@@ -56,44 +56,25 @@
       <div class="dash-section active" id="sec-dashboard">
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-icon pink">📦</div>
-            <div class="stat-info"><h3 id="totalOrders">0</h3><p>Total Orders</p><div class="stat-change up">↑ This month</div></div>
+            
+            <div class="stat-info"><h3 id="totalOrders">0</h3><p>Total Orders</p></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green">💰</div>
-            <div class="stat-info"><h3 id="totalRevenue">₹0</h3><p>Total Revenue</p><div class="stat-change up">↑ Growing</div></div>
+            
+            <div class="stat-info"><h3 id="totalRevenue">₹0</h3><p>Total Revenue</p></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon blue">🎂</div>
-            <div class="stat-info"><h3 id="totalCakes">0</h3><p>Cake Varieties</p><div class="stat-change up">Active menu</div></div>
+            
+            <div class="stat-info"><h3 id="totalCakes">0</h3><p>Cake Varieties</p></div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon orange">👥</div>
-            <div class="stat-info"><h3 id="totalCustomers">0</h3><p>Customers</p><div class="stat-change up">↑ Registered</div></div>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:2fr 1fr;gap:25px;flex-wrap:wrap">
-          <div class="dash-card">
-            <div class="card-header"><h3>📈 Weekly Sales</h3><span style="font-size:0.8rem;color:#999">Last 7 days</span></div>
-            <div class="mini-chart" id="miniChart"></div>
-            <div style="display:flex;justify-content:space-around;margin-top:10px;font-size:0.75rem;color:#999">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-            </div>
-          </div>
-          <div class="dash-card">
-            <div class="card-header"><h3>🏆 Top Categories</h3></div>
-            <div style="display:flex;flex-direction:column;gap:16px">
-              <div><div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:6px;font-weight:500"><span>🎂 Birthday</span><span>42%</span></div><div style="height:8px;background:#f3f4f6;border-radius:4px"><div style="height:100%;width:42%;background:#e91e63;border-radius:4px"></div></div></div>
-              <div><div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:6px;font-weight:500"><span>💍 Wedding</span><span>28%</span></div><div style="height:8px;background:#f3f4f6;border-radius:4px"><div style="height:100%;width:28%;background:#e91e63;border-radius:4px"></div></div></div>
-              <div><div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:6px;font-weight:500"><span>📸 Custom</span><span>18%</span></div><div style="height:8px;background:#f3f4f6;border-radius:4px"><div style="height:100%;width:18%;background:#e91e63;border-radius:4px"></div></div></div>
-              <div><div style="display:flex;justify-content:space-between;font-size:0.875rem;margin-bottom:6px;font-weight:500"><span>🦄 Kids</span><span>12%</span></div><div style="height:8px;background:#f3f4f6;border-radius:4px"><div style="height:100%;width:12%;background:#e91e63;border-radius:4px"></div></div></div>
-            </div>
+            
+            <div class="stat-info"><h3 id="totalCustomers">0</h3><p>Customers</p></div>
           </div>
         </div>
 
         <div class="dash-card" style="margin-top:25px">
-          <div class="card-header"><h3>📋 Recent Orders</h3><button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showSection('orders')">View All</button></div>
+          <div class="card-header"><h3>Recent Orders</h3><button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showSection('orders')">View All</button></div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
@@ -107,7 +88,7 @@
       <div class="dash-section" id="sec-cakes">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px">
           <div>
-            <h2 style="font-size:1.3rem">🎂 Cake Menu</h2>
+            <h2 style="font-size:1.25rem;font-weight:600">Cake Menu</h2>
             <p style="color:#999;font-size:0.85rem">Add, edit or remove cakes from your menu</p>
           </div>
           <button class="btn btn-primary" onclick="openAddCakeModal()">+ Add New Cake</button>
@@ -118,7 +99,7 @@
       <!-- ORDERS -->
       <div class="dash-section" id="sec-orders">
         <div style="margin-bottom:25px">
-          <h2 style="font-size:1.3rem">📦 All Orders</h2>
+          <h2 style="font-size:1.25rem;font-weight:600">All Orders</h2>
           <p style="color:#999;font-size:0.85rem">Manage and update order statuses</p>
         </div>
         <div class="dash-card">
@@ -134,7 +115,7 @@
       <div class="dash-section" id="sec-customers">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px">
           <div>
-            <h2 style="font-size:1.3rem">👥 Customers</h2>
+            <h2 style="font-size:1.25rem;font-weight:600">Customers</h2>
             <p style="color:#999;font-size:0.85rem">All registered customers</p>
           </div>
           <input type="text" placeholder="Search customers..." onkeyup="handleCustomerSearch(event)" style="padding:10px;border-radius:8px;border:1px solid #eee;min-width:250px">
@@ -152,7 +133,7 @@
       <!-- SETTINGS -->
       <div class="dash-section" id="sec-settings">
         <div class="dash-card" style="max-width:600px">
-          <h3 style="margin-bottom:25px">⚙️ Shop Settings</h3>
+          <h3 style="margin-bottom:24px;font-weight:600">Shop Settings</h3>
           <div class="form-group"><label>Shop Name</label><input type="text" id="setShopName" value="Priti's Cake"></div>
           <div class="form-group"><label>Contact Email</label><input type="email" id="setEmail" value="hello@priticake.com"></div>
           <div class="form-group"><label>Phone Number</label><input type="tel" id="setPhone" value="+91 98765 43210"></div>
@@ -176,7 +157,7 @@
 <!-- ADD/EDIT CAKE MODAL -->
 <div class="modal-overlay" id="cakeModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('cakeModal')">✕</button>
+    <button class="modal-close" onclick="closeModal('cakeModal')">&times;</button>
     <h2 id="cakeModalTitle">Add New Cake</h2>
     <input type="hidden" id="editCakeId">
     <div class="form-grid">
@@ -188,7 +169,7 @@
         </select>
       </div>
       <div class="form-group"><label>Price (₹) *</label><input type="number" id="cakePrice" placeholder="850"></div>
-      <div class="form-group"><label>Emoji Icon</label><input type="text" id="cakeEmoji" placeholder="🎂"></div>
+      <div class="form-group"><label>Emoji Icon</label><input type="text" id="cakeEmoji" placeholder=""></div>
       <div class="form-group form-full">
         <label>Cake Image</label>
         <input type="file" id="cakeImage" accept="image/*">
@@ -213,7 +194,7 @@
 <!-- ORDER DETAIL MODAL -->
 <div class="modal-overlay" id="orderDetailModal">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('orderDetailModal')">✕</button>
+    <button class="modal-close" onclick="closeModal('orderDetailModal')">&times;</button>
     <h2>Order Details</h2>
     <div id="orderDetailContent"></div>
     <button class="btn btn-outline" style="width:100%;margin-top:20px;padding:12px" onclick="closeModal('orderDetailModal')">Close</button>
