@@ -35,9 +35,6 @@
       <div class="forgot-link"><a href="#">Forgot Password?</a></div>
       <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="handleLogin()">Login →</button>
       <div class="auth-divider">or</div>
-      <div style="text-align:center;font-size:0.85rem;color:#666">
-        Admin login: <strong>admin@priticake.com</strong> / <strong>admin123</strong>
-      </div>
     </div>
 
     <!-- REGISTER FORM -->
@@ -81,7 +78,6 @@
   // Redirect if already logged in
   document.addEventListener('DOMContentLoaded', () => {
     if (isAdmin()) window.location.href = 'admin-dashboard.html';
-    else if (isLoggedIn()) window.location.href = 'client-dashboard.html';
 
     const params = new URLSearchParams(window.location.search);
     if (params.get('tab') === 'register') switchTab('register');

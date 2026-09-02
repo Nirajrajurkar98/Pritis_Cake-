@@ -20,8 +20,7 @@ const DB = {
   currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
 };
 
-// Admin credentials
-const ADMIN = { email: 'admin@priticake.com', password: 'admin123', name: 'Admin' };
+// Admin credentials removed
 
 // ===== SAVE TO STORAGE =====
 function saveData() {
