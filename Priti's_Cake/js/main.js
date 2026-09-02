@@ -100,7 +100,11 @@ function logout() {
 }
 
 function isLoggedIn() { return DB.currentUser !== null; }
-function isAdmin() { return DB.currentUser && DB.currentUser.role === 'admin'; }
+function isAdmin() { 
+  const apiAdmin = JSON.parse(localStorage.getItem('pc_admin') || 'null');
+  if (apiAdmin && apiAdmin.role === 'admin') return true;
+  return DB.currentUser && DB.currentUser.role === 'admin'; 
+}
 
 // ===== CART =====
 function addToCart(cakeId, qty = 1) {
