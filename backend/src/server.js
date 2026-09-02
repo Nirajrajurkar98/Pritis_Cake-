@@ -5,6 +5,7 @@ const connectDB = require('./config/db');
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
 const adminRoutes = require('./routes/admin.routes');
+const cakeRoutes = require('./routes/cake.routes');
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,7 @@ app.use(cors({
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin/cakes', cakeRoutes);
 app.use('/api/admin', adminRoutes);
 
 // 404 handler
