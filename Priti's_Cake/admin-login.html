@@ -3,49 +3,218 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login - Priti's Cake</title>
+  <title>Admin Sign In - Priti's Cake</title>
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .admin-badge {
+    /* Senior UI/UX Redesign for Admin Portal */
+    body {
+      background-color: #fcfaf8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    .admin-auth-wrapper {
+      width: 100%;
+      max-width: 400px;
+      padding: 2rem;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+      box-sizing: border-box;
+      margin: 1rem;
+    }
+    
+    .admin-brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .admin-brand-logo {
+      font-size: 26px;
+      font-weight: 800;
+      color: #1f2937;
+      text-decoration: none;
       display: inline-block;
-      background: #e91e8c;
+      letter-spacing: -0.5px;
+    }
+    
+    .admin-brand-logo span {
+      color: #e91e63;
+    }
+    
+    .admin-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #111827;
+      margin: 0 0 0.5rem 0;
+      text-align: center;
+    }
+    
+    .admin-subtitle {
+      font-size: 14px;
+      color: #6b7280;
+      text-align: center;
+      margin: 0 0 2rem 0;
+    }
+    
+    .form-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 15px;
+      color: #1f2937;
+      background-color: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #e91e63;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.1);
+    }
+    
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 36px;
+      background: none;
+      border: none;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+    }
+    
+    .password-toggle:hover {
+      color: #374151;
+    }
+    
+    .btn-submit {
+      width: 100%;
+      padding: 0.875rem;
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      background-color: #e91e63;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 0.5rem;
+    }
+    
+    .btn-submit:hover {
+      background-color: #db1456;
+    }
+    
+    .btn-submit:disabled {
+      background-color: #fca5a5;
+      cursor: not-allowed;
+    }
+    
+    .error-msg {
+      color: #dc2626;
+      font-size: 13px;
+      margin-top: 0.5rem;
+      display: none;
+      text-align: center;
+      background: #fef2f2;
+      padding: 0.5rem;
+      border-radius: 6px;
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 14px;
+      color: #6b7280;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .back-link:hover {
+      color: #111827;
+    }
+
+    /* Minimal Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1f2937;
       color: white;
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-top: 10px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast.error {
+      background: #dc2626;
+    }
+    .toast.success {
+      background: #059669;
     }
   </style>
 </head>
 <body>
 
-<div class="auth-page">
-  <div class="auth-container">
-    <div class="auth-logo">
-      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
-      <div><span class="admin-badge">Secure Admin Portal</span></div>
-    </div>
-
-    <!-- ADMIN LOGIN FORM -->
-    <div class="auth-form active" id="loginForm">
-      <h2 style="margin-top: 15px;">Admin Access 🔒</h2>
-      <p>Authorized personnel only</p>
-      <div class="form-group" style="margin-top:20px">
-        <label>Admin Email</label>
-        <input type="email" id="loginEmail" placeholder="admin@priticake.local">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter admin password">
-      </div>
-      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;margin-top:10px" onclick="handleAdminLogin()">Secure Login →</button>
-    </div>
-
-    <div style="text-align:center;margin-top:20px">
-      <a href="login.html" style="color:#666;font-size:0.85rem;text-decoration:none">← Back to Customer Login</a>
-    </div>
+<div class="admin-auth-wrapper">
+  <div class="admin-brand">
+    <a href="index.html" class="admin-brand-logo">Priti's <span>Cake</span></a>
   </div>
+
+  <h1 class="admin-title">Admin sign in</h1>
+  <p class="admin-subtitle">Secure portal for authorized personnel</p>
+
+  <div id="inlineError" class="error-msg"></div>
+
+  <form id="adminLoginForm" onsubmit="event.preventDefault(); handleAdminLogin();">
+    <div class="form-group">
+      <label class="form-label" for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" class="form-input" placeholder="admin@priticake.local" required autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="loginPassword">Password</label>
+      <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required autocomplete="current-password">
+      <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password visibility">Show</button>
+    </div>
+
+    <button type="submit" id="submitBtn" class="btn-submit">Sign in</button>
+  </form>
+
+  <a href="login.html" class="back-link">← Back to customer login</a>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -54,14 +223,42 @@
 <script src="js/main.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // If already logged in as admin, redirect to admin dashboard
+    // Redirect if already an admin
     if (isAdmin()) window.location.href = 'admin-dashboard.html';
   });
+
+  function togglePassword() {
+    const input = document.getElementById('loginPassword');
+    const toggleBtn = document.querySelector('.password-toggle');
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggleBtn.textContent = 'Hide';
+    } else {
+      input.type = 'password';
+      toggleBtn.textContent = 'Show';
+    }
+  }
+
+  function showInlineError(msg) {
+    const errorEl = document.getElementById('inlineError');
+    if (msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    } else {
+      errorEl.style.display = 'none';
+    }
+  }
 
   async function handleAdminLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
+    const btn = document.getElementById('submitBtn');
+    
+    if (!email || !password) return;
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+    showInlineError('');
 
     try {
       const res = await api.post('/auth/login', { email, password });
@@ -69,22 +266,29 @@
       if (res.user && res.user.role === 'admin') {
         localStorage.setItem('pc_token', res.token);
         localStorage.setItem('pc_admin', JSON.stringify(res.user));
-        showToast('Admin login successful! Redirecting...', 'success');
-        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1000);
+        
+        btn.textContent = 'Success';
+        btn.style.backgroundColor = '#059669';
+        
+        // Minor delay for UX
+        setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 400);
       } else {
-        showToast('Admin access required.', 'error');
+        showInlineError('Admin access required.');
+        btn.disabled = false;
+        btn.textContent = 'Sign in';
       }
     } catch (err) {
-      showToast('Invalid email or password', 'error');
+      console.error(err);
+      // Determine if network error (e.g. CORS/Server down) vs auth error
+      if (err.message.toLowerCase().includes('failed to fetch')) {
+        showInlineError('Unable to connect to the server. Please check your connection.');
+      } else {
+        showInlineError(err.message || 'Invalid email or password.');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
     }
   }
-
-  // Enter key support
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      handleAdminLogin();
-    }
-  });
 </script>
 </body>
 </html>
