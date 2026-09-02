@@ -16,7 +16,7 @@ const isValidEmail = (email) => {
 // @desc    Get shop settings
 // @route   GET /api/admin/settings
 // @access  Private/Admin
-const getShopSettings = async (req, res) => {
+const getShopSettings = async (req, res, next) => {
   try {
     let settings = await ShopSettings.findOne({ key: 'main' });
 
@@ -28,14 +28,14 @@ const getShopSettings = async (req, res) => {
     res.status(200).json({ settings });
   } catch (error) {
     console.error(`Error fetching settings: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
 // @desc    Update shop settings
 // @route   PUT /api/admin/settings
 // @access  Private/Admin
-const updateShopSettings = async (req, res) => {
+const updateShopSettings = async (req, res, next) => {
   try {
     const allowedUpdates = [
       'shopName',
@@ -60,26 +60,26 @@ const updateShopSettings = async (req, res) => {
     // Validations
     if (updateData.deliveryCharge !== undefined) {
       if (typeof updateData.deliveryCharge !== 'number' || updateData.deliveryCharge < 0) {
-        return res.status(400).json({ message: 'Delivery charge must be a non-negative number' });
+        return res.status(400).json({ success: false, message: 'Delivery charge must be a non-negative number' });
       }
     }
 
     if (updateData.minimumOrderAmount !== undefined) {
       if (typeof updateData.minimumOrderAmount !== 'number' || updateData.minimumOrderAmount < 0) {
-        return res.status(400).json({ message: 'Minimum order amount must be a non-negative number' });
+        return res.status(400).json({ success: false, message: 'Minimum order amount must be a non-negative number' });
       }
     }
 
     if (updateData.openingTime !== undefined && !isValidTime(updateData.openingTime)) {
-      return res.status(400).json({ message: 'Invalid openingTime format. Expected HH:MM' });
+      return res.status(400).json({ success: false, message: 'Invalid openingTime format. Expected HH:MM' });
     }
 
     if (updateData.closingTime !== undefined && !isValidTime(updateData.closingTime)) {
-      return res.status(400).json({ message: 'Invalid closingTime format. Expected HH:MM' });
+      return res.status(400).json({ success: false, message: 'Invalid closingTime format. Expected HH:MM' });
     }
 
     if (updateData.email !== undefined && updateData.email !== '' && !isValidEmail(updateData.email)) {
-      return res.status(400).json({ message: 'Invalid email format' });
+      return res.status(400).json({ success: false, message: 'Invalid email format' });
     }
 
     // Upsert the singleton
@@ -92,7 +92,7 @@ const updateShopSettings = async (req, res) => {
     res.status(200).json({ settings });
   } catch (error) {
     console.error(`Error updating settings: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 

@@ -4,13 +4,13 @@ const User = require('../models/User');
 // @route   GET /api/admin/test
 // @access  Private/Admin
 const getAdminTest = (req, res) => {
-  res.status(200).json({ message: 'Admin access granted' });
+  res.status(200).json({ success: true, message: 'Admin access granted' });
 };
 
 // @desc    Get dashboard statistics
 // @route   GET /api/admin/stats
 // @access  Private/Admin
-const getDashboardStats = async (req, res) => {
+const getDashboardStats = async (req, res, next) => {
   try {
     const [totalUsers, totalCustomers, totalAdmins] = await Promise.all([
       User.countDocuments({}),
@@ -25,7 +25,7 @@ const getDashboardStats = async (req, res) => {
     });
   } catch (error) {
     console.error(`Error fetching dashboard stats: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 

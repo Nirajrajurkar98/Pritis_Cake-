@@ -16,7 +16,7 @@ const deleteImage = (imagePath) => {
 // @desc    Create a cake
 // @route   POST /api/admin/cakes
 // @access  Private/Admin
-const createCake = async (req, res) => {
+const createCake = async (req, res, next) => {
   try {
     const { name, category, price, emoji, desc, rating, reviews, weight, time, serves, tag } = req.body;
     let image = req.body.image; // fallback if passed directly
@@ -27,14 +27,14 @@ const createCake = async (req, res) => {
 
     if (!name || !category || price === undefined) {
       if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
-      return res.status(400).json({ message: 'Name, category, and price are required' });
+      return res.status(400).json({ success: false, message: 'Name, category, and price are required' });
     }
 
     const parsedPrice = Number(price);
 
     if (isNaN(parsedPrice) || parsedPrice < 0) {
       if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
-      return res.status(400).json({ message: 'Price must be a non-negative number' });
+      return res.status(400).json({ success: false, message: 'Price must be a non-negative number' });
     }
 
     const cake = await Cake.create({
@@ -56,65 +56,65 @@ const createCake = async (req, res) => {
   } catch (error) {
     if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
     console.error(`Error creating cake: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
 // @desc    Get all cakes
 // @route   GET /api/admin/cakes
 // @access  Private/Admin
-const getCakes = async (req, res) => {
+const getCakes = async (req, res, next) => {
   try {
     const cakes = await Cake.find({});
     res.status(200).json(cakes);
   } catch (error) {
     console.error(`Error fetching cakes: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
 // @desc    Get single cake
 // @route   GET /api/admin/cakes/:id
 // @access  Private/Admin
-const getCakeById = async (req, res) => {
+const getCakeById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid cake ID' });
+      return res.status(400).json({ success: false, message: 'Invalid cake ID' });
     }
 
     const cake = await Cake.findById(id);
 
     if (!cake) {
-      return res.status(404).json({ message: 'Cake not found' });
+      return res.status(404).json({ success: false, message: 'Cake not found' });
     }
 
     res.status(200).json(cake);
   } catch (error) {
     console.error(`Error fetching cake: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
 // @desc    Update a cake
 // @route   PUT /api/admin/cakes/:id
 // @access  Private/Admin
-const updateCake = async (req, res) => {
+const updateCake = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, category, price, emoji, desc, rating, reviews, weight, time, serves, tag } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
-      return res.status(400).json({ message: 'Invalid cake ID' });
+      return res.status(400).json({ success: false, message: 'Invalid cake ID' });
     }
 
     if (price !== undefined) {
       const parsedPrice = Number(price);
       if (isNaN(parsedPrice) || parsedPrice < 0) {
         if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
-        return res.status(400).json({ message: 'Price must be a non-negative number' });
+        return res.status(400).json({ success: false, message: 'Price must be a non-negative number' });
       }
     }
 
@@ -122,7 +122,7 @@ const updateCake = async (req, res) => {
 
     if (!cake) {
       if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
-      return res.status(404).json({ message: 'Cake not found' });
+      return res.status(404).json({ success: false, message: 'Cake not found' });
     }
 
     let oldImage = null;
@@ -154,25 +154,25 @@ const updateCake = async (req, res) => {
   } catch (error) {
     if (req.file) deleteImage(`/uploads/cakes/${req.file.filename}`);
     console.error(`Error updating cake: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
 // @desc    Delete a cake
 // @route   DELETE /api/admin/cakes/:id
 // @access  Private/Admin
-const deleteCake = async (req, res) => {
+const deleteCake = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: 'Invalid cake ID' });
+      return res.status(400).json({ success: false, message: 'Invalid cake ID' });
     }
 
     const cake = await Cake.findById(id);
 
     if (!cake) {
-      return res.status(404).json({ message: 'Cake not found' });
+      return res.status(404).json({ success: false, message: 'Cake not found' });
     }
     
     const imagePath = cake.image;
@@ -182,10 +182,10 @@ const deleteCake = async (req, res) => {
       deleteImage(imagePath);
     }
 
-    res.status(200).json({ message: 'Cake removed' });
+    res.status(200).json({ success: true, message: 'Cake removed' });
   } catch (error) {
     console.error(`Error deleting cake: ${error.message}`);
-    res.status(500).json({ message: 'Internal server error' });
+    next(error);
   }
 };
 
