@@ -128,8 +128,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helve
   background: var(--gray-light);
   color: #4b5563;
 }
-.stat-info h3 { font-size: 1.5rem; font-weight: 700; color: #111827; line-height: 1.2; }
-.stat-info p { font-size: 0.875rem; color: var(--gray); margin-top: 4px; font-weight: 500; }
+.stat-info { display: flex; flex-direction: column; }
+.stat-info .stat-label { font-size: 0.875rem; color: #6b7280; font-weight: 500; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-info .stat-value { font-size: 1.75rem; font-weight: 700; color: #111827; line-height: 1; margin: 0; }
 .stat-change { font-size: 0.75rem; margin-top: 8px; font-weight: 500; }
 .stat-change.up { color: #059669; }
 .stat-change.down { color: #dc2626; }

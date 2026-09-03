@@ -57,39 +57,48 @@ async function showSection(id) {
 }
 
 async function loadDashboard() {
-  document.getElementById('totalOrders').textContent = '-';
-  document.getElementById('totalRevenue').textContent = '-';
-  document.getElementById('totalCakes').textContent = '-';
-  document.getElementById('totalCustomers').textContent = '-';
+  // Reset values to a loading state
+  document.getElementById('totalOrders').textContent = '...';
+  document.getElementById('totalRevenue').textContent = '...';
+  document.getElementById('totalCakes').textContent = '...';
+  document.getElementById('totalCustomers').textContent = '...';
+  
+  const tbody = document.getElementById('recentOrdersBody');
+  tbody.innerHTML = '<tr><td colspan="6" class="state-loading">Loading recent orders...</td></tr>';
 
   try {
-    const stats = await api.get('/admin/stats');
-    const orders = await api.get('/admin/orders');
-    const cakes = await api.get('/admin/cakes');
+    const [stats, orders, cakes] = await Promise.all([
+      api.get('/admin/stats'),
+      api.get('/admin/orders'),
+      api.get('/admin/cakes')
+    ]);
     
     const revenue = orders.reduce((s, o) => s + o.total, 0);
     document.getElementById('totalOrders').textContent = orders.length;
-    document.getElementById('totalRevenue').textContent = '₹' + revenue.toLocaleString();
+    document.getElementById('totalRevenue').textContent = typeof formatCurrency === 'function' ? formatCurrency(revenue) : '' + revenue.toLocaleString();
     document.getElementById('totalCakes').textContent = cakes.length;
     document.getElementById('totalCustomers').textContent = stats.totalCustomers;
 
     // Recent orders
-    const tbody = document.getElementById('recentOrdersBody');
     const recent = orders.slice(0, 5);
     tbody.innerHTML = recent.length ? recent.map(o => `
       <tr>
-        <td><strong>${o._id.substring(o._id.length-6).toUpperCase()}</strong></td>
+        <td class="col-id"><strong>${o._id.substring(o._id.length-6).toUpperCase()}</strong></td>
         <td>${o.userName}</td>
         <td>${o.items.map(i => i.name).join(', ')}</td>
-        <td><strong>₹${o.total}</strong></td>
-        <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
+        <td class="col-amount" style="text-align:right">${typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total}</td>
+        <td><span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span></td>
         <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       </tr>
     `).join('') : '<tr><td colspan="6" class="empty-state">No recent orders found.</td></tr>';
 
-    // Mini chart bars
-      } catch(err) {
-    showToast('Failed to load dashboard data', 'error');
+  } catch(err) {
+    console.error(err);
+    document.getElementById('totalOrders').textContent = '-';
+    document.getElementById('totalRevenue').textContent = '-';
+    document.getElementById('totalCakes').textContent = '-';
+    document.getElementById('totalCustomers').textContent = '-';
+    tbody.innerHTML = '<tr><td colspan="6" class="state-error" style="text-align:center">Unable to load dashboard data.<br><button class="btn btn-outline" style="margin-top:10px;padding:6px 12px;font-size:0.8rem" onclick="loadDashboard()">Retry</button></td></tr>';
   }
 }
 
