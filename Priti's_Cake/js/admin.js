@@ -754,13 +754,81 @@ function logout() {
 }
 
 // ===== MODAL HELPERS =====
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+let activeModalId = null;
+
+function openModal(id) { 
+  const el = document.getElementById(id);
+  if(el) {
+    el.classList.add('active'); 
+    activeModalId = id;
+    document.body.style.overflow = 'hidden'; // prevent bg scroll
+  }
+}
+
+function closeModal(id) { 
+  const el = document.getElementById(id);
+  if(el) {
+    el.classList.remove('active');
+    if(activeModalId === id) activeModalId = null;
+    
+    // Check if any other modals are still open before restoring scroll
+    if(!document.querySelector('.modal-overlay.active')) {
+      document.body.style.overflow = '';
+    }
+  }
+}
 
 // ===== SIDEBAR TOGGLE =====
 function toggleSidebar() {
-  document.getElementById('dashSidebar').classList.toggle('open');
+  const sidebar = document.getElementById('dashSidebar');
+  sidebar.classList.toggle('open');
+  if(sidebar.classList.contains('open')) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
 }
+
+function closeSidebar() {
+  const sidebar = document.getElementById('dashSidebar');
+  if(sidebar && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// ===== GLOBAL EVENT LISTENERS =====
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (activeModalId) {
+      // Don't close delete confirmation on ESC to be safe, or allow it?
+      // "destructive confirmation should not close accidentally" -> mostly via backdrop click, but ESC is explicit user intent.
+      // We will allow ESC to close everything for accessibility.
+      closeModal(activeModalId);
+    }
+    closeSidebar();
+  }
+});
+
+document.addEventListener('click', (e) => {
+  // Backdrop click for modals
+  if (e.target.classList.contains('modal-overlay')) {
+    // Only close if it's not the delete confirm modal (to prevent accidental destructive closure)
+    if (e.target.id !== 'deleteConfirmModal') {
+      closeModal(e.target.id);
+    }
+  }
+  
+  // Backdrop click for sidebar on mobile
+  const sidebar = document.getElementById('dashSidebar');
+  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
+  if (sidebar && sidebar.classList.contains('open')) {
+    if (!sidebar.contains(e.target) && (!sidebarToggleBtn || !sidebarToggleBtn.contains(e.target))) {
+      closeSidebar();
+    }
+  }
+});
+
 
 // Cake Image Preview Listener
 const cakeImageInput = document.getElementById('cakeImage');

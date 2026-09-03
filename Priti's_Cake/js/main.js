@@ -1,18 +1,18 @@
 // ===== DATA STORE =====
 const DB = {
   cakes: [
-    { id: 1, name: "Strawberry Dream", category: "Birthday", price: 850, emoji: "🍓", desc: "Layers of vanilla sponge with fresh strawberry cream and glazed strawberries on top.", rating: 4.9, reviews: 128, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Bestseller" },
-    { id: 2, name: "Chocolate Fudge", category: "Birthday", price: 950, emoji: "🍫", desc: "Rich dark chocolate cake with fudge frosting and chocolate ganache drizzle.", rating: 4.8, reviews: 95, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Popular" },
-    { id: 3, name: "Royal Wedding Cake", category: "Wedding", price: 4500, emoji: "💍", desc: "Elegant 3-tier white fondant cake with floral decorations, perfect for your special day.", rating: 5.0, reviews: 42, weight: "3 kg", time: "1-2 days", serves: "30-40", tag: "Premium" },
-    { id: 4, name: "Mango Delight", category: "Seasonal", price: 780, emoji: "🥭", desc: "Fresh mango mousse cake with mango jelly layers and whipped cream.", rating: 4.7, reviews: 67, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Seasonal" },
-    { id: 5, name: "Red Velvet", category: "Birthday", price: 900, emoji: "❤️", desc: "Classic red velvet with cream cheese frosting, moist and velvety texture.", rating: 4.9, reviews: 112, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Classic" },
-    { id: 6, name: "Unicorn Fantasy", category: "Kids", price: 1200, emoji: "🦄", desc: "Colorful rainbow layers with unicorn horn decoration, kids absolutely love it!", rating: 4.8, reviews: 88, weight: "1.5 kg", time: "3-4 hrs", serves: "12-15", tag: "Kids Fav" },
-    { id: 7, name: "Black Forest", category: "Birthday", price: 820, emoji: "🍒", desc: "German classic with chocolate sponge, whipped cream and cherries.", rating: 4.6, reviews: 74, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 8, name: "Butterscotch Bliss", category: "Anniversary", price: 880, emoji: "🧁", desc: "Soft butterscotch cake with caramel drizzle and crunchy praline topping.", rating: 4.7, reviews: 56, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 9, name: "Pineapple Fresh", category: "Birthday", price: 750, emoji: "🍍", desc: "Light pineapple sponge with fresh cream and pineapple chunks.", rating: 4.5, reviews: 49, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 10, name: "Custom Photo Cake", category: "Custom", price: 1500, emoji: "📸", desc: "Personalized cake with edible photo print. Send us your photo and we'll create magic!", rating: 4.9, reviews: 203, weight: "1.5 kg", time: "1 day", serves: "12-15", tag: "Custom" },
-    { id: 11, name: "Blueberry Cheesecake", category: "Anniversary", price: 1100, emoji: "🫐", desc: "New York style cheesecake with fresh blueberry compote topping.", rating: 4.8, reviews: 61, weight: "1 kg", time: "4-5 hrs", serves: "8-10", tag: "" },
-    { id: 12, name: "Truffle Royale", category: "Wedding", price: 2200, emoji: "🎂", desc: "Luxurious chocolate truffle cake with gold leaf decoration for premium occasions.", rating: 5.0, reviews: 38, weight: "2 kg", time: "1 day", serves: "20-25", tag: "Luxury" }
+    { id: 1, name: "Strawberry Dream", category: "Birthday", price: 850, emoji: "", desc: "Layers of vanilla sponge with fresh strawberry cream and glazed strawberries on top.", rating: 4.9, reviews: 128, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Bestseller" },
+    { id: 2, name: "Chocolate Fudge", category: "Birthday", price: 950, emoji: "", desc: "Rich dark chocolate cake with fudge frosting and chocolate ganache drizzle.", rating: 4.8, reviews: 95, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Popular" },
+    { id: 3, name: "Royal Wedding Cake", category: "Wedding", price: 4500, emoji: "", desc: "Elegant 3-tier white fondant cake with floral decorations, perfect for your special day.", rating: 5.0, reviews: 42, weight: "3 kg", time: "1-2 days", serves: "30-40", tag: "Premium" },
+    { id: 4, name: "Mango Delight", category: "Seasonal", price: 780, emoji: "", desc: "Fresh mango mousse cake with mango jelly layers and whipped cream.", rating: 4.7, reviews: 67, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Seasonal" },
+    { id: 5, name: "Red Velvet", category: "Birthday", price: 900, emoji: "", desc: "Classic red velvet with cream cheese frosting, moist and velvety texture.", rating: 4.9, reviews: 112, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Classic" },
+    { id: 6, name: "Unicorn Fantasy", category: "Kids", price: 1200, emoji: "", desc: "Colorful rainbow layers with unicorn horn decoration, kids absolutely love it!", rating: 4.8, reviews: 88, weight: "1.5 kg", time: "3-4 hrs", serves: "12-15", tag: "Kids Fav" },
+    { id: 7, name: "Black Forest", category: "Birthday", price: 820, emoji: "", desc: "German classic with chocolate sponge, whipped cream and cherries.", rating: 4.6, reviews: 74, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
+    { id: 8, name: "Butterscotch Bliss", category: "Anniversary", price: 880, emoji: "", desc: "Soft butterscotch cake with caramel drizzle and crunchy praline topping.", rating: 4.7, reviews: 56, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
+    { id: 9, name: "Pineapple Fresh", category: "Birthday", price: 750, emoji: "", desc: "Light pineapple sponge with fresh cream and pineapple chunks.", rating: 4.5, reviews: 49, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
+    { id: 10, name: "Custom Photo Cake", category: "Custom", price: 1500, emoji: "", desc: "Personalized cake with edible photo print. Send us your photo and we'll create magic!", rating: 4.9, reviews: 203, weight: "1.5 kg", time: "1 day", serves: "12-15", tag: "Custom" },
+    { id: 11, name: "Blueberry Cheesecake", category: "Anniversary", price: 1100, emoji: "", desc: "New York style cheesecake with fresh blueberry compote topping.", rating: 4.8, reviews: 61, weight: "1 kg", time: "4-5 hrs", serves: "8-10", tag: "" },
+    { id: 12, name: "Truffle Royale", category: "Wedding", price: 2200, emoji: "", desc: "Luxurious chocolate truffle cake with gold leaf decoration for premium occasions.", rating: 5.0, reviews: 38, weight: "2 kg", time: "1 day", serves: "20-25", tag: "Luxury" }
   ],
   users: JSON.parse(localStorage.getItem('pc_users') || '[]'),
   orders: JSON.parse(localStorage.getItem('pc_orders') || '[]'),
@@ -136,7 +136,7 @@ function renderCartItems() {
   const totalEl = document.getElementById('cartTotal');
   if (!container) return;
   if (DB.cart.length === 0) {
-    container.innerHTML = `<div class="cart-empty"><div class="icon">🛒</div><p>Your cart is empty</p></div>`;
+    container.innerHTML = `<div class="cart-empty"><p>Your cart is empty</p></div>`;
     if (totalEl) totalEl.style.display = 'none';
     return;
   }
@@ -182,7 +182,7 @@ function placeOrder() {
   saveData();
   updateCartUI();
   toggleCart();
-  showToast('Order placed successfully! 🎉', 'success');
+  showToast('Order placed successfully.', 'success');
 }
 
 // ===== TOAST =====
@@ -202,7 +202,7 @@ function updateNavAuth() {
   if (isLoggedIn()) {
     navBtns.innerHTML = `
       <div class="cart-btn-wrap">
-        <button class="btn btn-outline" onclick="toggleCart()">🛒 Cart</button>
+        <button class="btn btn-outline" onclick="toggleCart()">Cart</button>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
       </div>
       <a href="${isAdmin() ? 'admin-dashboard.html' : 'client-dashboard.html'}" class="btn btn-primary">Dashboard</a>
