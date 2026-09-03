@@ -138,7 +138,7 @@ function renderCakes(cakesToRender) {
         <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:8px;text-transform:capitalize;">${cake.category}</div>
         <div class="price" style="font-size:1.125rem;font-weight:700;color:#111827;margin-bottom:16px;">${formatCurrency(cake.price)}</div>
         <div class="admin-cake-actions" style="display:flex;gap:8px;">
-          <button class="btn-sm btn-edit" style="flex:1" onclick="editCake('${cake._id}')">Edit</button>
+          <button type="button" class="btn-sm btn-edit" style="flex:1" onclick="event.preventDefault(); editCake(\'${cake._id}\')">Edit</button>
           <button class="btn-sm btn-delete" style="flex:1" onclick="deleteCake('${cake._id}', '${cake.name.replace(/'/g, "\'")}')">Delete</button>
         </div>
       </div>
