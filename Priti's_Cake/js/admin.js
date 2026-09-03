@@ -312,57 +312,182 @@ async function executeDeleteCake() {
 // ===== ORDERS =====
 async function loadOrders() {
   const tbody = document.getElementById('ordersBody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#999;padding:30px">Loading orders...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="state-loading" style="padding:30px">Loading orders...</td></tr>';
   try {
-    const orders = await api.get('/admin/orders');
-    tbody.innerHTML = orders.length ? orders.map(o => `
-      <tr>
-        <td><strong>${o._id.substring(o._id.length-6).toUpperCase()}</strong></td>
-        <td>${o.userName}<br><small style="color:#999">${o.userEmail}</small></td>
-        <td>${o.items.map(i => `${i.name} ×${i.qty}`).join('<br>')}</td>
-        <td><strong>₹${o.total}</strong></td>
+    allOrders = await api.get('/admin/orders');
+    renderOrders(allOrders);
+  } catch(err) {
+    tbody.innerHTML = '<tr><td colspan="7" class="state-error" style="padding:30px">Unable to load orders. Please try again.</td></tr>';
+  }
+}
+
+function renderOrders(ordersToRender) {
+  const tbody = document.getElementById('ordersBody');
+  if (!ordersToRender || ordersToRender.length === 0) {
+    const isFiltered = document.getElementById('searchOrdersInput').value || document.getElementById('filterOrdersStatus').value;
+    const msg = isFiltered ? 'No orders match your current filters.' : 'No orders found.';
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-state" style="padding:30px">${msg}</td></tr>`;
+    return;
+  }
+  
+  tbody.innerHTML = ordersToRender.map(o => {
+    const orderId = o._id.substring(o._id.length-6).toUpperCase();
+    const date = new Date(o.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    const itemsText = o.items.map(i => `${i.qty}x ${i.name}`).join('<br>');
+    const badgeClass = o.status.toLowerCase().replace(/\s+/g, '-');
+    const amount = typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total;
+    
+    return `
+      <tr id="row-${o._id}">
+        <td><strong>#${orderId}</strong></td>
         <td>
-          <select class="badge badge-${o.status.toLowerCase()}" onchange="updateOrderStatus('${o._id}', this.value)" style="border:none;cursor:pointer;padding:4px 8px;border-radius:20px">
+          <div style="font-weight:600;color:#111827">${o.userName}</div>
+          <div style="font-size:0.8125rem;color:#6b7280">${o.userEmail}</div>
+        </td>
+        <td style="font-size:0.875rem;color:#4b5563;line-height:1.4">${itemsText}</td>
+        <td style="font-size:0.875rem;color:#4b5563">${date}</td>
+        <td style="text-align:right;font-weight:600;color:#111827">${amount}</td>
+        <td>
+          <select class="badge badge-${badgeClass}" data-original="${o.status}" onchange="updateOrderStatus('${o._id}', this)" style="border:1px solid #e5e7eb;cursor:pointer;outline:none;font-family:inherit;padding:4px 8px;border-radius:6px;width:100%;max-width:130px;font-weight:600;appearance:none;text-align:center" id="status-${o._id}">
             ${['Pending','Confirmed','Preparing','Out for Delivery','Delivered','Cancelled'].map(s =>
               `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`
             ).join('')}
           </select>
         </td>
-        <td>${new Date(o.createdAt).toLocaleDateString()}</td>
-        <td><button class="btn-sm btn-view" onclick="viewOrder('${o._id}')">View</button></td>
+        <td style="text-align:right">
+          <button type="button" class="btn-sm btn-outline" style="border:1px solid #d1d5db;color:#374151;background:#fff" onclick="event.preventDefault(); viewOrder('${o._id}')">View</button>
+        </td>
       </tr>
-    `).join('') : '<tr><td colspan="7" class="empty-state">No orders found.</td></tr>';
-  } catch(err) {
-    tbody.innerHTML = '<tr><td colspan="7" class="state-error" style="display:table-cell;">Failed to load orders</td></tr>';
-  }
+    `;
+  }).join('');
 }
 
-async function updateOrderStatus(orderId, status) {
+function filterOrders() {
+  const query = (document.getElementById('searchOrdersInput').value || '').toLowerCase().trim();
+  const statusFilter = document.getElementById('filterOrdersStatus').value;
+  
+  if (!query && !statusFilter) {
+    renderOrders(allOrders);
+    return;
+  }
+  
+  const filtered = allOrders.filter(o => {
+    const matchesSearch = !query || 
+      o._id.toLowerCase().includes(query) || 
+      o.userName.toLowerCase().includes(query) || 
+      o.userEmail.toLowerCase().includes(query);
+      
+    const matchesStatus = !statusFilter || o.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  
+  renderOrders(filtered);
+}
+
+function resetOrderFilters() {
+  document.getElementById('searchOrdersInput').value = '';
+  document.getElementById('filterOrdersStatus').value = '';
+  filterOrders();
+}
+
+async function updateOrderStatus(orderId, selectEl) {
+  const newStatus = selectEl.value;
+  const originalStatus = selectEl.getAttribute('data-original') || allOrders.find(o => o._id === orderId)?.status;
+  
+  selectEl.disabled = true;
+  selectEl.style.opacity = '0.5';
+  
   try {
-    await api.put(`/admin/orders/${orderId}/status`, { status });
-    showToast(`Order marked as ${status}`, 'success');
-    loadOrders(); // reload to sync color
+    await api.put(`/admin/orders/${orderId}/status`, { status: newStatus });
+    
+    // Update local cache
+    const orderIndex = allOrders.findIndex(o => o._id === orderId);
+    if (orderIndex > -1) {
+      allOrders[orderIndex].status = newStatus;
+    }
+    
+    // Update UI silently
+    const badgeClass = newStatus.toLowerCase().replace(/\s+/g, '-');
+    selectEl.className = `badge badge-${badgeClass}`;
+    selectEl.setAttribute('data-original', newStatus);
+    showToast(`Order #${orderId.substring(orderId.length-6).toUpperCase()} updated to ${newStatus}`, 'success');
+    
+    // Update modal if open
+    const modalBadge = document.getElementById(`modal-status-badge-${orderId}`);
+    if (modalBadge) {
+      modalBadge.className = `badge badge-${badgeClass}`;
+      modalBadge.textContent = newStatus;
+    }
   } catch(err) {
-    showToast(err.message || 'Failed to update order status', 'error');
-    loadOrders(); // revert UI change
+    showToast(err.message || 'Failed to update status', 'error');
+    selectEl.value = originalStatus; // revert UI change
+  } finally {
+    selectEl.disabled = false;
+    selectEl.style.opacity = '1';
   }
 }
 
 async function viewOrder(orderId) {
   try {
-    const o = await api.get(`/admin/orders/${orderId}`);
+    const o = allOrders.find(ord => ord._id === orderId) || await api.get(`/admin/orders/${orderId}`);
+    const orderIdStr = o._id.substring(o._id.length-6).toUpperCase();
+    const dateStr = new Date(o.createdAt).toLocaleString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+    const badgeClass = o.status.toLowerCase().replace(/\s+/g, '-');
+    const totalAmount = typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total;
+    
     document.getElementById('orderDetailContent').innerHTML = `
-      <div class="order-detail-grid">
-        <div class="order-detail-item"><span>Order ID</span><p>${o._id.substring(o._id.length-6).toUpperCase()}</p></div>
-        <div class="order-detail-item"><span>Date</span><p>${new Date(o.createdAt).toLocaleString()}</p></div>
-        <div class="order-detail-item"><span>Customer</span><p>${o.userName}</p></div>
-        <div class="order-detail-item"><span>Email</span><p>${o.userEmail}</p></div>
-        <div class="order-detail-item"><span>Status</span><p><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></p></div>
-        <div class="order-detail-item"><span>Total</span><p style="color:#e91e8c;font-size:1.1rem">₹${o.total}</p></div>
+      <div style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Customer</div>
+          <div style="font-weight:600;color:#111827">${o.userName}</div>
+          <div style="font-size:0.875rem;color:#4b5563">${o.userEmail}</div>
+        </div>
+        <div>
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Order Status</div>
+          <span class="badge badge-${badgeClass}" id="modal-status-badge-${o._id}" style="border:1px solid #e5e7eb;display:inline-block">${o.status}</span>
+        </div>
+        <div>
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Order ID</div>
+          <div style="font-family:monospace;font-size:0.875rem;color:#111827">#${orderIdStr}</div>
+        </div>
+        <div>
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Order Date</div>
+          <div style="font-size:0.875rem;color:#4b5563">${dateStr}</div>
+        </div>
       </div>
-      <h4 style="margin-bottom:12px">Items Ordered</h4>
-      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr></thead>
-      <tbody>${o.items.map(i => `<tr><td>${i.name}</td><td>${i.qty}</td><td>₹${i.price}</td><td>₹${i.price * i.qty}</td></tr>`).join('')}</tbody></table>
+      
+      <h4 style="font-size:1rem;font-weight:600;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:12px;margin-bottom:16px">Order Items</h4>
+      <div class="table-wrap" style="margin-bottom:24px;overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:400px">
+          <thead>
+            <tr style="border-bottom:1px solid #e5e7eb">
+              <th style="text-align:left;padding:8px 4px;font-size:0.8125rem;color:#6b7280;font-weight:500">Item</th>
+              <th style="text-align:center;padding:8px 4px;font-size:0.8125rem;color:#6b7280;font-weight:500">Qty</th>
+              <th style="text-align:right;padding:8px 4px;font-size:0.8125rem;color:#6b7280;font-weight:500">Price</th>
+              <th style="text-align:right;padding:8px 4px;font-size:0.8125rem;color:#6b7280;font-weight:500">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${o.items.map(i => `
+              <tr style="border-bottom:1px solid #f3f4f6">
+                <td style="padding:12px 4px;font-size:0.875rem;color:#111827">${i.name}</td>
+                <td style="padding:12px 4px;text-align:center;font-size:0.875rem;color:#4b5563">${i.qty}</td>
+                <td style="padding:12px 4px;text-align:right;font-size:0.875rem;color:#4b5563">${typeof formatCurrency === 'function' ? formatCurrency(i.price) : i.price}</td>
+                <td style="padding:12px 4px;text-align:right;font-size:0.875rem;font-weight:500;color:#111827">${typeof formatCurrency === 'function' ? formatCurrency(i.price * i.qty) : i.price * i.qty}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      
+      <div style="display:flex;justify-content:flex-end">
+        <div style="width:250px">
+          <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #e5e7eb">
+            <span style="font-weight:600;color:#111827">Grand Total</span>
+            <span style="font-weight:700;color:#111827;font-size:1.125rem">${totalAmount}</span>
+          </div>
+        </div>
+      </div>
     `;
     openModal('orderDetailModal');
   } catch(err) {

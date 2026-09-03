@@ -101,15 +101,30 @@
 
       <!-- ORDERS -->
       <div class="dash-section" id="sec-orders">
-        <div style="margin-bottom:25px">
-          <h2 style="font-size:1.25rem;font-weight:600">All Orders</h2>
-          <p style="color:#999;font-size:0.85rem">Manage and update order statuses</p>
+        <div class="orders-toolbar">
+          <div>
+            <h2 style="font-size:1.25rem;font-weight:600">Orders</h2>
+            <p style="color:#6b7280;font-size:0.875rem;margin-top:4px">Manage customer orders</p>
+          </div>
+          <div class="orders-filters">
+            <input type="text" id="searchOrdersInput" placeholder="Search Order ID, Name..." onkeyup="filterOrders()" style="padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;min-width:220px;font-size:0.875rem">
+            <select id="filterOrdersStatus" onchange="filterOrders()" style="padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;font-size:0.875rem;background:#fff">
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Out for Delivery">Out for Delivery</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-outline" style="padding:8px 12px" type="button" onclick="event.preventDefault(); resetOrderFilters()" id="btnResetOrderFilters" title="Clear filters">Reset</button>
+          </div>
         </div>
         <div class="dash-card">
           <div class="table-wrap">
             <table>
-              <thead><tr><th class="col-id">Order ID</th><th>Customer</th><th>Items</th><th class="col-amount">Amount</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-              <tbody id="ordersBody"><tr><td colspan="7" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+              <thead><tr><th class="col-id">Order ID</th><th>Customer</th><th>Items</th><th>Date</th><th class="col-amount" style="text-align:right">Amount</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="ordersBody"><tr><td colspan="7" style="text-align:center;color:#6b7280;padding:30px">Loading orders...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -240,11 +255,15 @@
 
 <!-- ORDER DETAIL MODAL -->
 <div class="modal-overlay" id="orderDetailModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeModal('orderDetailModal')">&times;</button>
-    <h2>Order Details</h2>
-    <div id="orderDetailContent"></div>
-    <button class="btn btn-outline" style="width:100%;margin-top:20px;padding:12px" onclick="closeModal('orderDetailModal')">Close</button>
+  <div class="modal" style="max-width:600px;padding:0">
+    <div style="padding:24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:1.25rem;font-weight:600;color:#111827">Order Details</h2>
+      <button class="modal-close" style="position:static;font-size:1.5rem" type="button" onclick="event.preventDefault(); closeModal('orderDetailModal')">&times;</button>
+    </div>
+    <div id="orderDetailContent" style="padding:24px;max-height:70vh;overflow-y:auto"></div>
+    <div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;justify-content:flex-end">
+      <button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('orderDetailModal')">Close</button>
+    </div>
   </div>
 </div>
 
