@@ -226,7 +226,7 @@ tr:hover td { background: #f9fafb; }
 .modal-overlay.active { display: flex; }
 .modal {
   background: var(--white);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 32px;
   max-width: 600px;
   width: 100%;
@@ -297,14 +297,8 @@ tr:hover td { background: #f9fafb; }
 .profile-header p { opacity: 0.9; font-size: 0.9rem; }
 
 /* CHART PLACEHOLDER */
-.chart-placeholder {
-  height: 200px;
-  background: linear-gradient(135deg, #fff0f8, #ffe4f3);
-  border-radius: 12px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--pink); font-size: 0.9rem;
-}
-.mini-chart { display: flex; align-items: flex-end; gap: 8px; height: 100px; padding: 10px; }
+
+
 .bar {
   flex: 1; background: linear-gradient(to top, var(--pink), var(--pink-light));
   border-radius: 4px 4px 0 0; min-width: 20px;
@@ -315,7 +309,7 @@ tr:hover td { background: #f9fafb; }
 .toast {
   position: fixed; bottom: 30px; right: 30px;
   background: var(--dark); color: var(--white);
-  padding: 15px 25px; border-radius: 12px;
+  padding: 15px 25px; border-radius: 8px;
   font-size: 0.9rem; z-index: 9999;
   transform: translateY(100px); opacity: 0;
   transition: all 0.3s;
