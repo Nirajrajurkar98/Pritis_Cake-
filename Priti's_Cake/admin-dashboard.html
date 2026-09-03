@@ -131,18 +131,29 @@
       </div>
 
       <div class="dash-section" id="sec-customers">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;flex-wrap:wrap;gap:15px">
+        <div class="orders-toolbar" style="margin-bottom:24px">
           <div>
             <h2 style="font-size:1.25rem;font-weight:600">Customers</h2>
-            <p style="color:#999;font-size:0.85rem">All registered customers</p>
+            <p style="color:#6b7280;font-size:0.875rem;margin-top:4px">Manage your registered customers</p>
           </div>
-          <input type="text" placeholder="Search customers..." onkeyup="handleCustomerSearch(event)" style="padding:10px;border-radius:8px;border:1px solid #eee;min-width:250px">
+          <div class="orders-filters">
+            <input type="text" id="searchCustomersInput" placeholder="Search by name, email..." onkeyup="filterCustomers()" style="padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;min-width:260px;font-size:0.875rem">
+            <button class="btn btn-outline" style="padding:8px 12px" type="button" onclick="event.preventDefault(); resetCustomerSearch()" title="Clear search">Clear</button>
+          </div>
         </div>
         <div class="dash-card">
           <div class="table-wrap">
-            <table>
-              <thead><tr><th>Customer</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Joined</th><th>Status</th></tr></thead>
-              <tbody id="customersBody"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No customers yet</td></tr></tbody>
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="border-bottom:1px solid #e5e7eb">
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Customer</th>
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Joined Date</th>
+                  <th style="text-align:right;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Orders</th>
+                  <th style="text-align:right;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Total Spent</th>
+                  <th style="text-align:right;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="customersBody"><tr><td colspan="5" class="state-loading" style="padding:30px">Loading customers...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -221,6 +232,20 @@
     <div style="display:flex;gap:12px;margin-top:24px;justify-content:flex-end;border-top:1px solid #e5e7eb;padding-top:20px">
       <button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('cakeModal')" id="btnCancelCake">Cancel</button>
       <button class="btn btn-primary" style="padding:10px 24px" type="button" onclick="event.preventDefault(); saveCake()" id="btnSaveCake">Save Cake</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOMER DETAIL MODAL -->
+<div class="modal-overlay" id="customerDetailModal">
+  <div class="modal" style="max-width:640px;padding:0">
+    <div style="padding:24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:1.25rem;font-weight:600;color:#111827">Customer Details</h2>
+      <button class="modal-close" style="position:static;font-size:1.5rem" type="button" onclick="event.preventDefault(); closeModal('customerDetailModal')">&times;</button>
+    </div>
+    <div id="customerDetailContent" style="padding:24px;max-height:70vh;overflow-y:auto"></div>
+    <div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;justify-content:flex-end">
+      <button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('customerDetailModal')">Close</button>
     </div>
   </div>
 </div>

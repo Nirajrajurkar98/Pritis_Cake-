@@ -496,66 +496,165 @@ async function viewOrder(orderId) {
 }
 
 // ===== CUSTOMERS =====
-let searchTimeout;
-async function loadCustomers(search = '') {
+async function loadCustomers() {
   const tbody = document.getElementById('customersBody');
-  tbody.innerHTML = '<tr><td colspan="6" class="state-loading">Loading customers...</td></tr>';
-  
-  const query = search ? `?search=${encodeURIComponent(search)}` : '';
+  tbody.innerHTML = '<tr><td colspan="5" class="state-loading" style="padding:30px">Loading customers...</td></tr>';
   
   try {
-    const customers = await api.get(`/admin/customers${query}`);
-    tbody.innerHTML = customers.length ? customers.map(u => {
-      return `
-        <tr>
-          <td><div style="display:flex;align-items:center;gap:10px">
-            <div style="width:35px;height:35px;background:linear-gradient(135deg,#e91e8c,#ff6ec7);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${u.name ? u.name[0].toUpperCase() : '?'}</div>
-            <div><strong>${u.name}</strong><br><small style="color:#999">${u.email}</small></div>
-          </div></td>
-          <td>${u.phone || 'N/A'}</td>
-          <td><button class="btn-sm btn-outline" onclick="viewCustomerOrders('${u._id}')">View Orders</button></td>
-          <td>${new Date(u.createdAt).toLocaleDateString()}</td>
-          <td><span class="badge badge-active">Active</span></td>
-        </tr>
-      `;
-    }).join('') : '<tr><td colspan="6" class="empty-state">No customers found.</td></tr>';
+    const [custRes, ordRes] = await Promise.all([
+      api.get('/admin/customers'),
+      allOrders.length > 0 ? Promise.resolve(allOrders) : api.get('/admin/orders')
+    ]);
+    
+    if (allOrders.length === 0 && ordRes.length > 0) {
+      allOrders = ordRes;
+    }
+    
+    // Map orders to customers
+    allCustomers = custRes.map(c => {
+      const userOrders = allOrders.filter(o => o.user === c._id);
+      return {
+        ...c,
+        orderCount: userOrders.length,
+        totalSpent: userOrders.reduce((sum, o) => sum + (o.total || 0), 0)
+      };
+    });
+    
+    renderCustomers(allCustomers);
   } catch(err) {
-    tbody.innerHTML = '<tr><td colspan="6" class="state-error" style="display:table-cell;">Failed to load customers</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="state-error" style="padding:30px">Unable to load customers. Please try again.</td></tr>';
   }
 }
 
-function handleCustomerSearch(e) {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    loadCustomers(e.target.value);
-  }, 500);
+function renderCustomers(customersToRender) {
+  const tbody = document.getElementById('customersBody');
+  if (!customersToRender || customersToRender.length === 0) {
+    const isFiltered = document.getElementById('searchCustomersInput').value;
+    const msg = isFiltered ? 'No customers match your search.' : 'No customers found.';
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:30px">${msg}</td></tr>`;
+    return;
+  }
+  
+  tbody.innerHTML = customersToRender.map(c => {
+    const date = new Date(c.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    const initial = c.name ? c.name[0].toUpperCase() : '?';
+    const total = typeof formatCurrency === 'function' ? formatCurrency(c.totalSpent) : c.totalSpent;
+    
+    return `
+      <tr>
+        <td style="padding:12px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;background:#fdf2f8;border:1px solid #fbcfe8;color:#be185d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.875rem;flex-shrink:0">${initial}</div>
+            <div>
+              <div style="font-weight:600;color:#111827">${c.name}</div>
+              <div style="font-size:0.8125rem;color:#6b7280">${c.email}</div>
+              ${c.phone ? `<div style="font-size:0.8125rem;color:#6b7280">${c.phone}</div>` : ''}
+            </div>
+          </div>
+        </td>
+        <td style="padding:12px;font-size:0.875rem;color:#4b5563">${date}</td>
+        <td style="padding:12px;text-align:right;font-size:0.875rem;font-weight:500;color:#111827">${c.orderCount}</td>
+        <td style="padding:12px;text-align:right;font-weight:600;color:#111827">${total}</td>
+        <td style="padding:12px;text-align:right">
+          <button type="button" class="btn-sm btn-outline" style="border:1px solid #d1d5db;color:#374151;background:#fff" onclick="event.preventDefault(); viewCustomer('${c._id}')">View Details</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-async function viewCustomerOrders(customerId) {
+function filterCustomers() {
+  const query = (document.getElementById('searchCustomersInput').value || '').toLowerCase().trim();
+  
+  if (!query) {
+    renderCustomers(allCustomers);
+    return;
+  }
+  
+  const filtered = allCustomers.filter(c => {
+    return (c.name && c.name.toLowerCase().includes(query)) || 
+           (c.email && c.email.toLowerCase().includes(query)) ||
+           (c.phone && c.phone.toLowerCase().includes(query));
+  });
+  
+  renderCustomers(filtered);
+}
+
+function resetCustomerSearch() {
+  document.getElementById('searchCustomersInput').value = '';
+  filterCustomers();
+}
+
+async function viewCustomer(customerId) {
   try {
-    const orders = await api.get(`/admin/customers/${customerId}/orders`);
-    let content = `<h4>Customer Orders History</h4><div style="max-height:400px;overflow-y:auto;margin-top:15px;">`;
+    const c = allCustomers.find(cust => cust._id === customerId);
+    if (!c) return;
     
-    if (orders.length === 0) {
-      content += `<p style="color:#999">No orders found for this customer.</p>`;
+    document.getElementById('customerDetailContent').innerHTML = `<div class="state-loading" style="padding:20px">Loading details...</div>`;
+    openModal('customerDetailModal');
+    
+    const userOrders = await api.get(`/admin/customers/${customerId}/orders`);
+    const dateStr = new Date(c.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    const totalSpent = typeof formatCurrency === 'function' ? formatCurrency(c.totalSpent) : c.totalSpent;
+    
+    let ordersHtml = '';
+    if (userOrders.length === 0) {
+      ordersHtml = `<div class="empty-state" style="padding:24px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb;margin-bottom:0">No orders found for this customer.</div>`;
     } else {
-      content += `<table><thead><tr><th>Order ID</th><th>Date</th><th>Amount</th><th>Status</th></tr></thead><tbody>`;
-      content += orders.map(o => `
-        <tr>
-          <td>${o._id.substring(o._id.length-6).toUpperCase()}</td>
-          <td>${new Date(o.createdAt).toLocaleDateString()}</td>
-          <td>₹${o.total}</td>
-          <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
-        </tr>
-      `).join('');
-      content += `</tbody></table>`;
+      ordersHtml = `
+        <div class="table-wrap" style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden">
+          <table style="width:100%;border-collapse:collapse;min-width:400px;margin-bottom:0">
+            <thead style="background:#f9fafb">
+              <tr style="border-bottom:1px solid #e5e7eb">
+                <th style="text-align:left;padding:10px 12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Order ID</th>
+                <th style="text-align:left;padding:10px 12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Date</th>
+                <th style="text-align:left;padding:10px 12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Items</th>
+                <th style="text-align:right;padding:10px 12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Amount</th>
+                <th style="text-align:right;padding:10px 12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${userOrders.map(o => {
+                const badgeClass = o.status.toLowerCase().replace(/\s+/g, '-');
+                const orderDate = new Date(o.createdAt).toLocaleDateString();
+                const amt = typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total;
+                return `
+                <tr style="border-bottom:1px solid #f3f4f6">
+                  <td style="padding:12px;font-family:monospace;font-size:0.875rem;color:#111827">#${o._id.substring(o._id.length-6).toUpperCase()}</td>
+                  <td style="padding:12px;font-size:0.875rem;color:#4b5563">${orderDate}</td>
+                  <td style="padding:12px;font-size:0.875rem;color:#4b5563">${o.items.length} item(s)</td>
+                  <td style="padding:12px;text-align:right;font-weight:500;font-size:0.875rem;color:#111827">${amt}</td>
+                  <td style="padding:12px;text-align:right"><span class="badge badge-${badgeClass}" style="border:1px solid #e5e7eb">${o.status}</span></td>
+                </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
     }
-    content += `</div>`;
     
-    document.getElementById('orderDetailContent').innerHTML = content;
-    openModal('orderDetailModal');
+    document.getElementById('customerDetailContent').innerHTML = `
+      <div style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#f9fafb;padding:16px;border-radius:8px;border:1px solid #e5e7eb">
+        <div>
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Customer Info</div>
+          <div style="font-weight:600;color:#111827;font-size:1.125rem">${c.name}</div>
+          <div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${c.email}</div>
+          ${c.phone ? `<div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${c.phone}</div>` : ''}
+          <div style="font-size:0.875rem;color:#6b7280;margin-top:6px">Joined: ${dateStr}</div>
+        </div>
+        <div style="text-align:right;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Total Spent</div>
+          <div style="font-weight:700;color:#be185d;font-size:1.5rem">${totalSpent}</div>
+          <div style="font-size:0.875rem;color:#4b5563;margin-top:4px">${c.orderCount} Total Orders</div>
+        </div>
+      </div>
+      
+      <h4 style="font-size:1rem;font-weight:600;color:#111827;margin-bottom:16px">Order History</h4>
+      ${ordersHtml}
+    `;
   } catch(err) {
-    showToast('Failed to load customer orders', 'error');
+    document.getElementById('customerDetailContent').innerHTML = `<div class="state-error" style="padding:20px">Failed to load customer details. Please try again.</div>`;
   }
 }
 
