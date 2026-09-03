@@ -129,7 +129,7 @@ function renderCakes(cakesToRender) {
     <div class="admin-cake-card">
       <div class="admin-cake-img" style="height:180px;background:#f9fafb;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e5e7eb;overflow:hidden">
         ${cake.image 
-          ? `<img src="${cake.image}" alt="${cake.name}" style="width:100%;height:100%;object-fit:cover;">` 
+          ? `<img src="${cake.image.startsWith('http') ? cake.image : 'http://localhost:5000' + cake.image}" alt="${cake.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.onerror=null; this.outerHTML='<span style=\'font-size:0.875rem;color:#9ca3af;\'>Image unavailable</span>';">` 
           : `<span style="font-size:0.875rem;color:#9ca3af;">No image</span>`
         }
       </div>
@@ -200,7 +200,8 @@ async function editCake(id) {
   const previewImg = document.getElementById('cakeImagePreviewImg');
   
   if (cake.image) {
-    previewImg.src = cake.image;
+    previewImg.src = cake.image.startsWith('http') ? cake.image : 'http://localhost:5000' + cake.image;
+    previewImg.onerror = function() { previewImg.src = ''; previewDiv.style.display = 'none'; };
     previewDiv.style.display = 'flex';
   } else {
     previewDiv.style.display = 'none';
