@@ -161,21 +161,73 @@
 
       <!-- SETTINGS -->
       <div class="dash-section" id="sec-settings">
-        <div class="dash-card" style="max-width:600px">
-          <h3 style="margin-bottom:24px;font-weight:600">Shop Settings</h3>
-          <div class="form-group"><label>Shop Name</label><input type="text" id="setShopName" value="Priti's Cake"></div>
-          <div class="form-group"><label>Contact Email</label><input type="email" id="setEmail" value="hello@priticake.com"></div>
-          <div class="form-group"><label>Phone Number</label><input type="tel" id="setPhone" value="+91 98765 43210"></div>
-          <div class="form-group"><label>Address</label><input type="text" id="setAddress" value="123 Sweet Street, Pune, Maharashtra"></div>
-          <div style="display:flex;gap:15px">
-            <div class="form-group" style="flex:1"><label>Opening Time</label><input type="text" id="setOpeningTime" placeholder="10:00"></div>
-            <div class="form-group" style="flex:1"><label>Closing Time</label><input type="text" id="setClosingTime" placeholder="21:00"></div>
+        <div style="margin-bottom:24px">
+          <h2 style="font-size:1.25rem;font-weight:600">Shop Settings</h2>
+          <p style="color:#6b7280;font-size:0.875rem;margin-top:4px">Configure your bakery operations and business information</p>
+        </div>
+
+        <div class="dash-card">
+          <div id="settingsLoadingState" style="padding:40px 20px;text-align:center;color:#6b7280;font-size:0.875rem">
+            Loading settings...
           </div>
-          <div style="display:flex;gap:15px">
-            <div class="form-group" style="flex:1"><label>Delivery Charge (₹)</label><input type="number" id="setDelivery" value="50"></div>
-            <div class="form-group" style="flex:1"><label>Min Order Amount (₹)</label><input type="number" id="setMinOrder" value="500"></div>
+          
+          <div id="settingsErrorState" class="state-error" style="display:none;padding:20px;text-align:center;margin-bottom:0">
+            Unable to load shop settings.<br>
+            <button type="button" class="btn-sm btn-outline" style="margin-top:12px" onclick="event.preventDefault(); loadSettings()">Try again</button>
           </div>
-          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+
+          <form id="settingsFormContainer" style="display:none" onsubmit="event.preventDefault(); saveSettings();">
+            <!-- SHOP INFORMATION -->
+            <h4 style="font-size:0.875rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;border-bottom:1px solid #e5e7eb;padding-bottom:8px">Shop Information</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:32px">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setShopName" style="font-size:0.8125rem;font-weight:500;color:#374151">Shop Name</label>
+                <input type="text" id="setShopName" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setEmail" style="font-size:0.8125rem;font-weight:500;color:#374151">Contact Email</label>
+                <input type="email" id="setEmail" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setPhone" style="font-size:0.8125rem;font-weight:500;color:#374151">Phone Number</label>
+                <input type="tel" id="setPhone" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setAddress" style="font-size:0.8125rem;font-weight:500;color:#374151">Physical Address</label>
+                <input type="text" id="setAddress" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db">
+              </div>
+            </div>
+
+            <!-- ORDER & DELIVERY -->
+            <h4 style="font-size:0.875rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;border-bottom:1px solid #e5e7eb;padding-bottom:8px">Order & Delivery</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:32px">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setDelivery" style="font-size:0.8125rem;font-weight:500;color:#374151">Delivery Charge (INR)</label>
+                <input type="number" id="setDelivery" min="0" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setMinOrder" style="font-size:0.8125rem;font-weight:500;color:#374151">Minimum Order Amount (INR)</label>
+                <input type="number" id="setMinOrder" min="0" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+            </div>
+
+            <!-- BUSINESS HOURS -->
+            <h4 style="font-size:0.875rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px;border-bottom:1px solid #e5e7eb;padding-bottom:8px">Business Hours</h4>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:32px">
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setOpeningTime" style="font-size:0.8125rem;font-weight:500;color:#374151">Opening Time (HH:MM)</label>
+                <input type="time" id="setOpeningTime" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label for="setClosingTime" style="font-size:0.8125rem;font-weight:500;color:#374151">Closing Time (HH:MM)</label>
+                <input type="time" id="setClosingTime" style="width:100%;padding:10px;border-radius:6px;border:1px solid #d1d5db" required>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;border-top:1px solid #e5e7eb;padding-top:20px">
+              <button type="submit" id="btnSaveSettings" class="btn btn-primary" style="padding:10px 24px;min-width:140px">Save Settings</button>
+            </div>
+          </form>
         </div>
       </div>
 

@@ -660,6 +660,14 @@ async function viewCustomer(customerId) {
 
 // ===== SETTINGS =====
 async function loadSettings() {
+  const loadingState = document.getElementById('settingsLoadingState');
+  const errorState = document.getElementById('settingsErrorState');
+  const formContainer = document.getElementById('settingsFormContainer');
+  
+  if (loadingState) loadingState.style.display = 'block';
+  if (errorState) errorState.style.display = 'none';
+  if (formContainer) formContainer.style.display = 'none';
+  
   try {
     const res = await api.get('/admin/settings');
     const settings = res.settings;
@@ -678,12 +686,20 @@ async function loadSettings() {
     setVal('setOpeningTime', settings.openingTime || '10:00');
     setVal('setClosingTime', settings.closingTime || '21:00');
     
+    if (loadingState) loadingState.style.display = 'none';
+    if (formContainer) formContainer.style.display = 'block';
+    
   } catch(err) {
     showToast('Failed to load settings', 'error');
+    if (loadingState) loadingState.style.display = 'none';
+    if (errorState) errorState.style.display = 'block';
   }
 }
 
 async function saveSettings() {
+  const btn = document.getElementById('btnSaveSettings');
+  const originalText = btn.textContent;
+  
   const payload = {
     shopName: document.getElementById('setShopName').value.trim(),
     email: document.getElementById('setEmail').value.trim(),
@@ -710,11 +726,24 @@ async function saveSettings() {
     return;
   }
   
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  btn.style.opacity = '0.7';
+  
   try {
     await api.put('/admin/settings', payload);
-    showToast('Settings saved! ✅', 'success');
+    showToast('Settings saved successfully.', 'success');
+    btn.textContent = 'Saved';
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.style.opacity = '1';
+    }, 2000);
   } catch(err) {
-    showToast(err.message || 'Failed to save settings', 'error');
+    showToast(err.message || 'Unable to save settings. Please try again.', 'error');
+    btn.disabled = false;
+    btn.textContent = originalText;
+    btn.style.opacity = '1';
   }
 }
 
