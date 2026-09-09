@@ -55,11 +55,17 @@ app.use(cors({
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/orders', orderRoutes);
 app.use('/api/admin/cakes', cakeRoutes);
 app.use('/api/admin/orders', orderRoutes);
 app.use('/api/admin/customers', customerRoutes);
 app.use('/api/admin/settings', settingsRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Public Catalog Routes
+const { getCakes, getCakeById } = require('./controllers/cake.controller');
+app.get('/api/cakes', getCakes);
+app.get('/api/cakes/:id', getCakeById);
 
 // 404 handler
 app.use((req, res, next) => {

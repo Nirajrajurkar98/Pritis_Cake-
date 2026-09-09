@@ -93,21 +93,35 @@
     document.getElementById('registerForm').classList.toggle('active', tab === 'register');
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
 
-    const result = login(email, password);
+    const btn = document.querySelector('#loginForm .btn-primary');
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Logging in...';
+
+    const result = await login(email, password);
+    
     if (result.success) {
       showToast('Login successful! Redirecting...', 'success');
-      setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
+      setTimeout(() => {
+        if (result.role === 'admin') {
+          window.location.href = 'admin-dashboard.html';
+        } else {
+          window.location.href = 'client-dashboard.html';
+        }
+      }, 1000);
     } else {
-      showToast('Invalid email or password', 'error');
+      showToast(result.msg, 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
     }
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
@@ -116,12 +130,27 @@
     if (!name || !email || !password) { showToast('Please fill all required fields', 'error'); return; }
     if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
     if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
-    const result = register(name, email, phone, password);
+    
+    const btn = document.querySelector('#registerForm .btn-primary');
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Creating Account...';
+
+    const result = await register(name, email, phone, password);
+    
     if (result.success) {
       showToast('Account created! Redirecting...', 'success');
-      setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
+      setTimeout(() => {
+        if (result.role === 'admin') {
+          window.location.href = 'admin-dashboard.html';
+        } else {
+          window.location.href = 'client-dashboard.html';
+        }
+      }, 1000);
     } else {
       showToast(result.msg, 'error');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
     }
   }
 

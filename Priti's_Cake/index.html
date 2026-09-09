@@ -189,10 +189,12 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
   // Load featured cakes
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.initPromise) await window.initPromise;
     const featured = DB.cakes.filter(c => c.tag === 'Bestseller' || c.tag === 'Popular' || c.tag === 'Premium').slice(0, 6);
     const cakes = featured.length >= 3 ? featured : DB.cakes.slice(0, 6);
     document.getElementById('featuredCakes').innerHTML = cakes.map(cake => `
@@ -208,7 +210,7 @@
             <span class="price">₹${cake.price}</span>
             <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart(${cake.id})">Add to Cart 🛒</button>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart('${cake.id}')">Add to Cart 🛒</button>
         </div>
       </div>
     `).join('');

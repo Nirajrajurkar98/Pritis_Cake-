@@ -1,21 +1,7 @@
 // ===== DATA STORE =====
 const DB = {
-  cakes: [
-    { id: 1, name: "Strawberry Dream", category: "Birthday", price: 850, emoji: "", desc: "Layers of vanilla sponge with fresh strawberry cream and glazed strawberries on top.", rating: 4.9, reviews: 128, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Bestseller" },
-    { id: 2, name: "Chocolate Fudge", category: "Birthday", price: 950, emoji: "", desc: "Rich dark chocolate cake with fudge frosting and chocolate ganache drizzle.", rating: 4.8, reviews: 95, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Popular" },
-    { id: 3, name: "Royal Wedding Cake", category: "Wedding", price: 4500, emoji: "", desc: "Elegant 3-tier white fondant cake with floral decorations, perfect for your special day.", rating: 5.0, reviews: 42, weight: "3 kg", time: "1-2 days", serves: "30-40", tag: "Premium" },
-    { id: 4, name: "Mango Delight", category: "Seasonal", price: 780, emoji: "", desc: "Fresh mango mousse cake with mango jelly layers and whipped cream.", rating: 4.7, reviews: 67, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Seasonal" },
-    { id: 5, name: "Red Velvet", category: "Birthday", price: 900, emoji: "", desc: "Classic red velvet with cream cheese frosting, moist and velvety texture.", rating: 4.9, reviews: 112, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Classic" },
-    { id: 6, name: "Unicorn Fantasy", category: "Kids", price: 1200, emoji: "", desc: "Colorful rainbow layers with unicorn horn decoration, kids absolutely love it!", rating: 4.8, reviews: 88, weight: "1.5 kg", time: "3-4 hrs", serves: "12-15", tag: "Kids Fav" },
-    { id: 7, name: "Black Forest", category: "Birthday", price: 820, emoji: "", desc: "German classic with chocolate sponge, whipped cream and cherries.", rating: 4.6, reviews: 74, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 8, name: "Butterscotch Bliss", category: "Anniversary", price: 880, emoji: "", desc: "Soft butterscotch cake with caramel drizzle and crunchy praline topping.", rating: 4.7, reviews: 56, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 9, name: "Pineapple Fresh", category: "Birthday", price: 750, emoji: "", desc: "Light pineapple sponge with fresh cream and pineapple chunks.", rating: 4.5, reviews: 49, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 10, name: "Custom Photo Cake", category: "Custom", price: 1500, emoji: "", desc: "Personalized cake with edible photo print. Send us your photo and we'll create magic!", rating: 4.9, reviews: 203, weight: "1.5 kg", time: "1 day", serves: "12-15", tag: "Custom" },
-    { id: 11, name: "Blueberry Cheesecake", category: "Anniversary", price: 1100, emoji: "", desc: "New York style cheesecake with fresh blueberry compote topping.", rating: 4.8, reviews: 61, weight: "1 kg", time: "4-5 hrs", serves: "8-10", tag: "" },
-    { id: 12, name: "Truffle Royale", category: "Wedding", price: 2200, emoji: "", desc: "Luxurious chocolate truffle cake with gold leaf decoration for premium occasions.", rating: 5.0, reviews: 38, weight: "2 kg", time: "1 day", serves: "20-25", tag: "Luxury" }
-  ],
+  cakes: [],
   users: JSON.parse(localStorage.getItem('pc_users') || '[]'),
-  orders: JSON.parse(localStorage.getItem('pc_orders') || '[]'),
   cart: JSON.parse(localStorage.getItem('pc_cart') || '[]'),
   currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
 };
@@ -25,20 +11,20 @@ const DB = {
 // ===== SAVE TO STORAGE =====
 function saveData() {
   localStorage.setItem('pc_users', JSON.stringify(DB.users));
-  localStorage.setItem('pc_orders', JSON.stringify(DB.orders));
   localStorage.setItem('pc_cart', JSON.stringify(DB.cart));
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
   localStorage.setItem('pc_cakes', JSON.stringify(DB.cakes));
 }
 
-// Load cakes from storage if admin modified them
-const storedCakes = localStorage.getItem('pc_cakes');
-if (storedCakes) DB.cakes = JSON.parse(storedCakes);
+  // Load cakes asynchronously via initPromise
 
 // ===== IMAGE HELPERS =====
 // Returns the inner HTML for a cake's visual (real image or emoji fallback)
 function cakeMedia(cake) {
-  if (cake && cake.image) return `<img src="${cake.image}" alt="${cake.name}">`;
+  if (cake && cake.image) {
+    const imgUrl = cake.image.startsWith('http') ? cake.image : `http://localhost:5000${cake.image}`;
+    return `<img src="${imgUrl}" alt="${cake.name}">`;
+  }
   return (cake && cake.emoji) ? cake.emoji : '🎂';
 }
 
@@ -68,38 +54,98 @@ function resizeImageFile(file, cb) {
 }
 
 // ===== AUTH =====
-function login(email, password) {
-  // Admin login is now handled via API.
-  // This function is for customer local fallback only.
-  const user = DB.users.find(u => u.email === email && u.password === password);
-  if (user) {
-    DB.currentUser = { ...user, role: 'client' };
-    saveData();
-    return { success: true, role: 'client' };
+async function login(email, password) {
+  try {
+    const data = await api.post('/auth/login', { email, password });
+    if (data && data.success) {
+      localStorage.setItem('pc_token', data.token);
+      
+      const profileData = await api.get('/auth/profile');
+      if (profileData && profileData.success) {
+        // ID compatibility shim for legacy frontend modules
+        if (profileData.data && profileData.data._id) {
+          profileData.data.id = profileData.data._id;
+        }
+        localStorage.setItem('pc_current_user', JSON.stringify(profileData.data));
+        DB.currentUser = profileData.data;
+        return { success: true, role: profileData.data.role };
+      }
+    }
+    return { success: false, msg: data.message || 'Invalid email or password' };
+  } catch (error) {
+    if (error.status === 401) {
+      return { success: false, msg: 'Invalid email or password.' };
+    }
+    return { success: false, msg: error.message || 'Unable to connect to the server. Please try again.' };
   }
-  return { success: false, msg: 'Invalid email or password' };
 }
 
-function register(name, email, phone, password) {
-  if (DB.users.find(u => u.email === email)) return { success: false, msg: 'Email already registered' };
-  const user = { id: Date.now(), name, email, phone, password, joinDate: new Date().toLocaleDateString() };
-  DB.users.push(user);
-  DB.currentUser = { ...user, role: 'client' };
-  saveData();
-  return { success: true };
+async function register(name, email, phone, password) {
+  try {
+    const data = await api.post('/auth/register', { name, email, password });
+    if (data && data.success) {
+      // Automatically login after successful registration
+      return await login(email, password);
+    }
+    return { success: false, msg: data.message || 'Registration failed' };
+  } catch (error) {
+    if (error.status === 409 || (error.message && error.message.toLowerCase().includes('already exists'))) {
+      return { success: false, msg: 'An account with this email already exists.' };
+    }
+    return { success: false, msg: error.message || 'Unable to connect to the server. Please try again.' };
+  }
 }
 
 function logout() {
   DB.currentUser = null;
+  DB.cart = [];
+  localStorage.removeItem('pc_token');
+  localStorage.removeItem('pc_current_user');
+  localStorage.removeItem('pc_admin');
+  localStorage.removeItem('pc_cart');
   saveData();
   window.location.href = 'login.html';
 }
 
-function isLoggedIn() { return DB.currentUser !== null; }
+function isLoggedIn() { 
+  return !!localStorage.getItem('pc_token');
+}
 function isAdmin() { 
   const apiAdmin = JSON.parse(localStorage.getItem('pc_admin') || 'null');
   const token = localStorage.getItem('pc_token');
-  return !!(token && apiAdmin && apiAdmin.role === 'admin');
+  if (!token) return false; // Token is strictly required
+  
+  // Check backend provided role first, fallback to pc_admin
+  const currentUser = JSON.parse(localStorage.getItem('pc_current_user') || 'null');
+  if (currentUser && currentUser.role === 'admin') return true;
+  return !!(apiAdmin && apiAdmin.role === 'admin');
+}
+
+async function hydrateSession() {
+  const token = localStorage.getItem('pc_token');
+  if (token) {
+    try {
+      const data = await api.get('/auth/profile');
+      if (data && data.success) {
+        // ID compatibility shim for legacy frontend modules
+        if (data.data && data.data._id) {
+          data.data.id = data.data._id;
+        }
+        localStorage.setItem('pc_current_user', JSON.stringify(data.data));
+        DB.currentUser = data.data;
+      }
+    } catch (error) {
+      if (error.status === 401) {
+        // Invalid or expired token
+        localStorage.removeItem('pc_token');
+        localStorage.removeItem('pc_current_user');
+        DB.currentUser = null;
+      }
+    }
+  } else {
+      localStorage.removeItem('pc_current_user');
+      DB.currentUser = null;
+  }
 }
 
 // ===== CART =====
@@ -121,6 +167,18 @@ function removeFromCart(cakeId) {
   updateCartUI();
 }
 
+function decreaseQuantity(cakeId) {
+  const existing = DB.cart.find(i => i.cakeId === cakeId);
+  if (existing) {
+    existing.qty -= 1;
+    if (existing.qty <= 0) {
+      DB.cart = DB.cart.filter(i => i.cakeId !== cakeId);
+    }
+    saveData();
+    updateCartUI();
+  }
+}
+
 function getCartTotal() { return DB.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); }
 function getCartCount() { return DB.cart.reduce((sum, i) => sum + i.qty, 0); }
 
@@ -136,7 +194,7 @@ function renderCartItems() {
   const totalEl = document.getElementById('cartTotal');
   if (!container) return;
   if (DB.cart.length === 0) {
-    container.innerHTML = `<div class="cart-empty"><p>Your cart is empty</p></div>`;
+    container.innerHTML = `<div class="cart-empty"><div class="icon">🛒</div><p>Your cart is empty</p></div>`;
     if (totalEl) totalEl.style.display = 'none';
     return;
   }
@@ -146,10 +204,15 @@ function renderCartItems() {
       <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}">` : item.emoji}</div>
       <div class="cart-item-info">
         <h4>${item.name}</h4>
-        <div class="price">₹${item.price} × ${item.qty}</div>
+        <div class="price" style="display:flex;align-items:center;gap:8px">
+          ₹${item.price} × 
+          <button onclick="decreaseQuantity('${item.cakeId}')" style="background:#eee;border:none;border-radius:4px;padding:2px 6px;cursor:pointer">-</button>
+          <span>${item.qty}</span>
+          <button onclick="addToCart('${item.cakeId}', 1)" style="background:#eee;border:none;border-radius:4px;padding:2px 6px;cursor:pointer">+</button>
+        </div>
         <div style="font-weight:700;color:#e91e8c">₹${item.price * item.qty}</div>
       </div>
-      <button class="cart-item-remove" onclick="removeFromCart(${item.cakeId})">✕</button>
+      <button class="cart-item-remove" onclick="removeFromCart('${item.cakeId}')">×</button>
     </div>
   `).join('');
   const subtotal = getCartTotal();
@@ -164,25 +227,52 @@ function toggleCart() {
   if (sidebar) sidebar.classList.toggle('open');
 }
 
-function placeOrder() {
-  if (DB.cart.length === 0) { showToast('Cart is empty!', 'error'); return; }
-  const order = {
-    id: 'ORD' + Date.now(),
-    userId: DB.currentUser.id,
-    userName: DB.currentUser.name,
-    userEmail: DB.currentUser.email,
-    items: [...DB.cart],
-    total: getCartTotal() + 50,
-    status: 'Pending',
-    date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString()
-  };
-  DB.orders.push(order);
-  DB.cart = [];
-  saveData();
-  updateCartUI();
-  toggleCart();
-  showToast('Order placed successfully.', 'success');
+let isPlacingOrder = false;
+
+async function placeOrder() {
+  if (isPlacingOrder) return false;
+  if (DB.cart.length === 0) { showToast('Cart is empty!', 'error'); return false; }
+  if (!isLoggedIn()) { showToast('Please login to place an order', 'error'); return false; }
+  
+  const btn = document.querySelector('button[onclick="placeOrder()"]');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerText = 'Placing...';
+  }
+  isPlacingOrder = true;
+
+  try {
+    const payload = {
+      items: DB.cart.map(item => ({
+        cakeId: item.cakeId,
+        qty: item.qty
+      }))
+    };
+    
+    const res = await api.post('/orders', payload);
+    if (res && res.success) {
+      DB.cart = [];
+      saveData();
+      updateCartUI();
+      toggleCart();
+      showToast('Order placed successfully! 🎂', 'success');
+      
+      // Attempt to refresh dashboard if we are on the dashboard page
+      if (typeof loadClientDashboard === 'function') loadClientDashboard();
+      if (typeof loadClientOrders === 'function') loadClientOrders();
+      return true;
+    }
+    return false;
+  } catch (err) {
+    showToast(err.message || 'Failed to place order. Please try again.', 'error');
+    return false;
+  } finally {
+    isPlacingOrder = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = 'Place Order 🎂';
+    }
+  }
 }
 
 // ===== TOAST =====
@@ -202,7 +292,7 @@ function updateNavAuth() {
   if (isLoggedIn()) {
     navBtns.innerHTML = `
       <div class="cart-btn-wrap">
-        <button class="btn btn-outline" onclick="toggleCart()">Cart</button>
+        <button class="btn btn-outline" onclick="toggleCart()">🛒 Cart</button>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
       </div>
       <a href="${isAdmin() ? 'admin-dashboard.html' : 'client-dashboard.html'}" class="btn btn-primary">Dashboard</a>
@@ -223,8 +313,33 @@ function toggleMobileNav() {
 }
 
 // ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
+// Global initialization promise to prevent race conditions across pages
+window.initPromise = (async () => {
+  await loadCatalog();
+  await hydrateSession();
+})();
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await window.initPromise;
   updateNavAuth();
   const hamburger = document.getElementById('hamburger');
   if (hamburger) hamburger.addEventListener('click', toggleMobileNav);
 });
+
+async function loadCatalog() {
+  try {
+    const res = await api.get('/cakes');
+    if (res && Array.isArray(res)) {
+      DB.cakes = res.map(cake => {
+        cake.id = cake._id; // ID compatibility shim
+        return cake;
+      });
+      // Optionally save to pc_cakes for legacy modules
+      localStorage.setItem('pc_cakes', JSON.stringify(DB.cakes));
+    }
+  } catch (error) {
+    console.error("Failed to load catalog from API:", error);
+    DB.cakes = [];
+    showToast("Catalog currently unavailable. Please try again later.", "error");
+  }
+}

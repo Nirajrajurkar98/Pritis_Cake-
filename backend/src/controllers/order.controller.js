@@ -1,5 +1,84 @@
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
+const Cake = require('../models/Cake');
+
+// @desc    Create new order
+// @route   POST /api/orders
+// @access  Private
+const createOrder = async (req, res, next) => {
+  try {
+    const { items } = req.body;
+    
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'No order items' });
+    }
+
+    const mergedItems = {};
+    for (const item of items) {
+      if (!item.cakeId || !mongoose.Types.ObjectId.isValid(item.cakeId)) {
+        return res.status(400).json({ success: false, message: `Invalid cake ID: ${item.cakeId}` });
+      }
+      if (!item.qty || !Number.isInteger(item.qty) || item.qty <= 0) {
+        return res.status(400).json({ success: false, message: `Invalid quantity for cake ID: ${item.cakeId}` });
+      }
+      if (mergedItems[item.cakeId]) {
+        mergedItems[item.cakeId] += item.qty;
+      } else {
+        mergedItems[item.cakeId] = item.qty;
+      }
+    }
+
+    const orderItems = [];
+    let itemsTotal = 0;
+
+    for (const [cakeId, qty] of Object.entries(mergedItems)) {
+      const cake = await Cake.findById(cakeId);
+      if (!cake) {
+        return res.status(404).json({ success: false, message: `Cake not found: ${cakeId}` });
+      }
+      orderItems.push({
+        cakeId: cake._id,
+        qty,
+        name: cake.name,
+        price: cake.price,
+        emoji: cake.emoji,
+        image: cake.image
+      });
+      itemsTotal += (cake.price * qty);
+    }
+    
+    // Add standard delivery fee of 50
+    const total = itemsTotal + 50;
+
+    const order = new Order({
+      user: req.user._id,
+      userName: req.user.name,
+      userEmail: req.user.email,
+      items: orderItems,
+      total,
+      status: 'Pending'
+    });
+
+    const createdOrder = await order.save();
+    res.status(201).json({ success: true, order: createdOrder });
+  } catch (error) {
+    console.error(`Error creating order: ${error.message}`);
+    next(error);
+  }
+};
+
+// @desc    Get logged in user orders
+// @route   GET /api/orders/my-orders
+// @access  Private
+const getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error(`Error fetching user orders: ${error.message}`);
+    next(error);
+  }
+};
 
 // @desc    Get all orders
 // @route   GET /api/admin/orders
@@ -77,6 +156,8 @@ const updateOrderStatus = async (req, res, next) => {
 };
 
 module.exports = {
+  createOrder,
+  getMyOrders,
   getOrders,
   getOrderById,
   updateOrderStatus

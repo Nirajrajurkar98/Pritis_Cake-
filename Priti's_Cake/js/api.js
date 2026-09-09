@@ -10,17 +10,18 @@ const api = {
   },
 
   handleResponse: async (response) => {
-    if (response.status === 401) {
-      localStorage.removeItem('pc_token');
-      localStorage.removeItem('pc_admin');
-      window.location.href = 'admin-login.html';
-      throw new Error('Session expired. Please login again.');
-    }
-    
     const data = await response.json().catch(() => null);
     if (!response.ok) {
-      if (response.status === 403) throw new Error('You are not authorized to perform this action.');
-      throw new Error((data && data.message) || 'Something went wrong. Please try again.');
+      let errMessage = (data && data.message) || 'Something went wrong. Please try again.';
+      if (response.status === 401) {
+        errMessage = data && data.message ? data.message : 'Session expired. Please login again.';
+      } else if (response.status === 403) {
+        errMessage = 'You are not authorized to perform this action.';
+      }
+      
+      const error = new Error(errMessage);
+      error.status = response.status;
+      throw error;
     }
     return data;
   },

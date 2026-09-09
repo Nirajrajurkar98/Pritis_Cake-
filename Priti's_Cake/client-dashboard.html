@@ -162,6 +162,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script src="js/client.js"></script>
 <script>
@@ -171,20 +172,26 @@
   });
   document.querySelector('.cat-filter-btn.active').style.cssText += 'background:#e91e8c;color:#fff';
 
-  function placeOrderDash() {
+  async function placeOrderDash() {
     if (DB.cart.length === 0) { showToast('Cart is empty! Add some cakes first 🎂', 'error'); return; }
-    placeOrder();
-    loadClientDashboard();
-    loadClientOrders();
-    showClientSection('orders');
+    const success = await placeOrder();
+    if (success) {
+      showClientSection('orders');
+    }
   }
 
   // Update cart summary in browse section
   const origAddToCart = addToCart;
-  function addToCart(id, qty) {
+  window.addToCart = function(id, qty) {
     origAddToCart(id, qty);
     updateDashCart();
-  }
+  };
+
+  const origDecreaseQuantity = decreaseQuantity;
+  window.decreaseQuantity = function(id) {
+    origDecreaseQuantity(id);
+    updateDashCart();
+  };
 
   function updateDashCart() {
     const el = document.getElementById('dashCartItems');
@@ -195,10 +202,17 @@
     }
     el.innerHTML = DB.cart.map(i => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">
-        <span>${i.emoji} ${i.name} ×${i.qty}</span>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span>${i.emoji} ${i.name}</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button onclick="decreaseQuantity('${i.cakeId}')" style="background:#eee;border:none;border-radius:4px;padding:2px 6px;cursor:pointer">-</button>
+            <span>${i.qty}</span>
+            <button onclick="addToCart('${i.cakeId}', 1)" style="background:#eee;border:none;border-radius:4px;padding:2px 6px;cursor:pointer">+</button>
+          </div>
+        </div>
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-weight:700;color:#e91e8c">₹${i.price * i.qty}</span>
-          <button onclick="removeFromCart(${i.cakeId});updateDashCart()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem">✕</button>
+          <button onclick="removeFromCart('${i.cakeId}');updateDashCart()" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem">×</button>
         </div>
       </div>
     `).join('') + `<div style="display:flex;justify-content:space-between;padding:15px 0;font-weight:800;font-size:1.1rem;color:#e91e8c"><span>Total</span><span>₹${getCartTotal() + 50}</span></div>`;

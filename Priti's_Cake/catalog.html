@@ -96,12 +96,14 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
   let currentQty = 1;
   let currentCakeId = null;
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.initPromise) await window.initPromise;
     const params = new URLSearchParams(window.location.search);
     const cat = params.get('cat');
     if (cat) {
@@ -158,7 +160,7 @@
     }
     grid.innerHTML = cakes.map(cake => `
       <div class="cake-card">
-        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal(${cake.id})">
+        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal('${cake.id}')">
           ${cakeMedia(cake)}
           ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
         </div>
@@ -170,8 +172,8 @@
             <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal(${cake.id})">Details</button>
-            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart(${cake.id})">🛒 Add</button>
+            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal('${cake.id}')">Details</button>
+            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart('${cake.id}')">🛒 Add</button>
           </div>
         </div>
       </div>

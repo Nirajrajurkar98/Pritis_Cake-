@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth.middleware');
+const { updateProfile } = require('../controllers/auth.controller');
 
 const router = express.Router();
 
@@ -106,5 +107,9 @@ router.get('/profile', protect, async (req, res, next) => {
     next(error);
   }
 });
+
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+router.put('/profile', protect, updateProfile);
 
 module.exports = router;

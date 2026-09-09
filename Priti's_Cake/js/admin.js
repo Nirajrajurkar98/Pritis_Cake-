@@ -9,6 +9,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Intercept API calls to handle 401 globally for admin
+  ['get', 'post', 'put', 'delete', 'postMultipart', 'putMultipart'].forEach(method => {
+    const original = api[method];
+    if (original) {
+      api[method] = async function(...args) {
+        try {
+          return await original.apply(this, args);
+        } catch (err) {
+          if (err.status === 401) {
+            logout();
+          }
+          throw err;
+        }
+      };
+    }
+  });
+
   document.getElementById('adminName').textContent = adminData.name || 'Admin';
   
   // Set up event listener for image preview
@@ -759,6 +776,7 @@ async function saveSettings() {
 function logout() {
   localStorage.removeItem('pc_token');
   localStorage.removeItem('pc_admin');
+  localStorage.removeItem('pc_current_user');
   window.location.href = 'admin-login.html';
 }
 
