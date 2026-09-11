@@ -161,25 +161,53 @@ function toggleCart() {
   if (sidebar) sidebar.classList.toggle('open');
 }
 
-function placeOrder() {
-  if (DB.cart.length === 0) { showToast('Cart is empty!', 'error'); return; }
-  const order = {
-    id: 'ORD' + Date.now(),
-    userId: DB.currentUser.id,
-    userName: DB.currentUser.name,
-    userEmail: DB.currentUser.email,
-    items: [...DB.cart],
-    total: getCartTotal() + 50,
-    status: 'Pending',
-    date: new Date().toLocaleDateString(),
-    time: new Date().toLocaleTimeString()
-  };
-  DB.orders.push(order);
-  DB.cart = [];
-  saveData();
-  updateCartUI();
-  toggleCart();
-  showToast('Order placed successfully.', 'success');
+async function placeOrder(e) {
+  if (DB.cart.length === 0) { showToast('Cart is empty!', 'error'); return false; }
+  
+  if (!isLoggedIn()) {
+    showToast('Please login to place an order', 'error');
+    setTimeout(() => window.location.href = 'login.html', 1500);
+    return false;
+  }
+
+  const btn = e ? (e.currentTarget || e.target) : null;
+  let originalText = '';
+  if (btn) {
+    originalText = btn.innerHTML;
+    btn.innerHTML = 'Placing Order...';
+    btn.disabled = true;
+  }
+
+  try {
+    const payload = {
+      items: DB.cart.map(item => ({
+        cakeId: item.cakeId,
+        qty: item.qty
+      }))
+    };
+    
+    await api.post('/orders', payload);
+    
+    // Clear cart on success
+    DB.cart = [];
+    saveData();
+    updateCartUI();
+    if (typeof toggleCart === 'function' && document.getElementById('cartSidebar') && document.getElementById('cartSidebar').classList.contains('open')) {
+      toggleCart();
+    }
+    
+    showToast('Order placed successfully.', 'success');
+    return true;
+  } catch (error) {
+    console.error('Checkout failed', error);
+    showToast(error.message || 'Checkout failed', 'error');
+    return false;
+  } finally {
+    if (btn) {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
+  }
 }
 
 // ===== TOAST =====

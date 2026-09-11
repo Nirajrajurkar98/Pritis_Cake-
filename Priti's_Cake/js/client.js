@@ -34,10 +34,16 @@ function showClientSection(id) {
   if (id === 'profile') loadProfile();
 }
 
-function loadClientDashboard() {
-  const myOrders = DB.orders.filter(o => o.userId === DB.currentUser.id);
+async function loadClientDashboard() {
+  let myOrders = [];
+  try {
+    myOrders = await api.get('/orders/myorders');
+  } catch (err) {
+    console.error('Failed to load dashboard orders:', err);
+  }
+
   const spent = myOrders.reduce((s, o) => s + o.total, 0);
-  const pending = myOrders.filter(o => o.status === 'Pending' || o.status === 'Confirmed' || o.status === 'Baking').length;
+  const pending = myOrders.filter(o => ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery'].includes(o.status)).length;
 
   document.getElementById('myOrderCount').textContent = myOrders.length;
   document.getElementById('mySpent').textContent = '₹' + spent.toLocaleString();
@@ -45,14 +51,14 @@ function loadClientDashboard() {
 
   // Recent orders
   const tbody = document.getElementById('clientRecentOrders');
-  const recent = [...myOrders].reverse().slice(0, 5);
+  const recent = [...myOrders].slice(0, 5); // Assuming already sorted descending by backend
   tbody.innerHTML = recent.length ? recent.map(o => `
     <tr>
-      <td><strong>${o.id}</strong></td>
+      <td><strong>${o._id || o.id}</strong></td>
       <td>${o.items.map(i => i.name).join(', ')}</td>
-      <td><strong>₹${o.total}</strong></td>
-      <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
-      <td>${o.date}</td>
+      <td><strong>₹${o.total.toLocaleString()}</strong></td>
+      <td><span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span></td>
+      <td>${new Date(o.createdAt || o.date).toLocaleDateString()}</td>
     </tr>
   `).join('') : '<tr><td colspan="5" style="text-align:center;color:#999;padding:30px">No orders yet. <a href="#" onclick="showClientSection(\'browse\')" style="color:#e91e8c">Browse cakes!</a></td></tr>';
 
@@ -153,29 +159,45 @@ function addToCartFromDetail(cakeId) {
   closeModal('cakeDetailModal');
 }
 
-function loadClientOrders() {
-  const myOrders = [...DB.orders.filter(o => o.userId === DB.currentUser.id)].reverse();
+async function loadClientOrders() {
   const container = document.getElementById('clientOrdersList');
-  container.innerHTML = myOrders.length ? myOrders.map(o => `
-    <div class="dash-card" style="margin-bottom:15px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
-        <div>
-          <h4 style="margin-bottom:5px">${o.id}</h4>
-          <p style="color:#999;font-size:0.85rem">${o.date} at ${o.time}</p>
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Loading your orders...</div>';
+  
+  try {
+    const myOrders = await api.get('/orders/myorders');
+    
+    if (myOrders.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:60px;color:#999"><div style="font-size:4rem;margin-bottom:15px">📦</div><p>You haven\'t placed any orders yet.</p><button class="btn btn-primary" style="margin-top:15px" onclick="showClientSection(\'browse\')">Browse Cakes</button></div>';
+      return;
+    }
+    
+    container.innerHTML = myOrders.map(o => `
+      <div class="dash-card" style="margin-bottom:15px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div>
+            <h4 style="margin-bottom:5px">${o._id}</h4>
+            <p style="color:#999;font-size:0.85rem">${new Date(o.createdAt).toLocaleDateString()} at ${new Date(o.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+          </div>
+          <span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span>
         </div>
-        <span class="badge badge-${o.status.toLowerCase()}">${o.status}</span>
+        <div style="margin:15px 0;padding:15px;background:#f8f9fa;border-radius:10px">
+          ${o.items.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem"><span>${i.emoji || '🎂'} ${i.name} ×${i.qty}</span><span>₹${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}
+          <div style="border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between;font-weight:800;color:#e91e8c"><span>Total</span><span>₹${o.total.toLocaleString()}</span></div>
+        </div>
+        ${getStatusTimeline(o.status)}
       </div>
-      <div style="margin:15px 0;padding:15px;background:#f8f9fa;border-radius:10px">
-        ${o.items.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem"><span>${i.emoji} ${i.name} ×${i.qty}</span><span>₹${i.price * i.qty}</span></div>`).join('')}
-        <div style="border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between;font-weight:800;color:#e91e8c"><span>Total</span><span>₹${o.total}</span></div>
-      </div>
-      ${getStatusTimeline(o.status)}
-    </div>
-  `).join('') : '<div style="text-align:center;padding:60px;color:#999"><div style="font-size:4rem;margin-bottom:15px">📦</div><p>No orders yet!</p><button class="btn btn-primary" style="margin-top:15px" onclick="showClientSection(\'browse\')">Browse Cakes</button></div>';
+    `).join('');
+  } catch (error) {
+    console.error('Failed to load orders', error);
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:#e91e8c;">Unable to load your orders. Please try again.</div>';
+    showToast('Unable to load your orders.', 'error');
+  }
 }
 
 function getStatusTimeline(status) {
-  const steps = ['Pending', 'Confirmed', 'Baking', 'Delivered'];
+  const steps = ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered'];
+  if (status === 'Cancelled') return '<div style="color:#dc2626;font-weight:bold;margin-top:10px;text-align:center;">Order Cancelled</div>';
+  
   const idx = steps.indexOf(status);
   return `<div style="display:flex;gap:0;margin-top:10px">
     ${steps.map((s, i) => `
