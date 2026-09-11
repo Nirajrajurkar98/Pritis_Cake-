@@ -30,7 +30,7 @@ async function loadClientDashboard() {
     const myOrders = await api.get('/orders/my-orders');
     const mappedOrders = myOrders.map(o => ({
       ...o,
-      id: 'ORD' + o._id.substring(o._id.length - 6).toUpperCase(),
+      id: 'ORD' + String(o._id || '').substring(String(o._id || '').length - 6).toUpperCase(),
       date: new Date(o.createdAt).toLocaleDateString(),
       time: new Date(o.createdAt).toLocaleTimeString(),
       status: o.status === 'Preparing' ? 'Baking' : o.status
@@ -78,6 +78,16 @@ async function loadClientDashboard() {
 function loadBrowseCakes(filter = 'All') {
   const cakes = filter === 'All' ? DB.cakes : DB.cakes.filter(c => c.category === filter);
   const grid = document.getElementById('browseCakesGrid');
+  if (!cakes.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:#999">
+      <div style="font-size:3rem">🍰</div>
+      <p style="margin-top:15px">${window.catalogError ? 'Cakes are temporarily unavailable. Please try again later.' : 'No cakes in this category yet.'}</p>
+    </div>`;
+    document.querySelectorAll('.cat-filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.cat === filter);
+    });
+    return;
+  }
   grid.innerHTML = cakes.map(cake => `
     <div class="client-cake-card" onclick="openCakeDetail('${cake.id}')">
         <div class="client-cake-img">${cakeMedia(cake)}</div>
@@ -146,7 +156,7 @@ async function loadClientOrders() {
     const myOrders = await api.get('/orders/my-orders');
     const mappedOrders = myOrders.map(o => ({
       ...o,
-      id: 'ORD' + o._id.substring(o._id.length - 6).toUpperCase(),
+      id: 'ORD' + String(o._id || '').substring(String(o._id || '').length - 6).toUpperCase(),
       date: new Date(o.createdAt).toLocaleDateString(),
       time: new Date(o.createdAt).toLocaleTimeString(),
       status: o.status === 'Preparing' ? 'Baking' : o.status

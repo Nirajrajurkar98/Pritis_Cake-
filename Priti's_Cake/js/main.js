@@ -1,7 +1,11 @@
 // ===== DATA STORE =====
+// LocalStorage holds ONLY UI/session state. The backend is authoritative.
+//   pc_token          -> JWT session token (auth authority is the backend)
+//   pc_current_user   -> profile cache refreshed from GET /auth/profile
+//   pc_cart           -> interim cart UI state (see cart API dependency below)
+//   pc_cakes          -> read-only catalog cache mirroring GET /api/cakes
 const DB = {
   cakes: [],
-  users: JSON.parse(localStorage.getItem('pc_users') || '[]'),
   cart: JSON.parse(localStorage.getItem('pc_cart') || '[]'),
   currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
 };
@@ -10,7 +14,6 @@ const DB = {
 
 // ===== SAVE TO STORAGE =====
 function saveData() {
-  localStorage.setItem('pc_users', JSON.stringify(DB.users));
   localStorage.setItem('pc_cart', JSON.stringify(DB.cart));
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
   localStorage.setItem('pc_cakes', JSON.stringify(DB.cakes));
@@ -80,22 +83,6 @@ async function login(email, password) {
   }
 }
 
-async function register(name, email, phone, password) {
-  try {
-    const data = await api.post('/auth/register', { name, email, password });
-    if (data && data.success) {
-      // Automatically login after successful registration
-      return await login(email, password);
-    }
-    return { success: false, msg: data.message || 'Registration failed' };
-  } catch (error) {
-    if (error.status === 409 || (error.message && error.message.toLowerCase().includes('already exists'))) {
-      return { success: false, msg: 'An account with this email already exists.' };
-    }
-    return { success: false, msg: error.message || 'Unable to connect to the server. Please try again.' };
-  }
-}
-
 function logout() {
   DB.currentUser = null;
   DB.cart = [];
@@ -103,6 +90,7 @@ function logout() {
   localStorage.removeItem('pc_current_user');
   localStorage.removeItem('pc_admin');
   localStorage.removeItem('pc_cart');
+  localStorage.removeItem('pc_users'); // legacy pre-API user cache cleanup
   saveData();
   window.location.href = 'login.html';
 }
@@ -149,13 +137,33 @@ async function hydrateSession() {
 }
 
 // ===== CART =====
+// BACKEND DEPENDENCY:
+// The cart is currently LOCAL state for UI only. It is NOT authoritative.
+// Target contract (to be wired when the backend team ships it):
+//   GET    /api/cart
+//   POST   /api/cart/items            { cakeId, qty }
+//   PUT    /api/cart/items/:cakeId    { qty }
+//   DELETE /api/cart/items/:cakeId
+//   DELETE /api/cart
+// Until those endpoints exist the cart stays in localStorage (pc_cart) and
+// only product IDs + quantities are ever sent to the backend at order time.
 function addToCart(cakeId, qty = 1) {
   if (!isLoggedIn()) { showToast('Please login to add items to cart', 'error'); setTimeout(() => window.location.href = 'login.html', 1500); return; }
   const cake = DB.cakes.find(c => c.id === cakeId);
   if (!cake) return;
   const existing = DB.cart.find(i => i.cakeId === cakeId);
-  if (existing) existing.qty += qty;
-  else DB.cart.push({ cakeId, qty, name: cake.name, price: cake.price, emoji: cake.emoji, image: cake.image || '' });
+  // Item snapshot is refreshed from the catalog cache on every add so the
+  // displayed price stays current; the real price is always server-side.
+  const snapshot = { cakeId, name: cake.name, price: cake.price, emoji: cake.emoji, image: cake.image || '' };
+  if (existing) {
+    existing.qty += qty;
+    existing.name = snapshot.name;
+    existing.price = snapshot.price;
+    existing.emoji = snapshot.emoji;
+    existing.image = snapshot.image;
+  } else {
+    DB.cart.push({ ...snapshot, qty });
+  }
   saveData();
   updateCartUI();
   showToast(`${cake.name} added to cart! 🎂`, 'success');
@@ -255,7 +263,11 @@ async function placeOrder() {
       saveData();
       updateCartUI();
       toggleCart();
-      showToast('Order placed successfully! 🎂', 'success');
+      // Backend response is authoritative (server-side pricing + delivery).
+      const confirmedTotal = res.order && res.order.total;
+      showToast(confirmedTotal != null
+        ? `Order placed successfully! Total: ₹${confirmedTotal} 🎂`
+        : 'Order placed successfully! 🎂', 'success');
       
       // Attempt to refresh dashboard if we are on the dashboard page
       if (typeof loadClientDashboard === 'function') loadClientDashboard();
@@ -327,6 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadCatalog() {
+  window.catalogError = false;
   try {
     const res = await api.get('/cakes');
     if (res && Array.isArray(res)) {
@@ -334,11 +347,15 @@ async function loadCatalog() {
         cake.id = cake._id; // ID compatibility shim
         return cake;
       });
-      // Optionally save to pc_cakes for legacy modules
+      // Read-only catalog cache mirroring the backend (not authoritative)
       localStorage.setItem('pc_cakes', JSON.stringify(DB.cakes));
+    } else {
+      window.catalogError = true;
+      DB.cakes = [];
     }
   } catch (error) {
     console.error("Failed to load catalog from API:", error);
+    window.catalogError = true;
     DB.cakes = [];
     showToast("Catalog currently unavailable. Please try again later.", "error");
   }

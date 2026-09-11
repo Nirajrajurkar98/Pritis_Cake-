@@ -103,7 +103,16 @@
   let currentCakeId = null;
 
   document.addEventListener('DOMContentLoaded', async () => {
+    const grid = document.getElementById('cakesGrid');
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999"><div style="font-size:3rem">🍰</div><p style="margin-top:15px">Loading cakes...</p></div>';
+
     if (window.initPromise) await window.initPromise;
+
+    if (window.catalogError || !DB.cakes.length) {
+      renderCatalogUnavailable();
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const cat = params.get('cat');
     if (cat) {
@@ -113,6 +122,27 @@
     }
     filterCakes();
   });
+
+  function renderCatalogUnavailable() {
+    const grid = document.getElementById('cakesGrid');
+    const countEl = document.getElementById('cakeCount');
+    if (countEl) countEl.textContent = 'Catalog unavailable';
+    grid.innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:60px;color:#999">
+        <div style="font-size:4rem">⚙️</div>
+        <p style="margin-top:15px;font-size:1.1rem">Catalog is temporarily unavailable.</p>
+        <p style="margin-top:5px">Please check back in a moment.</p>
+        <button class="btn btn-primary" style="margin-top:15px" onclick="retryCatalog()">Try Again</button>
+      </div>`;
+  }
+
+  async function retryCatalog() {
+    const grid = document.getElementById('cakesGrid');
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999"><p>Retrying...</p></div>';
+    if (typeof loadCatalog === 'function') await loadCatalog();
+    if (window.catalogError || !DB.cakes.length) { renderCatalogUnavailable(); return; }
+    filterCakes();
+  }
 
   function updatePrice(val) {
     document.getElementById('priceVal').textContent = '₹' + val;

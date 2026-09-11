@@ -15,56 +15,27 @@
       <p style="color:#666;font-size:0.85rem;margin-top:8px">Welcome back! Please login to continue</p>
     </div>
 
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="loginTab" onclick="switchTab('login')">Login</div>
-      <div class="auth-tab" id="registerTab" onclick="switchTab('register')">Register</div>
-    </div>
-
     <!-- LOGIN FORM -->
     <div class="auth-form active" id="loginForm">
       <h2>Welcome Back! 👋</h2>
       <p>Login to your account to order cakes</p>
       <div class="form-group" style="margin-top:20px">
-        <label>Email Address</label>
-        <input type="email" id="loginEmail" placeholder="your@email.com">
+        <label for="loginEmail">Email Address</label>
+        <input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email" required>
       </div>
       <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="loginPassword" placeholder="Enter your password">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password" required>
       </div>
       <div class="forgot-link"><a href="#">Forgot Password?</a></div>
       <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="handleLogin()">Login →</button>
       <div class="auth-divider">or</div>
       <div style="text-align:center;margin-top:15px">
+        New here? <a href="register.html" style="color:#e91e8c;font-weight:600;text-decoration:none">Create an Account</a>
+      </div>
+      <div style="text-align:center;margin-top:15px">
         <a href="admin-login.html" style="color:#e91e8c;font-size:0.9rem;font-weight:600;text-decoration:none">🛡️ Admin Portal Login</a>
       </div>
-    </div>
-
-    <!-- REGISTER FORM -->
-    <div class="auth-form" id="registerForm">
-      <h2>Create Account 🎂</h2>
-      <p>Join us and order your favourite cakes!</p>
-      <div class="form-group" style="margin-top:20px">
-        <label>Full Name</label>
-        <input type="text" id="regName" placeholder="Your full name">
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="regEmail" placeholder="your@email.com">
-      </div>
-      <div class="form-group">
-        <label>Phone Number</label>
-        <input type="tel" id="regPhone" placeholder="+91 98765 43210">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="regPassword" placeholder="Create a password">
-      </div>
-      <div class="form-group">
-        <label>Confirm Password</label>
-        <input type="password" id="regConfirm" placeholder="Confirm your password">
-      </div>
-      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="handleRegister()">Create Account →</button>
     </div>
 
     <div style="text-align:center;margin-top:20px">
@@ -78,25 +49,43 @@
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
-  // Redirect if already logged in
-  document.addEventListener('DOMContentLoaded', () => {
-    if (isAdmin()) window.location.href = 'admin-dashboard.html';
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (window.initPromise) await window.initPromise;
 
     const params = new URLSearchParams(window.location.search);
-    if (params.get('tab') === 'register') switchTab('register');
+
+    // Registration flow: register.html -> POST /api/auth/register -> login.html
+    if (params.get('tab') === 'register') {
+      window.location.href = 'register.html';
+      return;
+    }
+    if (params.get('registered') === '1') {
+      showToast('Account created successfully! Please login. 🎉', 'success');
+      history.replaceState(null, '', 'login.html');
+    }
+
+    // Redirect if already authenticated (admin -> admin dashboard, customer -> dashboard)
+    const isAuth = isLoggedIn();
+    const admin = isAdmin();
+    if (isAuth) {
+      window.location.href = admin ? 'admin-dashboard.html' : 'client-dashboard.html';
+    }
   });
 
-  function switchTab(tab) {
-    document.getElementById('loginTab').classList.toggle('active', tab === 'login');
-    document.getElementById('registerTab').classList.toggle('active', tab === 'register');
-    document.getElementById('loginForm').classList.toggle('active', tab === 'login');
-    document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+  function showLoginError(msg) {
+    if (msg) showToast(msg, 'error');
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   }
 
   async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
-    if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
+
+    if (!email || !password) { showLoginError('Please fill all fields'); return; }
+    if (!isValidEmail(email)) { showLoginError('Please enter a valid email address'); return; }
 
     const btn = document.querySelector('#loginForm .btn-primary');
     btn.disabled = true;
@@ -104,7 +93,7 @@
     btn.innerHTML = 'Logging in...';
 
     const result = await login(email, password);
-    
+
     if (result.success) {
       showToast('Login successful! Redirecting...', 'success');
       setTimeout(() => {
@@ -115,51 +104,14 @@
         }
       }, 1000);
     } else {
-      showToast(result.msg, 'error');
+      showLoginError(result.msg);
       btn.disabled = false;
       btn.innerHTML = originalText;
     }
   }
 
-  async function handleRegister() {
-    const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const password = document.getElementById('regPassword').value;
-    const confirm = document.getElementById('regConfirm').value;
-    if (!name || !email || !password) { showToast('Please fill all required fields', 'error'); return; }
-    if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
-    if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
-    
-    const btn = document.querySelector('#registerForm .btn-primary');
-    btn.disabled = true;
-    const originalText = btn.innerHTML;
-    btn.innerHTML = 'Creating Account...';
-
-    const result = await register(name, email, phone, password);
-    
-    if (result.success) {
-      showToast('Account created! Redirecting...', 'success');
-      setTimeout(() => {
-        if (result.role === 'admin') {
-          window.location.href = 'admin-dashboard.html';
-        } else {
-          window.location.href = 'client-dashboard.html';
-        }
-      }, 1000);
-    } else {
-      showToast(result.msg, 'error');
-      btn.disabled = false;
-      btn.innerHTML = originalText;
-    }
-  }
-
-  // Enter key support
   document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') {
-      if (document.getElementById('loginForm').classList.contains('active')) handleLogin();
-      else handleRegister();
-    }
+    if (e.key === 'Enter') handleLogin();
   });
 </script>
 </body>

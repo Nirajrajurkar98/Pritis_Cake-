@@ -197,7 +197,15 @@
     if (window.initPromise) await window.initPromise;
     const featured = DB.cakes.filter(c => c.tag === 'Bestseller' || c.tag === 'Popular' || c.tag === 'Premium').slice(0, 6);
     const cakes = featured.length >= 3 ? featured : DB.cakes.slice(0, 6);
-    document.getElementById('featuredCakes').innerHTML = cakes.map(cake => `
+    const featuredEl = document.getElementById('featuredCakes');
+    if (!cakes.length) {
+      featuredEl.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:50px;color:#999">
+        <div style="font-size:3rem">🍰</div>
+        <p style="margin-top:15px">${window.catalogError ? 'Cakes are temporarily unavailable. Please check back soon!' : 'New cakes are being baked. Check back soon!'}</p>
+      </div>`;
+      return;
+    }
+    featuredEl.innerHTML = cakes.map(cake => `
       <div class="cake-card">
         <div class="cake-img">
           ${cakeMedia(cake)}
