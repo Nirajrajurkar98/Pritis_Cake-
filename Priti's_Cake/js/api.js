@@ -13,8 +13,12 @@ const api = {
     if (response.status === 401) {
       localStorage.removeItem('pc_token');
       localStorage.removeItem('pc_admin');
-      if (!window.location.pathname.includes('login.html')) {
-        window.location.href = 'admin-login.html';
+      localStorage.removeItem('pc_current_user');
+      if (!window.location.pathname.includes('login.html') &&
+          !window.location.pathname.includes('admin-login.html')) {
+        // Redirect admins back to admin login, customers to customer login
+        const isAdminPage = window.location.pathname.includes('admin-');
+        window.location.href = isAdminPage ? 'admin-login.html' : 'login.html';
       }
       const data = await response.json().catch(() => null);
       throw new Error((data && data.message) || 'Invalid credentials or session expired.');

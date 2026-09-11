@@ -88,7 +88,9 @@ function resizeImageFile(file, cb) {
 
 function logout() {
   DB.currentUser = null;
-  saveData();
+  localStorage.removeItem('pc_token');
+  localStorage.removeItem('pc_current_user');
+  localStorage.setItem('pc_orders', '[]');
   window.location.href = 'login.html';
 }
 

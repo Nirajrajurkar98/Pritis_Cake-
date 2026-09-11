@@ -1,8 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   if (!isLoggedIn() || isAdmin()) { window.location.href = 'login.html'; return; }
-  document.getElementById('clientName').textContent = DB.currentUser.name;
-  document.getElementById('clientInitial').textContent = DB.currentUser.name[0];
-  
+
+  // Set fallback from cache for instant load
+  if (DB.currentUser && DB.currentUser.name) {
+    document.getElementById('clientName').textContent = DB.currentUser.name;
+    document.getElementById('clientInitial').textContent = DB.currentUser.name[0];
+  }
+
+  // Fetch authoritative profile from backend immediately
+  loadProfile();
+
   if (isCakesLoaded || cakesError) {
     initDashboard();
   } else {
@@ -210,29 +217,78 @@ function getStatusTimeline(status) {
   </div>`;
 }
 
-function loadProfile() {
-  const u = DB.currentUser;
-  document.getElementById('profileName').textContent = u.name;
-  document.getElementById('profileEmail').textContent = u.email;
-  document.getElementById('profileInitial').textContent = u.name[0];
-  document.getElementById('editName').value = u.name;
-  document.getElementById('editEmail').value = u.email;
-  document.getElementById('editPhone').value = u.phone || '';
+async function loadProfile() {
+  const nameEl = document.getElementById('profileName');
+  const emailEl = document.getElementById('profileEmail');
+  const initEl = document.getElementById('profileInitial');
+  const editName = document.getElementById('editName');
+  const editEmail = document.getElementById('editEmail');
+  const editPhone = document.getElementById('editPhone');
+
+  if (nameEl) nameEl.textContent = 'Loading...';
+
+  try {
+    const response = await api.get('/auth/profile');
+    const profile = response.data || response;
+
+    // Update local cache for navigation/sync
+    DB.currentUser = { ...DB.currentUser, ...profile };
+    localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
+
+    if (nameEl) nameEl.textContent = profile.name;
+    if (emailEl) emailEl.textContent = profile.email;
+    if (profile.name) {
+      if (initEl) initEl.textContent = profile.name[0].toUpperCase();
+      const sidebarInit = document.getElementById('clientInitial');
+      if (sidebarInit) sidebarInit.textContent = profile.name[0].toUpperCase();
+    }
+    const sidebarName = document.getElementById('clientName');
+    if (sidebarName) sidebarName.textContent = profile.name;
+
+    if (editName) editName.value = profile.name || '';
+    if (editEmail) editEmail.value = profile.email || '';
+    if (editPhone) editPhone.value = profile.phone || '';
+  } catch (error) {
+    console.error('Failed to load profile', error);
+    if (nameEl) nameEl.textContent = 'Error loading profile';
+    showToast(error.message || 'Unable to load profile data', 'error');
+  }
 }
 
-function saveProfile() {
+async function saveProfile() {
   const name = document.getElementById('editName').value.trim();
   const phone = document.getElementById('editPhone').value.trim();
+  const password = document.getElementById('editPassword') ? document.getElementById('editPassword').value : '';
+
   if (!name) { showToast('Name is required', 'error'); return; }
-  const userIdx = DB.users.findIndex(u => u.id === DB.currentUser.id);
-  if (userIdx !== -1) { DB.users[userIdx].name = name; DB.users[userIdx].phone = phone; }
-  DB.currentUser.name = name;
-  DB.currentUser.phone = phone;
-  saveData();
-  document.getElementById('clientName').textContent = name;
-  document.getElementById('clientInitial').textContent = name[0];
-  loadProfile();
-  showToast('Profile updated! ✅', 'success');
+
+  const btn = document.querySelector('#csec-profile button.btn-primary');
+  const originalText = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = 'Saving...'; btn.disabled = true; }
+
+  try {
+    const payload = { name, phone };
+    if (password) payload.password = password;
+
+    const response = await api.put('/auth/profile', payload);
+    const updatedUser = response.data || response;
+
+    DB.currentUser = { ...DB.currentUser, ...updatedUser };
+    localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
+
+    document.getElementById('clientName').textContent = updatedUser.name;
+    document.getElementById('clientInitial').textContent = updatedUser.name[0].toUpperCase();
+
+    await loadProfile();
+    if (document.getElementById('editPassword')) document.getElementById('editPassword').value = '';
+
+    showToast('Profile updated!', 'success');
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    showToast(error.message || 'Failed to update profile', 'error');
+  } finally {
+    if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
+  }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('active'); }
