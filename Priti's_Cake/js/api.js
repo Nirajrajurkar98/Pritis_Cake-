@@ -26,79 +26,42 @@ const api = {
     return data;
   },
 
-  get: async (endpoint) => {
+  // Centralized request helper — every API call flows through here so the
+  // authorization header, base URL and JSON handling stay in one place.
+  // The Node.js/Express backend is the source of truth: the frontend only
+  // sends the data the API contract asks for, never stitched-up responses.
+  request: async (method, endpoint, options = {}) => {
+    const { data, isMultipart } = options;
+    const config = {
+      method,
+      headers: api.getHeaders(isMultipart)
+    };
+    if (data !== undefined && !isMultipart) config.body = JSON.stringify(data);
+    else if (data !== undefined) config.body = data;
+
     try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'GET',
-        headers: api.getHeaders()
-      });
+      const response = await fetch(`${API_URL}${endpoint}`, config);
       return await api.handleResponse(response);
     } catch (err) {
+      if (err instanceof TypeError) {
+        const networkError = new Error('Unable to connect to the server. Please check your connection and try again.');
+        networkError.status = 0;
+        networkError.isNetworkError = true;
+        throw networkError;
+      }
       throw err;
     }
   },
 
-  post: async (endpoint, data) => {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: api.getHeaders(),
-        body: JSON.stringify(data)
-      });
-      return await api.handleResponse(response);
-    } catch (err) {
-      throw err;
-    }
-  },
+  get: async (endpoint) => api.request('GET', endpoint),
 
-  postMultipart: async (endpoint, formData) => {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: api.getHeaders(true),
-        body: formData
-      });
-      return await api.handleResponse(response);
-    } catch (err) {
-      throw err;
-    }
-  },
+  post: async (endpoint, data) => api.request('POST', endpoint, { data }),
 
-  put: async (endpoint, data) => {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'PUT',
-        headers: api.getHeaders(),
-        body: JSON.stringify(data)
-      });
-      return await api.handleResponse(response);
-    } catch (err) {
-      throw err;
-    }
-  },
+  postMultipart: async (endpoint, formData) => api.request('POST', endpoint, { data: formData, isMultipart: true }),
 
-  putMultipart: async (endpoint, formData) => {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'PUT',
-        headers: api.getHeaders(true),
-        body: formData
-      });
-      return await api.handleResponse(response);
-    } catch (err) {
-      throw err;
-    }
-  },
+  put: async (endpoint, data) => api.request('PUT', endpoint, { data }),
 
-  delete: async (endpoint) => {
-    try {
-      const response = await fetch(`${API_URL}${endpoint}`, {
-        method: 'DELETE',
-        headers: api.getHeaders()
-      });
-      return await api.handleResponse(response);
-    } catch (err) {
-      throw err;
-    }
-  }
+  putMultipart: async (endpoint, formData) => api.request('PUT', endpoint, { data: formData, isMultipart: true }),
+
+  delete: async (endpoint) => api.request('DELETE', endpoint)
 };

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - Priti's Cake</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-logo">
+      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+      <p style="color:#666;font-size:0.85rem;margin-top:8px">Join us and order your favourite cakes!</p>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-form active" id="registerForm">
+      <h2>Create Account 🎂</h2>
+      <p>Register to start ordering fresh, handcrafted cakes</p>
+
+      <div class="form-group" style="margin-top:20px">
+        <label for="regName">Full Name</label>
+        <input type="text" id="regName" placeholder="Your full name" autocomplete="name" required>
+      </div>
+      <div class="form-group">
+        <label for="regEmail">Email Address</label>
+        <input type="email" id="regEmail" placeholder="your@email.com" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label for="regPassword">Password</label>
+        <input type="password" id="regPassword" placeholder="Create a password (min 6 characters)" autocomplete="new-password" minlength="6" required>
+      </div>
+      <div class="form-group">
+        <label for="regConfirm">Confirm Password</label>
+        <input type="password" id="regConfirm" placeholder="Confirm your password" autocomplete="new-password" minlength="6" required>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="handleRegister()">Create Account →</button>
+
+      <div style="text-align:center;margin-top:15px;font-size:0.9rem">
+        Already have an account? <a href="login.html" style="color:#e91e8c;font-weight:600;text-decoration:none">Login</a>
+      </div>
+      <div style="text-align:center;margin-top:15px">
+        <a href="admin-login.html" style="color:#e91e8c;font-size:0.9rem;font-weight:600;text-decoration:none">🛡️ Admin Portal Login</a>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:20px">
+      <a href="index.html" style="color:#e91e8c;font-size:0.85rem;text-decoration:none">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/api.js"></script>
+<script>
+  // Registration is handled directly against POST /api/auth/register.
+  // The backend is authoritative — the frontend only validates for UX and
+  // stores nothing here; after success the user logs in to receive the JWT.
+  function showToast(msg, type = '') {
+    let toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = `toast ${type}`;
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  async function handleRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    const confirm = document.getElementById('regConfirm').value;
+
+    if (!name || !email || !password || !confirm) { showToast('Please fill all fields', 'error'); return; }
+    if (!isValidEmail(email)) { showToast('Please enter a valid email address', 'error'); return; }
+    if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+    if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
+
+    const btn = document.querySelector('#registerForm .btn-primary');
+    btn.disabled = true;
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Creating Account...';
+
+    try {
+      const data = await api.post('/auth/register', { name, email, password });
+      if (data && data.success) {
+        showToast('Account created successfully! Redirecting to login...', 'success');
+        setTimeout(() => { window.location.href = 'login.html?registered=1'; }, 1200);
+      } else {
+        showToast((data && data.message) || 'Registration failed. Please try again.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    } catch (err) {
+      if (err.status === 409 || (err.message && err.message.toLowerCase().includes('already exists'))) {
+        showToast('An account with this email already exists. Please login.', 'error');
+      } else {
+        showToast(err.message || 'Unable to connect to the server. Please try again.', 'error');
+      }
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleRegister();
+  });
+</script>
+</body>
+</html>
