@@ -1,20 +1,7 @@
 // ===== DATA STORE =====
 const DB = {
-  cakes: [
-    { id: 1, name: "Strawberry Dream", category: "Birthday", price: 850, emoji: "", desc: "Layers of vanilla sponge with fresh strawberry cream and glazed strawberries on top.", rating: 4.9, reviews: 128, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Bestseller" },
-    { id: 2, name: "Chocolate Fudge", category: "Birthday", price: 950, emoji: "", desc: "Rich dark chocolate cake with fudge frosting and chocolate ganache drizzle.", rating: 4.8, reviews: 95, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Popular" },
-    { id: 3, name: "Royal Wedding Cake", category: "Wedding", price: 4500, emoji: "", desc: "Elegant 3-tier white fondant cake with floral decorations, perfect for your special day.", rating: 5.0, reviews: 42, weight: "3 kg", time: "1-2 days", serves: "30-40", tag: "Premium" },
-    { id: 4, name: "Mango Delight", category: "Seasonal", price: 780, emoji: "", desc: "Fresh mango mousse cake with mango jelly layers and whipped cream.", rating: 4.7, reviews: 67, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Seasonal" },
-    { id: 5, name: "Red Velvet", category: "Birthday", price: 900, emoji: "", desc: "Classic red velvet with cream cheese frosting, moist and velvety texture.", rating: 4.9, reviews: 112, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "Classic" },
-    { id: 6, name: "Unicorn Fantasy", category: "Kids", price: 1200, emoji: "", desc: "Colorful rainbow layers with unicorn horn decoration, kids absolutely love it!", rating: 4.8, reviews: 88, weight: "1.5 kg", time: "3-4 hrs", serves: "12-15", tag: "Kids Fav" },
-    { id: 7, name: "Black Forest", category: "Birthday", price: 820, emoji: "", desc: "German classic with chocolate sponge, whipped cream and cherries.", rating: 4.6, reviews: 74, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 8, name: "Butterscotch Bliss", category: "Anniversary", price: 880, emoji: "", desc: "Soft butterscotch cake with caramel drizzle and crunchy praline topping.", rating: 4.7, reviews: 56, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 9, name: "Pineapple Fresh", category: "Birthday", price: 750, emoji: "", desc: "Light pineapple sponge with fresh cream and pineapple chunks.", rating: 4.5, reviews: 49, weight: "1 kg", time: "2-3 hrs", serves: "8-10", tag: "" },
-    { id: 10, name: "Custom Photo Cake", category: "Custom", price: 1500, emoji: "", desc: "Personalized cake with edible photo print. Send us your photo and we'll create magic!", rating: 4.9, reviews: 203, weight: "1.5 kg", time: "1 day", serves: "12-15", tag: "Custom" },
-    { id: 11, name: "Blueberry Cheesecake", category: "Anniversary", price: 1100, emoji: "", desc: "New York style cheesecake with fresh blueberry compote topping.", rating: 4.8, reviews: 61, weight: "1 kg", time: "4-5 hrs", serves: "8-10", tag: "" },
-    { id: 12, name: "Truffle Royale", category: "Wedding", price: 2200, emoji: "", desc: "Luxurious chocolate truffle cake with gold leaf decoration for premium occasions.", rating: 5.0, reviews: 38, weight: "2 kg", time: "1 day", serves: "20-25", tag: "Luxury" }
-  ],
-  users: JSON.parse(localStorage.getItem('pc_users') || '[]'),
+  cakes: [],
+  users: [],
   orders: JSON.parse(localStorage.getItem('pc_orders') || '[]'),
   cart: JSON.parse(localStorage.getItem('pc_cart') || '[]'),
   currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
@@ -24,16 +11,43 @@ const DB = {
 
 // ===== SAVE TO STORAGE =====
 function saveData() {
-  localStorage.setItem('pc_users', JSON.stringify(DB.users));
   localStorage.setItem('pc_orders', JSON.stringify(DB.orders));
   localStorage.setItem('pc_cart', JSON.stringify(DB.cart));
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
-  localStorage.setItem('pc_cakes', JSON.stringify(DB.cakes));
 }
 
-// Load cakes from storage if admin modified them
-const storedCakes = localStorage.getItem('pc_cakes');
-if (storedCakes) DB.cakes = JSON.parse(storedCakes);
+// ===== LOAD CAKES FROM API =====
+let isCakesLoaded = false;
+let cakesError = false;
+
+async function loadCakesFromAPI() {
+  try {
+    let data;
+    // Fallback to fetch if api.js is not loaded
+    if (typeof api !== 'undefined' && api.get) {
+      data = await api.get('/cakes');
+    } else {
+      const response = await fetch('http://localhost:5000/api/cakes');
+      if (!response.ok) throw new Error('Failed to load cakes');
+      data = await response.json();
+    }
+    
+    // Convert _id to id so we don't break existing frontend code
+    DB.cakes = data.map(cake => ({
+      ...cake,
+      id: cake._id,
+      // Fix relative image paths if necessary
+      image: cake.image ? (cake.image.startsWith('http') ? cake.image : `http://localhost:5000${cake.image}`) : ''
+    }));
+    
+    isCakesLoaded = true;
+    window.dispatchEvent(new Event('cakesLoaded'));
+  } catch (error) {
+    console.error(error);
+    cakesError = true;
+    window.dispatchEvent(new Event('cakesError'));
+  }
+}
 
 // ===== IMAGE HELPERS =====
 // Returns the inner HTML for a cake's visual (real image or emoji fallback)
@@ -68,26 +82,9 @@ function resizeImageFile(file, cb) {
 }
 
 // ===== AUTH =====
-function login(email, password) {
-  // Admin login is now handled via API.
-  // This function is for customer local fallback only.
-  const user = DB.users.find(u => u.email === email && u.password === password);
-  if (user) {
-    DB.currentUser = { ...user, role: 'client' };
-    saveData();
-    return { success: true, role: 'client' };
-  }
-  return { success: false, msg: 'Invalid email or password' };
-}
+// Login is now handled via API directly in login.html
 
-function register(name, email, phone, password) {
-  if (DB.users.find(u => u.email === email)) return { success: false, msg: 'Email already registered' };
-  const user = { id: Date.now(), name, email, phone, password, joinDate: new Date().toLocaleDateString() };
-  DB.users.push(user);
-  DB.currentUser = { ...user, role: 'client' };
-  saveData();
-  return { success: true };
-}
+// Registration is now handled via API directly in login.html
 
 function logout() {
   DB.currentUser = null;
@@ -149,7 +146,7 @@ function renderCartItems() {
         <div class="price">₹${item.price} × ${item.qty}</div>
         <div style="font-weight:700;color:#e91e8c">₹${item.price * item.qty}</div>
       </div>
-      <button class="cart-item-remove" onclick="removeFromCart(${item.cakeId})">✕</button>
+      <button class="cart-item-remove" onclick="removeFromCart('${item.cakeId}')">✕</button>
     </div>
   `).join('');
   const subtotal = getCartTotal();
@@ -227,4 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateNavAuth();
   const hamburger = document.getElementById('hamburger');
   if (hamburger) hamburger.addEventListener('click', toggleMobileNav);
+  
+  // Start loading cakes for storefront
+  loadCakesFromAPI();
 });

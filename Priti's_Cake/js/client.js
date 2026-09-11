@@ -2,9 +2,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!isLoggedIn() || isAdmin()) { window.location.href = 'login.html'; return; }
   document.getElementById('clientName').textContent = DB.currentUser.name;
   document.getElementById('clientInitial').textContent = DB.currentUser.name[0];
+  
+  if (isCakesLoaded || cakesError) {
+    initDashboard();
+  } else {
+    window.addEventListener('cakesLoaded', initDashboard);
+    window.addEventListener('cakesError', initDashboard);
+  }
+});
+
+function initDashboard() {
   loadClientDashboard();
   showClientSection('overview');
-});
+}
 
 function showClientSection(id) {
   document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
@@ -50,7 +60,7 @@ function loadClientDashboard() {
   const featGrid = document.getElementById('featuredCakesGrid');
   if (featGrid) {
     featGrid.innerHTML = DB.cakes.slice(0, 4).map(cake => `
-      <div class="client-cake-card" onclick="openCakeDetail(${cake.id})">
+      <div class="client-cake-card" onclick="openCakeDetail('${cake.id}')">
         <div class="client-cake-img">${cakeMedia(cake)}</div>
         <div class="client-cake-info">
           <h4>${cake.name}</h4>
@@ -62,22 +72,38 @@ function loadClientDashboard() {
 }
 
 function loadBrowseCakes(filter = 'All') {
-  const cakes = filter === 'All' ? DB.cakes : DB.cakes.filter(c => c.category === filter);
   const grid = document.getElementById('browseCakesGrid');
-  grid.innerHTML = cakes.map(cake => `
-    <div class="client-cake-card" onclick="openCakeDetail(${cake.id})">
-        <div class="client-cake-img">${cakeMedia(cake)}</div>
-        <div class="client-cake-info">
-          <h4>${cake.name}</h4>
-          <div style="font-size:0.75rem;color:#999;margin-bottom:5px">${cake.category}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="price">₹${cake.price}</div>
-          <div style="font-size:0.75rem;color:#ffa500">⭐ ${cake.rating}</div>
+  
+  if (cakesError) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:#e91e8c;grid-column:1/-1">Unable to load cakes. Please try again.</div>';
+    return;
+  }
+  
+  if (DB.cakes.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:#999;grid-column:1/-1">No cakes are available at the moment.</div>';
+    return;
+  }
+
+  const cakes = filter === 'All' ? DB.cakes : DB.cakes.filter(c => c.category === filter);
+  
+  if (cakes.length === 0) {
+    grid.innerHTML = '<div style="text-align:center;padding:40px;color:#999;grid-column:1/-1">No cakes found for this category.</div>';
+  } else {
+    grid.innerHTML = cakes.map(cake => `
+      <div class="client-cake-card" onclick="openCakeDetail('${cake.id}')">
+          <div class="client-cake-img">${cakeMedia(cake)}</div>
+          <div class="client-cake-info">
+            <h4>${cake.name}</h4>
+            <div style="font-size:0.75rem;color:#999;margin-bottom:5px">${cake.category}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="price">₹${cake.price}</div>
+            <div style="font-size:0.75rem;color:#ffa500">⭐ ${cake.rating || 0}</div>
+          </div>
+          <button class="btn btn-primary" style="width:100%;margin-top:10px;padding:8px;font-size:0.85rem" onclick="event.stopPropagation();addToCartClient('${cake.id}')">Add to Cart 🛒</button>
         </div>
-        <button class="btn btn-primary" style="width:100%;margin-top:10px;padding:8px;font-size:0.85rem" onclick="event.stopPropagation();addToCartClient(${cake.id})">Add to Cart 🛒</button>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+  }
 
   // Update filter buttons
   document.querySelectorAll('.cat-filter-btn').forEach(btn => {
@@ -96,12 +122,12 @@ function openCakeDetail(id) {
     <div style="height:180px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:6rem;margin-bottom:20px;overflow:hidden">${cakeMedia(cake)}</div>
     <h2>${cake.name}</h2>
     <div style="font-size:1.8rem;font-weight:800;color:#e91e8c;margin:10px 0">₹${cake.price}</div>
-    <p style="color:#666;line-height:1.7;margin-bottom:20px">${cake.desc}</p>
+    <p style="color:#666;line-height:1.7;margin-bottom:20px">${cake.desc || ''}</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Weight</span><p style="font-weight:600">${cake.weight}</p></div>
-      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Serves</span><p style="font-weight:600">${cake.serves}</p></div>
-      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Prep Time</span><p style="font-weight:600">${cake.time}</p></div>
-      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Rating</span><p style="font-weight:600">⭐ ${cake.rating} (${cake.reviews})</p></div>
+      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Weight</span><p style="font-weight:600">${cake.weight || '-'}</p></div>
+      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Serves</span><p style="font-weight:600">${cake.serves || '-'}</p></div>
+      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Prep Time</span><p style="font-weight:600">${cake.time || '-'}</p></div>
+      <div style="background:#fff0f8;padding:12px;border-radius:10px"><span style="font-size:0.75rem;color:#999">Rating</span><p style="font-weight:600">⭐ ${cake.rating || 0} (${cake.reviews || 0})</p></div>
     </div>
     <div style="display:flex;align-items:center;gap:15px;margin-bottom:20px">
       <span style="font-weight:600">Quantity:</span>
@@ -109,7 +135,7 @@ function openCakeDetail(id) {
       <span class="qty-num" id="detailQty">1</span>
       <button class="qty-btn" onclick="changeQty(1)">+</button>
     </div>
-    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="addToCartFromDetail(${cake.id})">Add to Cart 🛒</button>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="addToCartFromDetail('${cake.id}')">Add to Cart 🛒</button>
   `;
   openModal('cakeDetailModal');
 }

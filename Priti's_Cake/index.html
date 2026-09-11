@@ -189,13 +189,27 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
   // Load featured cakes
-  document.addEventListener('DOMContentLoaded', () => {
+  function renderFeaturedCakes() {
+    const container = document.getElementById('featuredCakes');
+    
+    if (cakesError) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e91e8c">Unable to load cakes. Please try again.</div>';
+      return;
+    }
+    
+    if (DB.cakes.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999">No cakes are available at the moment.</div>';
+      return;
+    }
+
     const featured = DB.cakes.filter(c => c.tag === 'Bestseller' || c.tag === 'Popular' || c.tag === 'Premium').slice(0, 6);
     const cakes = featured.length >= 3 ? featured : DB.cakes.slice(0, 6);
-    document.getElementById('featuredCakes').innerHTML = cakes.map(cake => `
+    
+    container.innerHTML = cakes.map(cake => `
       <div class="cake-card">
         <div class="cake-img">
           ${cakeMedia(cake)}
@@ -203,15 +217,25 @@
         </div>
         <div class="cake-info">
           <h3>${cake.name}</h3>
-          <p>${cake.desc.substring(0, 80)}...</p>
+          <p>${cake.desc ? cake.desc.substring(0, 80) + '...' : ''}</p>
           <div class="cake-footer">
             <span class="price">₹${cake.price}</span>
-            <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
+            <span class="rating">⭐ ${cake.rating || 0} (${cake.reviews || 0})</span>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart(${cake.id})">Add to Cart 🛒</button>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart('${cake.id}')">Add to Cart 🛒</button>
         </div>
       </div>
     `).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('featuredCakes').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999">Loading cakes...</div>';
+    if (isCakesLoaded || cakesError) {
+      renderFeaturedCakes();
+    } else {
+      window.addEventListener('cakesLoaded', renderFeaturedCakes);
+      window.addEventListener('cakesError', renderFeaturedCakes);
+    }
   });
 </script>
 </body>

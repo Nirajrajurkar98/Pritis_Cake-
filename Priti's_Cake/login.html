@@ -93,35 +93,67 @@
     document.getElementById('registerForm').classList.toggle('active', tab === 'register');
   }
 
-  function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
     if (!email || !password) { showToast('Please fill all fields', 'error'); return; }
 
-    const result = login(email, password);
-    if (result.success) {
+    const btn = document.querySelector('#loginForm button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Logging in...';
+    btn.disabled = true;
+
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      
+      // Store token
+      localStorage.setItem('pc_token', response.token);
+      
+      // Store user
+      const user = response.user || response.data || response;
+      
+      // Keep DB.currentUser updated so existing customer UI works
+      DB.currentUser = { ...user, role: 'client' };
+      localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
+      
       showToast('Login successful! Redirecting...', 'success');
       setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
-    } else {
-      showToast('Invalid email or password', 'error');
+    } catch (error) {
+      showToast(error.message || 'Invalid email or password', 'error');
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     }
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     const name = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
+    
     if (!name || !email || !password) { showToast('Please fill all required fields', 'error'); return; }
     if (password !== confirm) { showToast('Passwords do not match', 'error'); return; }
     if (password.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
-    const result = register(name, email, phone, password);
-    if (result.success) {
-      showToast('Account created! Redirecting...', 'success');
-      setTimeout(() => window.location.href = 'client-dashboard.html', 1000);
-    } else {
-      showToast(result.msg, 'error');
+    
+    const btn = document.querySelector('#registerForm button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = 'Creating Account...';
+    btn.disabled = true;
+
+    try {
+      const response = await api.post('/auth/register', { name, email, phone, password });
+      showToast('Account created successfully!', 'success');
+      
+      // The existing flow redirected to the dashboard, but since we haven't implemented login API yet,
+      // redirecting to login tab makes more sense for now.
+      setTimeout(() => switchTab('login'), 1500);
+    } catch (error) {
+      showToast(error.message || 'Registration failed', 'error');
+    } finally {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
     }
   }
 

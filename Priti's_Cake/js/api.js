@@ -13,8 +13,11 @@ const api = {
     if (response.status === 401) {
       localStorage.removeItem('pc_token');
       localStorage.removeItem('pc_admin');
-      window.location.href = 'admin-login.html';
-      throw new Error('Session expired. Please login again.');
+      if (!window.location.pathname.includes('login.html')) {
+        window.location.href = 'admin-login.html';
+      }
+      const data = await response.json().catch(() => null);
+      throw new Error((data && data.message) || 'Invalid credentials or session expired.');
     }
     
     const data = await response.json().catch(() => null);

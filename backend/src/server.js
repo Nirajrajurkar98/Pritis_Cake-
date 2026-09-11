@@ -12,6 +12,8 @@ const cakeRoutes = require('./routes/cake.routes');
 const orderRoutes = require('./routes/order.routes');
 const customerRoutes = require('./routes/customer.routes');
 const settingsRoutes = require('./routes/settings.routes');
+const publicCakeRoutes = require('./routes/cake.public.routes');
+const customerOrderRoutes = require('./routes/order.customer.routes');
 
 // Load environment variables
 dotenv.config();
@@ -55,6 +57,8 @@ app.use(cors({
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/cakes', publicCakeRoutes);
+app.use('/api/orders', customerOrderRoutes);
 app.use('/api/admin/cakes', cakeRoutes);
 app.use('/api/admin/orders', orderRoutes);
 app.use('/api/admin/customers', customerRoutes);

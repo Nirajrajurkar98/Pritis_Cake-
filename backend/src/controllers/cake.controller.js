@@ -189,10 +189,49 @@ const deleteCake = async (req, res, next) => {
   }
 };
 
+// @desc    Get all cakes for public storefront
+// @route   GET /api/cakes
+// @access  Public
+const getPublicCakes = async (req, res, next) => {
+  try {
+    const cakes = await Cake.find({}).select('name category price emoji image desc rating reviews weight time serves tag');
+    res.status(200).json(cakes);
+  } catch (error) {
+    console.error(`Error fetching public cakes: ${error.message}`);
+    next(error);
+  }
+};
+
+// @desc    Get single cake for public storefront
+// @route   GET /api/cakes/:id
+// @access  Public
+const getPublicCakeById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid cake ID' });
+    }
+
+    const cake = await Cake.findById(id).select('name category price emoji image desc rating reviews weight time serves tag');
+
+    if (!cake) {
+      return res.status(404).json({ success: false, message: 'Cake not found' });
+    }
+
+    res.status(200).json(cake);
+  } catch (error) {
+    console.error(`Error fetching public cake: ${error.message}`);
+    next(error);
+  }
+};
+
 module.exports = {
   createCake,
   getCakes,
   getCakeById,
   updateCake,
-  deleteCake
+  deleteCake,
+  getPublicCakes,
+  getPublicCakeById
 };

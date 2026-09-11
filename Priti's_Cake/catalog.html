@@ -96,6 +96,7 @@
 
 <div id="toast" class="toast"></div>
 
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
   let currentQty = 1;
@@ -109,7 +110,16 @@
       const el = document.getElementById('cat' + cat);
       if (el) el.checked = true;
     }
-    filterCakes();
+    
+    document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999">Loading cakes...</div>';
+    document.getElementById('cakeCount').textContent = 'Loading...';
+
+    if (isCakesLoaded || cakesError) {
+      filterCakes();
+    } else {
+      window.addEventListener('cakesLoaded', filterCakes);
+      window.addEventListener('cakesError', filterCakes);
+    }
   });
 
   function updatePrice(val) {
@@ -118,6 +128,18 @@
   }
 
   function filterCakes() {
+    if (cakesError) {
+      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e91e8c">Unable to load cakes. Please try again.</div>';
+      document.getElementById('cakeCount').textContent = 'Error';
+      return;
+    }
+    
+    if (DB.cakes.length === 0) {
+      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999">No cakes are available at the moment.</div>';
+      document.getElementById('cakeCount').textContent = '0 cakes';
+      return;
+    }
+
     const allChecked = document.getElementById('catAll').checked;
     const cats = ['Birthday','Wedding','Anniversary','Kids','Custom','Seasonal'].filter(c => document.getElementById('cat'+c)?.checked);
     const maxPrice = parseInt(document.getElementById('priceRange').value);
@@ -158,20 +180,20 @@
     }
     grid.innerHTML = cakes.map(cake => `
       <div class="cake-card">
-        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal(${cake.id})">
+        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal('${cake.id}')">
           ${cakeMedia(cake)}
           ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
         </div>
         <div class="cake-info">
           <h3>${cake.name}</h3>
-          <p>${cake.desc.substring(0,80)}...</p>
+          <p>${cake.desc ? cake.desc.substring(0,80) + '...' : ''}</p>
           <div class="cake-footer">
             <span class="price">₹${cake.price}</span>
-            <span class="rating">⭐ ${cake.rating} (${cake.reviews})</span>
+            <span class="rating">⭐ ${cake.rating || 0} (${cake.reviews || 0})</span>
           </div>
           <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal(${cake.id})">Details</button>
-            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart(${cake.id})">🛒 Add</button>
+            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal('${cake.id}')">Details</button>
+            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart('${cake.id}')">🛒 Add</button>
           </div>
         </div>
       </div>
