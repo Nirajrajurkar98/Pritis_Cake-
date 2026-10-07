@@ -147,7 +147,13 @@ function renderCartItems() {
       </div>
       <button class="cart-item-remove" onclick="removeFromCart('${item.cakeId}')">✕</button>
     </div>
-  `).join('');
+  `).join('') + `
+    <div class="cart-delivery-form" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
+      <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Delivery Details</h4>
+      <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" style="width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" required>
+      <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 70px; font-family: inherit;" required></textarea>
+    </div>
+  `;
   const subtotal = getCartTotal();
   const delivery = subtotal > 0 ? 50 : 0;
   document.getElementById('cartSubtotal').textContent = `₹${subtotal}`;
@@ -169,6 +175,24 @@ async function placeOrder(e) {
     return false;
   }
 
+  const phoneEl = document.getElementById('checkoutPhone');
+  const addressEl = document.getElementById('checkoutAddress');
+  
+  const phone = phoneEl ? phoneEl.value.trim() : '';
+  const deliveryAddress = addressEl ? addressEl.value.trim() : '';
+
+  if (!phone || phone.length < 8) {
+    showToast('Please provide a valid phone number', 'error');
+    if (phoneEl) phoneEl.focus();
+    return false;
+  }
+  
+  if (!deliveryAddress) {
+    showToast('Please provide a delivery address', 'error');
+    if (addressEl) addressEl.focus();
+    return false;
+  }
+
   const btn = e ? (e.currentTarget || e.target) : null;
   let originalText = '';
   if (btn) {
@@ -179,6 +203,8 @@ async function placeOrder(e) {
 
   try {
     const payload = {
+      phone: phone,
+      deliveryAddress: deliveryAddress,
       items: DB.cart.map(item => ({
         cakeId: item.cakeId,
         qty: item.qty

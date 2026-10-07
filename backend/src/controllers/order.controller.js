@@ -82,14 +82,30 @@ const updateOrderStatus = async (req, res, next) => {
 // @access  Private
 const createCustomerOrder = async (req, res, next) => {
   try {
-    const { items } = req.body;
+    const { items, phone, deliveryAddress } = req.body;
 
     if (!items || items.length === 0) {
       return res.status(400).json({ success: false, message: 'No order items' });
     }
 
+    if (!phone || typeof phone !== 'string' || phone.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Phone number is required' });
+    }
+    const cleanPhone = phone.trim();
+    if (cleanPhone.length < 8 || cleanPhone.length > 15 || !/^[0-9+\-\s()]+$/.test(cleanPhone)) {
+      return res.status(400).json({ success: false, message: 'Invalid phone number format' });
+    }
+
+    if (!deliveryAddress || typeof deliveryAddress !== 'string' || deliveryAddress.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Delivery address is required' });
+    }
+    const cleanAddress = deliveryAddress.trim();
+    if (cleanAddress.length > 500) {
+      return res.status(400).json({ success: false, message: 'Delivery address is too long' });
+    }
+
     const orderItems = [];
-    let total = 0;
+    let subtotal = 0;
 
     for (const item of items) {
       if (!item.cakeId || !mongoose.Types.ObjectId.isValid(item.cakeId)) {
@@ -115,22 +131,20 @@ const createCustomerOrder = async (req, res, next) => {
         image: cake.image
       });
 
-      total += (cake.price * qty);
+      subtotal += (cake.price * qty);
     }
     
-    // Add delivery charge if that's standard, wait, the frontend adds 50 for delivery.
-    // Let's check `main.js`: `const delivery = subtotal > 0 ? 50 : 0;` and `getCartTotal() + 50`
-    // Wait, the prompt says "Calculate the order total on the server from the current database prices."
-    // Does the schema have a delivery charge field? No. It just has `total`.
-    // I should add the 50 delivery fee as it's hardcoded in the frontend. 
-    // Wait, let's keep it exact: `total += 50;` (since delivery fee is standard 50 if order exists).
-    total += 50;
+    const deliveryCharge = 50;
+    const total = subtotal + deliveryCharge;
 
     const order = new Order({
       user: req.user._id,
       userName: req.user.name,
       userEmail: req.user.email,
+      phone: cleanPhone,
+      deliveryAddress: cleanAddress,
       items: orderItems,
+      deliveryCharge: deliveryCharge,
       total: total,
       status: 'Pending'
     });

@@ -189,7 +189,12 @@ async function loadClientOrders() {
         </div>
         <div style="margin:15px 0;padding:15px;background:#f8f9fa;border-radius:10px">
           ${o.items.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem"><span>${i.emoji || '🎂'} ${i.name} ×${i.qty}</span><span>₹${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem;color:#666"><span>Delivery Charge</span><span>₹${o.deliveryCharge || 50}</span></div>
           <div style="border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between;font-weight:800;color:#e91e8c"><span>Total</span><span>₹${o.total.toLocaleString()}</span></div>
+          ${o.deliveryAddress ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;font-size:0.85rem;color:#555">
+            <strong>Delivery Address:</strong><br/>${o.deliveryAddress}<br/>
+            <strong>Phone:</strong> ${o.phone}
+          </div>` : ''}
         </div>
         ${getStatusTimeline(o.status)}
       </div>
