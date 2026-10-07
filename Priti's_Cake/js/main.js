@@ -2,7 +2,6 @@
 const DB = {
   cakes: [],
   users: [],
-  orders: JSON.parse(localStorage.getItem('pc_orders') || '[]'),
   cart: JSON.parse(localStorage.getItem('pc_cart') || '[]'),
   currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
 };
@@ -11,7 +10,6 @@ const DB = {
 
 // ===== SAVE TO STORAGE =====
 function saveData() {
-  localStorage.setItem('pc_orders', JSON.stringify(DB.orders));
   localStorage.setItem('pc_cart', JSON.stringify(DB.cart));
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
 }
@@ -90,7 +88,6 @@ function logout() {
   DB.currentUser = null;
   localStorage.removeItem('pc_token');
   localStorage.removeItem('pc_current_user');
-  localStorage.setItem('pc_orders', '[]');
   window.location.href = 'login.html';
 }
 
