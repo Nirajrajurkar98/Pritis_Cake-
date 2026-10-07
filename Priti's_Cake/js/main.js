@@ -117,6 +117,17 @@ function removeFromCart(cakeId) {
   updateCartUI();
 }
 
+function updateCartItemQty(cakeId, delta) {
+  const item = DB.cart.find(i => i.cakeId === cakeId);
+  if (!item) return;
+  const newQty = item.qty + delta;
+  if (newQty >= 1) {
+    item.qty = newQty;
+    saveData();
+    updateCartUI();
+  }
+}
+
 function getCartTotal() { return DB.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); }
 function getCartCount() { return DB.cart.reduce((sum, i) => sum + i.qty, 0); }
 
@@ -142,8 +153,15 @@ function renderCartItems() {
       <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}">` : item.emoji}</div>
       <div class="cart-item-info">
         <h4>${item.name}</h4>
-        <div class="price">₹${item.price} × ${item.qty}</div>
-        <div style="font-weight:700;color:#e91e8c">₹${item.price * item.qty}</div>
+        <div class="price">₹${item.price}</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
+          <div style="display:flex; align-items:center; border:1px solid #ddd; border-radius:4px; overflow:hidden;">
+            <button onclick="updateCartItemQty('${item.cakeId}', -1)" style="padding:2px 10px; background:#f8f9fa; border:none; border-right:1px solid #ddd; cursor:pointer;" aria-label="Decrease quantity">−</button>
+            <span style="padding:2px 12px; font-size:0.9rem; min-width:1ch; text-align:center;">${item.qty}</span>
+            <button onclick="updateCartItemQty('${item.cakeId}', 1)" style="padding:2px 10px; background:#f8f9fa; border:none; border-left:1px solid #ddd; cursor:pointer;" aria-label="Increase quantity">+</button>
+          </div>
+          <div style="font-weight:700;color:#e91e8c">₹${item.price * item.qty}</div>
+        </div>
       </div>
       <button class="cart-item-remove" onclick="removeFromCart('${item.cakeId}')">✕</button>
     </div>
