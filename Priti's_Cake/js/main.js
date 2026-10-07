@@ -211,17 +211,47 @@ async function placeOrder(e) {
       }))
     };
     
-    await api.post('/orders', payload);
+    const order = await api.post('/orders', payload);
     
     // Clear cart on success
     DB.cart = [];
     saveData();
-    updateCartUI();
-    if (typeof toggleCart === 'function' && document.getElementById('cartSidebar') && document.getElementById('cartSidebar').classList.contains('open')) {
-      toggleCart();
+    
+    const badge = document.getElementById('cartBadge');
+    if (badge) { badge.textContent = 0; badge.style.display = 'none'; }
+    
+    const container = document.getElementById('cartItems');
+    const totalEl = document.getElementById('cartTotal');
+    if (totalEl) totalEl.style.display = 'none';
+    
+    if (container) {
+      const subtotal = order.total - (order.deliveryCharge || 50);
+      container.innerHTML = `
+        <div style="text-align: center; padding: 20px 10px;">
+          <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+          <h3 style="color: #4CAF50; margin-bottom: 15px;">Order Placed Successfully</h3>
+          <p style="margin-bottom: 5px;"><strong>Order ID:</strong> #${order._id}</p>
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: left;">
+            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+              <span>Subtotal</span><span>₹${subtotal}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom: 8px; color:#666;">
+              <span>Delivery Charge</span><span>₹${order.deliveryCharge || 50}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; border-top: 1px solid #ddd; padding-top: 10px; font-weight:bold; color:#e91e8c; font-size: 1.1rem;">
+              <span>Total</span><span>₹${order.total}</span>
+            </div>
+          </div>
+          <div style="text-align: left; font-size: 0.9rem; margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
+            <p style="margin-bottom:5px"><strong>Phone:</strong> ${order.phone}</p>
+            <p style="margin:0"><strong>Delivery Address:</strong><br/>${order.deliveryAddress}</p>
+          </div>
+          <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" onclick="window.location.href='client-dashboard.html'">View My Orders</button>
+          <button class="btn btn-outline" style="width: 100%; padding: 12px; background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;" onclick="toggleCart(); updateCartUI();">Close</button>
+        </div>
+      `;
     }
     
-    showToast('Order placed successfully.', 'success');
     return true;
   } catch (error) {
     console.error('Checkout failed', error);
