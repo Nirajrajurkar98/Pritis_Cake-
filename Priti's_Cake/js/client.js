@@ -45,11 +45,12 @@ async function loadClientDashboard() {
   let myOrders = [];
   try {
     myOrders = await api.get('/orders/myorders');
+    window.customerOrders = myOrders;
   } catch (err) {
     console.error('Failed to load dashboard orders:', err);
   }
 
-  const spent = myOrders.reduce((s, o) => s + o.total, 0);
+  const spent = myOrders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + o.total, 0);
   const pending = myOrders.filter(o => ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery'].includes(o.status)).length;
 
   document.getElementById('myOrderCount').textContent = myOrders.length;
@@ -61,13 +62,16 @@ async function loadClientDashboard() {
   const recent = [...myOrders].slice(0, 5); // Assuming already sorted descending by backend
   tbody.innerHTML = recent.length ? recent.map(o => `
     <tr>
-      <td><strong>${o._id || o.id}</strong></td>
+      <td><strong>#${o._id.substring(o._id.length-6).toUpperCase()}</strong></td>
       <td>${o.items.map(i => i.name).join(', ')}</td>
       <td><strong>₹${o.total.toLocaleString()}</strong></td>
       <td><span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span></td>
       <td>${new Date(o.createdAt || o.date).toLocaleDateString()}</td>
+      <td style="text-align:right">
+        <button class="btn btn-outline" style="padding:4px 8px;font-size:0.75rem" onclick="viewOrderDetails('${o._id}')">View</button>
+      </td>
     </tr>
-  `).join('') : '<tr><td colspan="5" style="text-align:center;color:#999;padding:30px">No orders yet. <a href="#" onclick="showClientSection(\'browse\')" style="color:#e91e8c">Browse cakes!</a></td></tr>';
+  `).join('') : '<tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet. <a href="#" onclick="showClientSection(\'browse\')" style="color:#e91e8c">Browse cakes!</a></td></tr>';
 
   // Featured cakes
   const featGrid = document.getElementById('featuredCakesGrid');
@@ -166,12 +170,66 @@ function addToCartFromDetail(cakeId) {
   closeModal('cakeDetailModal');
 }
 
+window.customerOrders = [];
+
+function viewOrderDetails(orderId) {
+  const o = window.customerOrders.find(x => x._id === orderId);
+  if (!o) return showToast('Order not found', 'error');
+
+  const content = document.getElementById('orderDetailContent');
+  const subtotal = o.total - (o.deliveryCharge || 50);
+
+  content.innerHTML = `
+    <div style="border-bottom:1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
+      <h2 style="margin-bottom:5px">Order Details</h2>
+      <p style="color:#666; font-size:0.9rem">ID: ${o._id}</p>
+      <p style="color:#666; font-size:0.9rem">Placed on ${new Date(o.createdAt).toLocaleDateString()} at ${new Date(o.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+      <div style="margin-top: 10px;">
+        <span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span>
+      </div>
+    </div>
+    
+    <h4 style="margin-bottom: 10px">Items</h4>
+    <div style="background:#f8f9fa; border-radius:8px; padding:15px; margin-bottom: 15px;">
+      ${o.items.map(i => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.95rem;">
+          <span>${i.emoji || '🎂'} ${i.name} ×${i.qty}</span>
+          <span>₹${(i.price * i.qty).toLocaleString()}</span>
+        </div>
+      `).join('')}
+      <div style="border-top:1px solid #ddd; margin-top:10px; padding-top:10px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; color:#666">
+          <span>Subtotal</span><span>₹${subtotal.toLocaleString()}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; color:#666">
+          <span>Delivery Charge</span><span>₹${(o.deliveryCharge || 50).toLocaleString()}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; color:#e91e8c; font-size:1.1rem; margin-top:5px;">
+          <span>Total</span><span>₹${o.total.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+
+    <h4 style="margin-bottom: 10px">Delivery Information</h4>
+    <div style="background:#f8f9fa; border-radius:8px; padding:15px; font-size:0.9rem; color:#555;">
+      <p style="margin-bottom:5px"><strong>Phone:</strong> ${o.phone || 'N/A'}</p>
+      <p style="margin:0"><strong>Address:</strong><br/>${o.deliveryAddress ? o.deliveryAddress.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A'}</p>
+    </div>
+    
+    <div style="margin-top: 20px;">
+      ${getStatusTimeline(o.status)}
+    </div>
+  `;
+  openModal('orderDetailModal');
+}
+
 async function loadClientOrders() {
   const container = document.getElementById('clientOrdersList');
   container.innerHTML = '<div style="text-align:center;padding:40px;color:#999;">Loading your orders...</div>';
   
   try {
     const myOrders = await api.get('/orders/myorders');
+    window.customerOrders = myOrders;
     
     if (myOrders.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:60px;color:#999"><div style="font-size:4rem;margin-bottom:15px">📦</div><p>You haven\'t placed any orders yet.</p><button class="btn btn-primary" style="margin-top:15px" onclick="showClientSection(\'browse\')">Browse Cakes</button></div>';
@@ -182,21 +240,17 @@ async function loadClientOrders() {
       <div class="dash-card" style="margin-bottom:15px">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
           <div>
-            <h4 style="margin-bottom:5px">${o._id}</h4>
-            <p style="color:#999;font-size:0.85rem">${new Date(o.createdAt).toLocaleDateString()} at ${new Date(o.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+            <h4 style="margin-bottom:5px">Order #${o._id.substring(o._id.length-6).toUpperCase()}</h4>
+            <p style="color:#999;font-size:0.85rem">${new Date(o.createdAt).toLocaleDateString()}</p>
           </div>
-          <span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span>
+          <div style="text-align:right">
+            <div style="font-weight:700;color:#e91e8c;margin-bottom:5px">₹${o.total.toLocaleString()}</div>
+            <span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span>
+          </div>
         </div>
-        <div style="margin:15px 0;padding:15px;background:#f8f9fa;border-radius:10px">
-          ${o.items.map(i => `<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem"><span>${i.emoji || '🎂'} ${i.name} ×${i.qty}</span><span>₹${(i.price * i.qty).toLocaleString()}</span></div>`).join('')}
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:0.9rem;color:#666"><span>Delivery Charge</span><span>₹${o.deliveryCharge || 50}</span></div>
-          <div style="border-top:1px solid #eee;padding-top:10px;display:flex;justify-content:space-between;font-weight:800;color:#e91e8c"><span>Total</span><span>₹${o.total.toLocaleString()}</span></div>
-          ${o.deliveryAddress ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #eee;font-size:0.85rem;color:#555">
-            <strong>Delivery Address:</strong><br/>${o.deliveryAddress}<br/>
-            <strong>Phone:</strong> ${o.phone}
-          </div>` : ''}
+        <div style="margin-top:15px;text-align:right">
+          <button class="btn btn-outline" style="padding:6px 12px;font-size:0.85rem" onclick="viewOrderDetails('${o._id}')">View Details</button>
         </div>
-        ${getStatusTimeline(o.status)}
       </div>
     `).join('');
   } catch (error) {

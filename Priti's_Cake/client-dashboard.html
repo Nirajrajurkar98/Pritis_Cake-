@@ -84,8 +84,8 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
-              <tbody id="clientRecentOrders"><tr><td colspan="5" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+              <thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
+              <tbody id="clientRecentOrders"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -157,6 +157,14 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal('cakeDetailModal')">✕</button>
     <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div class="modal-overlay" id="orderDetailModal">
+  <div class="modal" style="max-width: 600px;">
+    <button class="modal-close" onclick="closeModal('orderDetailModal')">✕</button>
+    <div id="orderDetailContent" style="padding: 10px 0;"></div>
   </div>
 </div>
 

@@ -1,3 +1,12 @@
+function escapeHtml(unsafe) {
+  if (!unsafe) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
 const formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
 document.addEventListener('DOMContentLoaded', async () => {
   // Auth check
@@ -56,6 +65,54 @@ async function showSection(id) {
   }
 }
 
+function updateRevenueFilterUI() {
+  const period = document.getElementById('revPeriod').value;
+  document.getElementById('revDateContainer').style.display = period === 'daily' ? 'block' : 'none';
+  document.getElementById('revMonthContainer').style.display = period === 'monthly' ? 'flex' : 'none';
+  document.getElementById('revYearContainer').style.display = period === 'yearly' ? 'block' : 'none';
+}
+
+async function fetchFilteredRevenue() {
+  const period = document.getElementById('revPeriod').value;
+  let url = '/admin/revenue?period=' + period;
+  let label = '';
+
+  if (period === 'daily') {
+    const date = document.getElementById('revDate').value;
+    if (!date) return typeof showToast === 'function' ? showToast('Please select a date', 'error') : alert('Please select a date');
+    url += '&date=' + date;
+    label = 'Revenue for ' + new Date(date).toLocaleDateString();
+  } else if (period === 'monthly') {
+    const month = document.getElementById('revMonth').value;
+    const year = document.getElementById('revMonthYear').value;
+    if (!year) return typeof showToast === 'function' ? showToast('Please enter a year', 'error') : alert('Please enter a year');
+    url += '&month=' + month + '&year=' + year;
+    label = 'Revenue for ' + document.getElementById('revMonth').options[month-1].text + ' ' + year;
+  } else if (period === 'yearly') {
+    const year = document.getElementById('revYear').value;
+    if (!year) return typeof showToast === 'function' ? showToast('Please enter a year', 'error') : alert('Please enter a year');
+    url += '&year=' + year;
+    label = 'Revenue for ' + year;
+  }
+
+  const resEl = document.getElementById('filteredRevenueResult');
+  const labelEl = document.getElementById('filteredRevenueLabel');
+
+  resEl.textContent = '...';
+  labelEl.textContent = 'Loading...';
+
+  try {
+    const data = await api.get(url);
+    resEl.textContent = typeof formatCurrency === 'function' ? formatCurrency(data.revenue) : '₹' + data.revenue.toLocaleString();
+    labelEl.textContent = label;
+  } catch (err) {
+    console.error(err);
+    resEl.textContent = 'Error';
+    labelEl.textContent = err.message || 'Failed to fetch revenue';
+    if(typeof showToast === 'function') showToast(err.message || 'Failed to fetch revenue', 'error');
+  }
+}
+
 async function loadDashboard() {
   // Reset values to a loading state
   document.getElementById('totalOrders').textContent = '...';
@@ -73,7 +130,7 @@ async function loadDashboard() {
       api.get('/admin/cakes')
     ]);
     
-    const revenue = orders.reduce((s, o) => s + o.total, 0);
+    const revenue = orders.filter(o => o.status !== 'Cancelled').reduce((s, o) => s + o.total, 0);
     document.getElementById('totalOrders').textContent = orders.length;
     document.getElementById('totalRevenue').textContent = typeof formatCurrency === 'function' ? formatCurrency(revenue) : '' + revenue.toLocaleString();
     document.getElementById('totalCakes').textContent = cakes.length;
@@ -84,7 +141,7 @@ async function loadDashboard() {
     tbody.innerHTML = recent.length ? recent.map(o => `
       <tr>
         <td class="col-id"><strong>${o._id.substring(o._id.length-6).toUpperCase()}</strong></td>
-        <td>${o.userName}</td>
+        <td>${escapeHtml(o.userName)}</td>
         <td>${o.items.map(i => i.name).join(', ')}</td>
         <td class="col-amount" style="text-align:right">${typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total}</td>
         <td><span class="badge badge-${o.status.toLowerCase().replace(/\s+/g, '-')}">${o.status}</span></td>
@@ -112,6 +169,8 @@ function getCakeMediaHtml(cake) {
 
 // ===== CAKES =====
 let allCakes = [];
+let allOrders = [];
+let allCustomers = [];
 let cakeToDeleteId = null;
 
 async function loadCakes() {
@@ -350,8 +409,8 @@ function renderOrders(ordersToRender) {
       <tr id="row-${o._id}">
         <td><strong>#${orderId}</strong></td>
         <td>
-          <div style="font-weight:600;color:#111827">${o.userName}</div>
-          <div style="font-size:0.8125rem;color:#6b7280">${o.userEmail}</div>
+          <div style="font-weight:600;color:#111827">${escapeHtml(o.userName)}</div>
+          <div style="font-size:0.8125rem;color:#6b7280">${escapeHtml(o.userEmail)}</div>
         </td>
         <td style="font-size:0.875rem;color:#4b5563;line-height:1.4">${itemsText}</td>
         <td style="font-size:0.875rem;color:#4b5563">${date}</td>
@@ -448,8 +507,8 @@ async function viewOrder(orderId) {
       <div style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
         <div>
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Customer</div>
-          <div style="font-weight:600;color:#111827">${o.userName}</div>
-          <div style="font-size:0.875rem;color:#4b5563">${o.userEmail}</div>
+          <div style="font-weight:600;color:#111827">${escapeHtml(o.userName)}</div>
+          <div style="font-size:0.875rem;color:#4b5563">${escapeHtml(o.userEmail)}</div>
         </div>
         <div>
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Order Status</div>
@@ -531,6 +590,7 @@ async function loadCustomers() {
     
     renderCustomers(allCustomers);
   } catch(err) {
+    console.error('Failed to load customers:', err);
     tbody.innerHTML = '<tr><td colspan="5" class="state-error" style="padding:30px">Unable to load customers. Please try again.</td></tr>';
   }
 }
@@ -555,9 +615,9 @@ function renderCustomers(customersToRender) {
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:36px;height:36px;background:#fdf2f8;border:1px solid #fbcfe8;color:#be185d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.875rem;flex-shrink:0">${initial}</div>
             <div>
-              <div style="font-weight:600;color:#111827">${c.name}</div>
-              <div style="font-size:0.8125rem;color:#6b7280">${c.email}</div>
-              ${c.phone ? `<div style="font-size:0.8125rem;color:#6b7280">${c.phone}</div>` : ''}
+              <div style="font-weight:600;color:#111827">${escapeHtml(c.name)}</div>
+              <div style="font-size:0.8125rem;color:#6b7280">${escapeHtml(c.email)}</div>
+              ${c.phone ? `<div style="font-size:0.8125rem;color:#6b7280">${escapeHtml(c.phone)}</div>` : ''}
             </div>
           </div>
         </td>
@@ -647,9 +707,9 @@ async function viewCustomer(customerId) {
       <div style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#f9fafb;padding:16px;border-radius:8px;border:1px solid #e5e7eb">
         <div>
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Customer Info</div>
-          <div style="font-weight:600;color:#111827;font-size:1.125rem">${c.name}</div>
-          <div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${c.email}</div>
-          ${c.phone ? `<div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${c.phone}</div>` : ''}
+          <div style="font-weight:600;color:#111827;font-size:1.125rem">${escapeHtml(c.name)}</div>
+          <div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${escapeHtml(c.email)}</div>
+          ${c.phone ? `<div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${escapeHtml(c.phone)}</div>` : ''}
           <div style="font-size:0.875rem;color:#6b7280;margin-top:6px">Joined: ${dateStr}</div>
         </div>
         <div style="text-align:right;display:flex;flex-direction:column;justify-content:center">

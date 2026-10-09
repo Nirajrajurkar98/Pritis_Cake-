@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cake = require('../models/Cake');
+const ShopSettings = require('../models/ShopSettings');
 
 // @desc    Get all orders
 // @route   GET /api/admin/orders
@@ -134,7 +135,8 @@ const createCustomerOrder = async (req, res, next) => {
       subtotal += (cake.price * qty);
     }
     
-    const deliveryCharge = 50;
+    const settings = await ShopSettings.findOne({ key: 'main' });
+    const deliveryCharge = settings && settings.deliveryCharge !== undefined ? settings.deliveryCharge : 50;
     const total = subtotal + deliveryCharge;
 
     const order = new Order({
