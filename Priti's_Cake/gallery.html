@@ -9,52 +9,51 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <a href="index.html" class="logo">Priti's <span>Cake</span></a>
   <ul class="nav-links" id="navLinks">
     <li><a href="index.html">Home</a></li>
     <li><a href="catalog.html">Cakes</a></li>
-    <li><a href="gallery.html">Gallery</a></li>
+    <li><a href="gallery.html" aria-current="page">Gallery</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav-btns" id="navBtns"></div>
-  <span class="hamburger" id="hamburger">☰</span>
+  <span class="hamburger" id="hamburger" aria-label="Toggle Navigation">☰</span>
 </nav>
 
 <div class="gallery-hero">
-  <h1>Our <span>Gallery</span> 📸</h1>
-  <p style="color:#666;margin-top:10px">A showcase of our most beautiful and delicious creations</p>
+  <h1>Our Gallery</h1>
+  <p style="color:var(--gray);margin-top:15px;font-size:1.1rem;max-width:600px;margin-left:auto;margin-right:auto;">A showcase of our most beautiful and delicious creations</p>
 </div>
 
 <section>
-  <div class="gallery-filter">
-    <button class="filter-btn active" onclick="filterGallery('all', this)">All</button>
-    <button class="filter-btn" onclick="filterGallery('birthday', this)">🎂 Birthday</button>
-    <button class="filter-btn" onclick="filterGallery('wedding', this)">💍 Wedding</button>
-    <button class="filter-btn" onclick="filterGallery('custom', this)">📸 Custom</button>
-    <button class="filter-btn" onclick="filterGallery('kids', this)">🦄 Kids</button>
-    <button class="filter-btn" onclick="filterGallery('anniversary', this)">💕 Anniversary</button>
+  <div class="gallery-filter" role="tablist" aria-label="Filter Gallery">
+    <button class="filter-btn active" role="tab" aria-selected="true" onclick="filterGallery('all', this)">All</button>
+    <button class="filter-btn" role="tab" aria-selected="false" onclick="filterGallery('birthday', this)">🎂 Birthday</button>
+    <button class="filter-btn" role="tab" aria-selected="false" onclick="filterGallery('wedding', this)">💍 Wedding</button>
+    <button class="filter-btn" role="tab" aria-selected="false" onclick="filterGallery('custom', this)">📸 Custom</button>
+    <button class="filter-btn" role="tab" aria-selected="false" onclick="filterGallery('kids', this)">🦄 Kids</button>
+    <button class="filter-btn" role="tab" aria-selected="false" onclick="filterGallery('anniversary', this)">💕 Anniversary</button>
   </div>
   <div class="gallery-grid" id="galleryGrid"></div>
 </section>
 
 <!-- LIGHTBOX -->
-<div class="modal-overlay" id="lightbox" onclick="closeLightbox()">
-  <div class="modal" style="max-width:500px;text-align:center" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeLightbox()">✕</button>
-    <div id="lightboxImg" style="height:250px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:8rem;margin-bottom:20px"></div>
-    <h2 id="lightboxTitle"></h2>
-    <p id="lightboxDesc" style="color:#666;margin:10px 0 20px"></p>
-    <a href="catalog.html" class="btn btn-primary">Order This Cake 🛒</a>
+<div class="modal-overlay" id="lightbox" onclick="closeLightbox()" role="dialog" aria-modal="true" aria-labelledby="lightboxTitle">
+  <div class="modal" style="max-width:550px;text-align:center" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeLightbox()" aria-label="Close image">✕</button>
+    <div id="lightboxImg" style="height:280px;background:var(--pink-pale);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:8rem;margin-bottom:25px" aria-hidden="true"></div>
+    <h2 id="lightboxTitle" style="font-family:var(--font-serif);font-size:2rem;margin-bottom:10px;"></h2>
+    <p id="lightboxDesc" style="color:var(--gray);margin-bottom:25px;font-size:1.05rem;line-height:1.6;"></p>
+    <a href="catalog.html" class="btn btn-primary" style="padding:12px 30px;">Order This Cake</a>
   </div>
 </div>
 
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
-      <p>Handcrafted cakes baked with love and passion.</p>
-      <div class="social-links"><a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a></div>
+      <a href="index.html" class="logo">Priti's <span>Cake</span></a>
+      <p>Handcrafted cakes baked with love and passion. Making every celebration sweeter since 2016.</p>
     </div>
     <div class="footer-col">
       <h4>Quick Links</h4>
@@ -67,7 +66,7 @@
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-      <p>📍 123 Sweet Street, Pune</p>
+      <p>📍 123 Sweet Street, Pune, Maharashtra 411001</p>
       <p style="margin-top:10px">📞 +91 98765 43210</p>
       <p style="margin-top:10px">✉️ hello@priticake.com</p>
     </div>
@@ -76,13 +75,13 @@
 </footer>
 
 <div class="cart-sidebar" id="cartSidebar">
-  <div class="cart-header"><h2>🛒 Your Cart</h2><button class="cart-close" onclick="toggleCart()">✕</button></div>
+  <div class="cart-header"><h2>Your Cart</h2><button class="cart-close" onclick="toggleCart()" aria-label="Close cart">✕</button></div>
   <div id="cartItems"></div>
   <div class="cart-total" id="cartTotal" style="display:none">
     <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
     <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
     <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder()">Place Order 🎉</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order</button>
   </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -91,33 +90,37 @@
 <script>
   const galleryItems = [
     { emoji: '🍓', title: 'Strawberry Dream', cat: 'birthday', desc: 'Fresh strawberry cream cake with glazed topping', bg: 'linear-gradient(135deg,#ff9a9e,#fecfef)' },
-    { emoji: '💍', title: 'Royal Wedding', cat: 'wedding', desc: '3-tier white fondant wedding masterpiece', bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
+    { emoji: '👑', title: 'Royal Wedding', cat: 'wedding', desc: '3-tier white fondant wedding masterpiece', bg: 'linear-gradient(135deg,#a18cd1,#fbc2eb)' },
     { emoji: '🦄', title: 'Unicorn Fantasy', cat: 'kids', desc: 'Rainbow layers with unicorn decoration', bg: 'linear-gradient(135deg,#f093fb,#f5576c)' },
     { emoji: '📸', title: 'Photo Cake', cat: 'custom', desc: 'Personalized edible photo print cake', bg: 'linear-gradient(135deg,#4facfe,#00f2fe)' },
-    { emoji: '💕', title: 'Anniversary Rose', cat: 'anniversary', desc: 'Elegant rose decorated anniversary cake', bg: 'linear-gradient(135deg,#f6d365,#fda085)' },
+    { emoji: '🌹', title: 'Anniversary Rose', cat: 'anniversary', desc: 'Elegant rose decorated anniversary cake', bg: 'linear-gradient(135deg,#f6d365,#fda085)' },
     { emoji: '🍫', title: 'Chocolate Fudge', cat: 'birthday', desc: 'Rich dark chocolate with ganache drizzle', bg: 'linear-gradient(135deg,#d4a574,#8b4513)' },
-    { emoji: '🎂', title: 'Truffle Royale', cat: 'wedding', desc: 'Luxurious truffle cake with gold leaf', bg: 'linear-gradient(135deg,#ffd700,#ff8c00)' },
+    { emoji: '✨', title: 'Truffle Royale', cat: 'wedding', desc: 'Luxurious truffle cake with gold leaf', bg: 'linear-gradient(135deg,#ffd700,#ff8c00)' },
     { emoji: '🫐', title: 'Blueberry Cheesecake', cat: 'anniversary', desc: 'NY style cheesecake with blueberry compote', bg: 'linear-gradient(135deg,#667eea,#764ba2)' },
-    { emoji: '❤️', title: 'Red Velvet', cat: 'birthday', desc: 'Classic red velvet with cream cheese frosting', bg: 'linear-gradient(135deg,#ff416c,#ff4b2b)' },
+    { emoji: '🍰', title: 'Red Velvet', cat: 'birthday', desc: 'Classic red velvet with cream cheese frosting', bg: 'linear-gradient(135deg,#ff416c,#ff4b2b)' },
     { emoji: '🚀', title: 'Space Adventure', cat: 'kids', desc: 'Galaxy themed cake for little astronauts', bg: 'linear-gradient(135deg,#0f0c29,#302b63)' },
     { emoji: '🌸', title: 'Cherry Blossom', cat: 'custom', desc: 'Japanese inspired floral design cake', bg: 'linear-gradient(135deg,#ffb7c5,#ff69b4)' },
-    { emoji: '🥭', title: 'Mango Delight', cat: 'birthday', desc: 'Fresh mango mousse with jelly layers', bg: 'linear-gradient(135deg,#f7971e,#ffd200)' },
+    { emoji: '🥭', title: 'Mango Delight', cat: 'birthday', desc: 'Fresh mango mousse with jelly layers', bg: 'linear-gradient(135deg,#f7971e,#ffd200)' }
   ];
 
   let currentFilter = 'all';
 
   function filterGallery(cat, btn) {
     currentFilter = cat;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-selected', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-selected', 'true');
     renderGallery();
   }
 
   function renderGallery() {
     const items = currentFilter === 'all' ? galleryItems : galleryItems.filter(i => i.cat === currentFilter);
     document.getElementById('galleryGrid').innerHTML = items.map((item, idx) => `
-      <div class="gallery-item" style="background:${item.bg}" onclick="openLightbox(${galleryItems.indexOf(item)})">
-        ${item.emoji}
+      <div class="gallery-item" style="background:${item.bg}" onclick="openLightbox(${galleryItems.indexOf(item)})" role="button" tabindex="0" aria-label="View ${item.title}" onkeypress="if(event.key==='Enter') openLightbox(${galleryItems.indexOf(item)})">
+        <span aria-hidden="true">${item.emoji}</span>
         <div class="gallery-overlay">
           <h3>${item.title}</h3>
           <p>${item.desc}</p>
@@ -136,6 +139,13 @@
   }
 
   function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+  
+  // Close lightbox on escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('lightbox').classList.contains('active')) {
+      closeLightbox();
+    }
+  });
 
   renderGallery();
 </script>

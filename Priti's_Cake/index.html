@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Priti's Cake - Baked with Love 🎂</title>
+  <title>Priti's Cake - Artisanal Bakery</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <!-- NAVBAR -->
 <nav>
-  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <a href="index.html" class="logo">Priti's <span>Cake</span></a>
   <ul class="nav-links" id="navLinks">
-    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html" aria-current="page">Home</a></li>
     <li><a href="catalog.html">Cakes</a></li>
     <li><a href="gallery.html">Gallery</a></li>
     <li><a href="about.html">About</a></li>
@@ -25,15 +25,16 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-text">
-    <h1>Cakes Baked with <span>Love & Passion</span> 🎂</h1>
+    <h1>Artisanal Cakes,<br>Baked with Love</h1>
     <p>Handcrafted custom cakes for every occasion — birthdays, weddings, anniversaries and more. Made fresh with premium ingredients, delivered to your door.</p>
     <div class="hero-btns">
-      <a href="catalog.html" class="btn btn-primary">Order Now 🛒</a>
+      <a href="catalog.html" class="btn btn-primary">Order Now</a>
       <a href="gallery.html" class="btn btn-outline">View Gallery</a>
     </div>
   </div>
   <div class="hero-img">
-    <div class="hero-cake-placeholder">
+    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=800" alt="Beautifully decorated artisanal cake with fresh berries" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+    <div class="hero-cake-placeholder" style="display:none">
       🎂
       <p>Priti's Special</p>
     </div>
@@ -43,26 +44,26 @@
 <!-- CATEGORIES -->
 <section class="categories">
   <div class="section-title">
-    <h2>Shop by <span>Category</span></h2>
-    <p>Find the perfect cake for every occasion</p>
+    <h2>Shop by Category</h2>
+    <p>Find the perfect handcrafted cake for every occasion</p>
   </div>
   <div class="cat-grid">
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Birthday'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Birthday'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Birthday'">
       <div class="icon">🎂</div><h3>Birthday</h3>
     </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Wedding'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Wedding'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Wedding'">
       <div class="icon">💍</div><h3>Wedding</h3>
     </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Anniversary'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Anniversary'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Anniversary'">
       <div class="icon">💕</div><h3>Anniversary</h3>
     </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Kids'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Kids'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Kids'">
       <div class="icon">🦄</div><h3>Kids</h3>
     </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Custom'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Custom'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Custom'">
       <div class="icon">📸</div><h3>Custom</h3>
     </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Seasonal'">
+    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Seasonal'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Seasonal'">
       <div class="icon">🌸</div><h3>Seasonal</h3>
     </div>
   </div>
@@ -71,19 +72,19 @@
 <!-- FEATURED CAKES -->
 <section>
   <div class="section-title">
-    <h2>Our <span>Bestsellers</span></h2>
-    <p>Most loved cakes by our customers</p>
+    <h2>Our Bestsellers</h2>
+    <p>Most loved artisanal creations by our customers</p>
   </div>
   <div class="cakes-grid" id="featuredCakes"></div>
-  <div style="text-align:center;margin-top:40px">
-    <a href="catalog.html" class="btn btn-primary">View All Cakes →</a>
+  <div style="text-align:center;margin-top:50px">
+    <a href="catalog.html" class="btn btn-outline">View All Cakes</a>
   </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section style="background:#fff0f8">
+<section style="background: var(--bg-color);">
   <div class="section-title">
-    <h2>How It <span>Works</span></h2>
+    <h2>How It Works</h2>
     <p>Order your dream cake in 4 simple steps</p>
   </div>
   <div class="steps-grid">
@@ -107,7 +108,7 @@
 <!-- TESTIMONIALS -->
 <section class="testimonials">
   <div class="section-title">
-    <h2>What Our <span>Customers Say</span></h2>
+    <h2>What Our Customers Say</h2>
     <p>Real reviews from real cake lovers</p>
   </div>
   <div class="test-grid">
@@ -133,11 +134,8 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+      <a href="index.html" class="logo">Priti's <span>Cake</span></a>
       <p>Handcrafted cakes baked with love and passion. Making every celebration sweeter since 2016.</p>
-      <div class="social-links">
-        <a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a>
-      </div>
     </div>
     <div class="footer-col">
       <h4>Quick Links</h4>
@@ -175,15 +173,15 @@
 <!-- CART SIDEBAR -->
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-header">
-    <h2>🛒 Your Cart</h2>
-    <button class="cart-close" onclick="toggleCart()">✕</button>
+    <h2>Your Cart</h2>
+    <button class="cart-close" onclick="toggleCart()" aria-label="Close Cart">✕</button>
   </div>
   <div id="cartItems"></div>
   <div class="cart-total" id="cartTotal" style="display:none">
     <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
     <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
     <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order 🎉</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order</button>
   </div>
 </div>
 
@@ -197,12 +195,12 @@
     const container = document.getElementById('featuredCakes');
     
     if (cakesError) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#e91e8c">Unable to load cakes. Please try again.</div>';
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--pink)">Unable to load cakes. Please try again.</div>';
       return;
     }
     
     if (DB.cakes.length === 0) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999">No cakes are available at the moment.</div>';
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray)">No cakes are available at the moment.</div>';
       return;
     }
 
@@ -222,14 +220,14 @@
             <span class="price">₹${cake.price}</span>
             <span class="rating">⭐ ${cake.rating || 0} (${cake.reviews || 0})</span>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart('${cake.id}')">Add to Cart 🛒</button>
+          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart('${cake.id}')">Add to Cart</button>
         </div>
       </div>
     `).join('');
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('featuredCakes').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999">Loading cakes...</div>';
+    document.getElementById('featuredCakes').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray)">Loading cakes...</div>';
     if (isCakesLoaded || cakesError) {
       renderFeaturedCakes();
     } else {
@@ -240,4 +238,3 @@
 </script>
 </body>
 </html>
-

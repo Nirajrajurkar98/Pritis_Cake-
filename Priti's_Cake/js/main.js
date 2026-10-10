@@ -100,7 +100,6 @@ function isAdmin() {
 
 // ===== CART =====
 function addToCart(cakeId, qty = 1) {
-  if (!isLoggedIn()) { showToast('Please login to add items to cart', 'error'); setTimeout(() => window.location.href = 'login.html', 1500); return; }
   const cake = DB.cakes.find(c => c.id === cakeId);
   if (!cake) return;
   const existing = DB.cart.find(i => i.cakeId === cakeId);
@@ -297,18 +296,21 @@ function showToast(msg, type = '') {
 function updateNavAuth() {
   const navBtns = document.getElementById('navBtns');
   if (!navBtns) return;
-  if (isLoggedIn()) {
-    navBtns.innerHTML = `
+  
+  const cartHTML = `
       <div class="cart-btn-wrap">
         <button class="btn btn-outline" onclick="toggleCart()">Cart</button>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
       </div>
+  `;
+
+  if (isLoggedIn()) {
+    navBtns.innerHTML = cartHTML + `
       <a href="${isAdmin() ? 'admin-dashboard.html' : 'client-dashboard.html'}" class="btn btn-primary">Dashboard</a>
     `;
   } else {
-    navBtns.innerHTML = `
+    navBtns.innerHTML = cartHTML + `
       <a href="login.html" class="btn btn-outline">Login</a>
-      <a href="login.html" class="btn btn-primary">Order Now</a>
     `;
   }
   updateCartUI();

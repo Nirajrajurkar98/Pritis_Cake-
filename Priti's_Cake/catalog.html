@@ -3,27 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Cakes - Priti's Cake</title>
+  <title>Our Cakes - Priti's Cake Catalog</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <nav>
-  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <a href="index.html" class="logo">Priti's <span>Cake</span></a>
   <ul class="nav-links" id="navLinks">
     <li><a href="index.html">Home</a></li>
-    <li><a href="catalog.html">Cakes</a></li>
+    <li><a href="catalog.html" aria-current="page">Cakes</a></li>
     <li><a href="gallery.html">Gallery</a></li>
     <li><a href="about.html">About</a></li>
     <li><a href="contact.html">Contact</a></li>
   </ul>
   <div class="nav-btns" id="navBtns"></div>
-  <span class="hamburger" id="hamburger">☰</span>
+  <span class="hamburger" id="hamburger" aria-label="Toggle Navigation">☰</span>
 </nav>
 
 <div class="catalog-hero">
-  <h1>Our <span>Cake Collection</span> 🎂</h1>
-  <p style="color:#666;margin-top:10px">Handcrafted with love — find your perfect cake</p>
+  <h1>Our Cake Collection</h1>
+  <p style="color:var(--gray);margin-top:15px;font-size:1.1rem;max-width:600px;margin-left:auto;margin-right:auto;">Handcrafted with premium ingredients. Filter and sort to find your perfect artisanal cake.</p>
 </div>
 
 <div class="catalog-layout">
@@ -42,15 +42,15 @@
     <div class="sidebar-section">
       <h3>💰 Price Range</h3>
       <div class="price-range">
-        <input type="range" id="priceRange" min="500" max="5000" value="5000" oninput="updatePrice(this.value)">
+        <input type="range" id="priceRange" min="500" max="5000" value="5000" oninput="updatePrice(this.value)" aria-label="Filter by maximum price">
         <div class="price-display"><span>₹500</span><span id="priceVal">₹5000</span></div>
       </div>
     </div>
     <div class="sidebar-section">
       <h3>⭐ Rating</h3>
-      <div class="checkbox-item"><input type="radio" name="rating" value="0" checked onchange="filterCakes()"> <label>All Ratings</label></div>
-      <div class="checkbox-item"><input type="radio" name="rating" value="4.5" onchange="filterCakes()"> <label>4.5+ Stars</label></div>
-      <div class="checkbox-item"><input type="radio" name="rating" value="4.8" onchange="filterCakes()"> <label>4.8+ Stars</label></div>
+      <div class="checkbox-item"><input type="radio" id="rating0" name="rating" value="0" checked onchange="filterCakes()"> <label for="rating0">All Ratings</label></div>
+      <div class="checkbox-item"><input type="radio" id="rating45" name="rating" value="4.5" onchange="filterCakes()"> <label for="rating45">4.5+ Stars</label></div>
+      <div class="checkbox-item"><input type="radio" id="rating48" name="rating" value="4.8" onchange="filterCakes()"> <label for="rating48">4.8+ Stars</label></div>
     </div>
     <button class="btn btn-outline" style="width:100%" onclick="resetFilters()">Reset Filters</button>
   </aside>
@@ -59,7 +59,7 @@
   <div>
     <div class="catalog-header">
       <h2 id="cakeCount">Showing all cakes</h2>
-      <select class="sort-select" id="sortSelect" onchange="filterCakes()">
+      <select class="sort-select" id="sortSelect" onchange="filterCakes()" aria-label="Sort cakes">
         <option value="default">Sort: Default</option>
         <option value="price-low">Price: Low to High</option>
         <option value="price-high">Price: High to Low</option>
@@ -72,9 +72,9 @@
 </div>
 
 <!-- CAKE DETAIL MODAL -->
-<div class="modal-overlay" id="cakeModal">
+<div class="modal-overlay" id="cakeModal" role="dialog" aria-modal="true" aria-labelledby="modalCakeName">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -82,15 +82,15 @@
 <!-- CART SIDEBAR -->
 <div class="cart-sidebar" id="cartSidebar">
   <div class="cart-header">
-    <h2>🛒 Your Cart</h2>
-    <button class="cart-close" onclick="toggleCart()">✕</button>
+    <h2>Your Cart</h2>
+    <button class="cart-close" onclick="toggleCart()" aria-label="Close cart">✕</button>
   </div>
   <div id="cartItems"></div>
   <div class="cart-total" id="cartTotal" style="display:none">
     <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
     <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
     <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order 🎉</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order</button>
   </div>
 </div>
 
@@ -111,7 +111,7 @@
       if (el) el.checked = true;
     }
     
-    document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999">Loading cakes...</div>';
+    document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray);font-size:1.1rem;">Loading cakes...</div>';
     document.getElementById('cakeCount').textContent = 'Loading...';
 
     if (isCakesLoaded || cakesError) {
@@ -129,13 +129,13 @@
 
   function filterCakes() {
     if (cakesError) {
-      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#e91e8c">Unable to load cakes. Please try again.</div>';
+      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--pink);font-size:1.1rem;font-weight:600;">Unable to load cakes. Please try again.</div>';
       document.getElementById('cakeCount').textContent = 'Error';
       return;
     }
     
     if (DB.cakes.length === 0) {
-      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999">No cakes are available at the moment.</div>';
+      document.getElementById('cakesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray);font-size:1.1rem;">No cakes are available at the moment.</div>';
       document.getElementById('cakeCount').textContent = '0 cakes';
       return;
     }
@@ -175,12 +175,12 @@
   function renderCakes(cakes) {
     const grid = document.getElementById('cakesGrid');
     if (cakes.length === 0) {
-      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px;color:#999"><div style="font-size:4rem">🔍</div><p style="margin-top:15px">No cakes found. Try adjusting filters.</p></div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--gray)"><div style="font-size:4rem;opacity:0.5;margin-bottom:15px">🔍</div><h3 style="font-size:1.2rem;color:var(--dark);font-family:var(--font-sans)">No cakes found</h3><p style="margin-top:8px">Try adjusting your filters to find what you\'re looking for.</p></div>';
       return;
     }
     grid.innerHTML = cakes.map(cake => `
       <div class="cake-card">
-        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal('${cake.id}')">
+        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal('${cake.id}')" tabindex="0" role="button" aria-label="View details for ${cake.name}" onkeypress="if(event.key==='Enter') openCakeModal('${cake.id}')">
           ${cakeMedia(cake)}
           ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
         </div>
@@ -191,9 +191,9 @@
             <span class="price">₹${cake.price}</span>
             <span class="rating">⭐ ${cake.rating || 0} (${cake.reviews || 0})</span>
           </div>
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button class="btn btn-outline" style="flex:1;padding:8px" onclick="openCakeModal('${cake.id}')">Details</button>
-            <button class="btn btn-primary" style="flex:1;padding:8px" onclick="addToCart('${cake.id}')">🛒 Add</button>
+          <div style="display:flex;gap:12px;margin-top:15px">
+            <button class="btn btn-outline" style="flex:1;padding:10px" onclick="openCakeModal('${cake.id}')">Details</button>
+            <button class="btn btn-primary" style="flex:1;padding:10px" onclick="addToCart('${cake.id}')">Add to Cart</button>
           </div>
         </div>
       </div>
@@ -207,9 +207,9 @@
     currentQty = 1;
     document.getElementById('modalContent').innerHTML = `
       <div class="modal-cake-img">${cakeMedia(cake)}</div>
-      <h2>${cake.name}</h2>
-      <div style="font-size:0.85rem;color:#e91e8c;margin-bottom:5px">${cake.category}</div>
-      <div class="price">₹${cake.price}</div>
+      <h2 id="modalCakeName">${cake.name}</h2>
+      <div style="font-size:0.9rem;color:var(--pink);margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${cake.category}</div>
+      <div class="price" style="margin-bottom:15px">₹${cake.price}</div>
       <p>${cake.desc}</p>
       <div class="modal-details">
         <div class="detail-item"><span>Weight</span><p>${cake.weight}</p></div>
@@ -218,12 +218,12 @@
         <div class="detail-item"><span>Rating</span><p>⭐ ${cake.rating} (${cake.reviews} reviews)</p></div>
       </div>
       <div class="qty-control">
-        <span style="font-weight:600">Quantity:</span>
-        <button class="qty-btn" onclick="changeQty(-1)">−</button>
-        <span class="qty-num" id="qtyNum">1</span>
-        <button class="qty-btn" onclick="changeQty(1)">+</button>
+        <span style="font-weight:600;color:var(--dark)">Quantity:</span>
+        <button class="qty-btn" onclick="changeQty(-1)" aria-label="Decrease quantity">−</button>
+        <span class="qty-num" id="qtyNum" aria-live="polite">1</span>
+        <button class="qty-btn" onclick="changeQty(1)" aria-label="Increase quantity">+</button>
       </div>
-      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="addToCartModal()">Add to Cart 🛒</button>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1.05rem" onclick="addToCartModal()">Add to Cart</button>
     `;
     document.getElementById('cakeModal').classList.add('active');
   }
@@ -240,7 +240,13 @@
 
   function closeModal() { document.getElementById('cakeModal').classList.remove('active'); }
   document.getElementById('cakeModal').addEventListener('click', e => { if(e.target === document.getElementById('cakeModal')) closeModal(); });
+  
+  // Close modal on escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('cakeModal').classList.contains('active')) {
+      closeModal();
+    }
+  });
 </script>
 </body>
 </html>
-

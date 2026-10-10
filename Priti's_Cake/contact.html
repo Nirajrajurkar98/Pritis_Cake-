@@ -9,60 +9,69 @@
 <body>
 
 <nav>
-  <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
+  <a href="index.html" class="logo">Priti's <span>Cake</span></a>
   <ul class="nav-links" id="navLinks">
     <li><a href="index.html">Home</a></li>
     <li><a href="catalog.html">Cakes</a></li>
     <li><a href="gallery.html">Gallery</a></li>
     <li><a href="about.html">About</a></li>
-    <li><a href="contact.html">Contact</a></li>
+    <li><a href="contact.html" aria-current="page">Contact</a></li>
   </ul>
   <div class="nav-btns" id="navBtns"></div>
-  <span class="hamburger" id="hamburger">☰</span>
+  <span class="hamburger" id="hamburger" aria-label="Toggle Navigation">☰</span>
 </nav>
 
 <div class="contact-hero">
-  <h1>Get in <span>Touch</span> 💌</h1>
-  <p style="color:#666;margin-top:10px">We'd love to hear from you! Reach out for orders, custom cakes or any queries.</p>
+  <h1>Get in Touch</h1>
+  <p style="color:var(--gray);margin-top:15px;font-size:1.1rem;max-width:600px;margin-left:auto;margin-right:auto;">We'd love to hear from you! Reach out for orders, custom cakes or any queries.</p>
 </div>
 
 <section>
   <div class="contact-grid">
     <div class="contact-info">
-      <h2>Let's Talk! 💬</h2>
+      <h2>Let's Talk!</h2>
       <div class="contact-item">
-        <div class="contact-icon">📍</div>
+        <div class="contact-icon" aria-hidden="true">📍</div>
         <div><h4>Visit Us</h4><p>123 Sweet Street, Koregaon Park<br>Pune, Maharashtra 411001</p></div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">📞</div>
+        <div class="contact-icon" aria-hidden="true">📞</div>
         <div><h4>Call Us</h4><p>+91 98765 43210<br>+91 87654 32109</p></div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">✉️</div>
+        <div class="contact-icon" aria-hidden="true">✉️</div>
         <div><h4>Email Us</h4><p>hello@priticake.com<br>orders@priticake.com</p></div>
       </div>
       <div class="contact-item">
-        <div class="contact-icon">🕐</div>
+        <div class="contact-icon" aria-hidden="true">🕐</div>
         <div><h4>Working Hours</h4><p>Monday - Sunday<br>8:00 AM - 9:00 PM</p></div>
       </div>
-      <div style="margin-top:30px;background:#fff0f8;padding:25px;border-radius:15px">
-        <h3 style="margin-bottom:15px">📍 Find Us on Map</h3>
-        <div style="height:200px;background:linear-gradient(135deg,#ffb3d9,#ff6ec7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem">🗺️</div>
-        <p style="font-size:0.85rem;color:#666;margin-top:10px;text-align:center">123 Sweet Street, Koregaon Park, Pune</p>
+      <div style="margin-top:40px;background:var(--pink-pale);padding:30px;border-radius:20px;border:1px solid rgba(0,0,0,0.03);">
+        <h3 style="margin-bottom:15px;font-family:var(--font-sans);">Find Us on Map</h3>
+        <div style="height:200px;background:var(--white);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:3rem;border:1px solid rgba(0,0,0,0.05);">🗺️</div>
+        <p style="font-size:0.95rem;color:var(--gray);margin-top:15px;text-align:center;font-weight:600;">123 Sweet Street, Koregaon Park, Pune</p>
       </div>
     </div>
 
     <div class="contact-form">
-      <h2>Send a Message 📩</h2>
+      <h2>Send a Message</h2>
       <div class="form-row">
-        <div class="form-group"><label>Your Name *</label><input type="text" id="cName" placeholder="Full name"></div>
-        <div class="form-group"><label>Phone Number</label><input type="tel" id="cPhone" placeholder="+91 98765 43210"></div>
+        <div class="form-group">
+          <label for="cName">Your Name *</label>
+          <input type="text" id="cName" placeholder="Full name" aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="cPhone">Phone Number</label>
+          <input type="tel" id="cPhone" placeholder="+91 98765 43210">
+        </div>
       </div>
-      <div class="form-group"><label>Email Address *</label><input type="email" id="cEmail" placeholder="your@email.com"></div>
       <div class="form-group">
-        <label>Subject *</label>
-        <select id="cSubject">
+        <label for="cEmail">Email Address *</label>
+        <input type="email" id="cEmail" placeholder="your@email.com" aria-required="true">
+      </div>
+      <div class="form-group">
+        <label for="cSubject">Subject *</label>
+        <select id="cSubject" aria-required="true">
           <option value="">Select a subject</option>
           <option>Place a Custom Order</option>
           <option>Order Inquiry</option>
@@ -71,15 +80,18 @@
           <option>Other</option>
         </select>
       </div>
-      <div class="form-group"><label>Message *</label><textarea id="cMessage" placeholder="Tell us about your cake requirements, occasion, date needed, etc..."></textarea></div>
-      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="sendMessage()">Send Message 📩</button>
+      <div class="form-group">
+        <label for="cMessage">Message *</label>
+        <textarea id="cMessage" placeholder="Tell us about your cake requirements, occasion, date needed, etc..." aria-required="true"></textarea>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1.05rem" onclick="sendMessage()">Send Message</button>
     </div>
   </div>
 </section>
 
-<section style="background:#fff0f8;padding:60px 5%">
+<section class="categories" style="padding:80px 5%">
   <div class="section-title">
-    <h2>Frequently Asked <span>Questions</span></h2>
+    <h2>Frequently Asked Questions</h2>
   </div>
   <div style="max-width:800px;margin:0 auto">
     <div id="faqList"></div>
@@ -89,9 +101,8 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <a href="index.html" class="logo">Priti's <span>Cake</span> 🎂</a>
-      <p>Handcrafted cakes baked with love and passion.</p>
-      <div class="social-links"><a href="#">📘</a><a href="#">📸</a><a href="#">🐦</a><a href="#">▶️</a></div>
+      <a href="index.html" class="logo">Priti's <span>Cake</span></a>
+      <p>Handcrafted cakes baked with love and passion. Making every celebration sweeter since 2016.</p>
     </div>
     <div class="footer-col">
       <h4>Quick Links</h4>
@@ -104,7 +115,7 @@
     </div>
     <div class="footer-col">
       <h4>Contact</h4>
-      <p>📍 123 Sweet Street, Pune</p>
+      <p>📍 123 Sweet Street, Pune, Maharashtra 411001</p>
       <p style="margin-top:10px">📞 +91 98765 43210</p>
       <p style="margin-top:10px">✉️ hello@priticake.com</p>
     </div>
@@ -113,13 +124,13 @@
 </footer>
 
 <div class="cart-sidebar" id="cartSidebar">
-  <div class="cart-header"><h2>🛒 Your Cart</h2><button class="cart-close" onclick="toggleCart()">✕</button></div>
+  <div class="cart-header"><h2>Your Cart</h2><button class="cart-close" onclick="toggleCart()" aria-label="Close cart">✕</button></div>
   <div id="cartItems"></div>
   <div class="cart-total" id="cartTotal" style="display:none">
     <div class="cart-total-row"><span>Subtotal</span><span id="cartSubtotal">₹0</span></div>
     <div class="cart-total-row"><span>Delivery</span><span id="cartDelivery">₹50</span></div>
     <div class="cart-total-row final"><span>Total</span><span id="cartGrandTotal">₹0</span></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder()">Place Order 🎉</button>
+    <button class="btn btn-primary" style="width:100%;margin-top:15px;padding:14px" onclick="placeOrder(event)">Place Order</button>
   </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -135,21 +146,25 @@
   ];
 
   document.getElementById('faqList').innerHTML = faqs.map((f, i) => `
-    <div style="background:#fff;border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-      <div style="padding:18px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600" onclick="toggleFaq(${i})">
+    <div style="background:var(--white);border-radius:12px;margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.03);">
+      <button style="width:100%;background:none;border:none;text-align:left;padding:20px 24px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:1.05rem;color:var(--dark);font-family:var(--font-sans);" onclick="toggleFaq(${i})" aria-expanded="false" aria-controls="faqAns${i}" id="faqBtn${i}">
         <span>${f.q}</span>
-        <span id="faqIcon${i}" style="color:#e91e8c;font-size:1.2rem">+</span>
-      </div>
-      <div id="faqAns${i}" style="display:none;padding:0 20px 18px;color:#666;line-height:1.7">${f.a}</div>
+        <span id="faqIcon${i}" style="color:var(--pink);font-size:1.4rem;transition:transform 0.3s;">+</span>
+      </button>
+      <div id="faqAns${i}" style="display:none;padding:0 24px 24px;color:var(--gray);line-height:1.7" role="region" aria-labelledby="faqBtn${i}">${f.a}</div>
     </div>
   `).join('');
 
   function toggleFaq(i) {
     const ans = document.getElementById('faqAns' + i);
     const icon = document.getElementById('faqIcon' + i);
+    const btn = document.getElementById('faqBtn' + i);
     const open = ans.style.display === 'block';
+    
     ans.style.display = open ? 'none' : 'block';
     icon.textContent = open ? '+' : '−';
+    icon.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+    btn.setAttribute('aria-expanded', !open);
   }
 
   function sendMessage() {
