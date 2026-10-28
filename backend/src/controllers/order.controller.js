@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Cake = require('../models/Cake');
 const ShopSettings = require('../models/ShopSettings');
+const {
+  DELIVERY_TIME_SLOTS,
+  MAX_CAKE_MESSAGE_LENGTH,
+  MAX_SPECIAL_INSTRUCTIONS_LENGTH
+} = require('../constants/order.constants');
 
 // @desc    Get all orders
 // @route   GET /api/admin/orders
@@ -83,9 +88,17 @@ const updateOrderStatus = async (req, res, next) => {
 // @access  Private
 const createCustomerOrder = async (req, res, next) => {
   try {
-    const { items, phone, deliveryAddress } = req.body;
+    const {
+      items,
+      phone,
+      deliveryAddress,
+      deliveryDate,
+      deliveryTimeSlot,
+      cakeMessage,
+      specialInstructions
+    } = req.body;
 
-    if (!items || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: 'No order items' });
     }
 
@@ -103,6 +116,93 @@ const createCustomerOrder = async (req, res, next) => {
     const cleanAddress = deliveryAddress.trim();
     if (cleanAddress.length > 500) {
       return res.status(400).json({ success: false, message: 'Delivery address is too long' });
+    }
+
+    // Delivery date validation
+    let cleanDeliveryDate = null;
+    if (deliveryDate !== undefined && deliveryDate !== null && deliveryDate !== '') {
+      if (typeof deliveryDate !== 'string') {
+        return res.status(400).json({ success: false, message: 'Delivery date must be a string' });
+      }
+
+      const trimmedDate = deliveryDate.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmedDate)) {
+        return res.status(400).json({ success: false, message: 'Delivery date must be in YYYY-MM-DD format' });
+      }
+
+      const [yearStr, monthStr, dayStr] = trimmedDate.split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+      const day = parseInt(dayStr, 10);
+
+      const parsedDate = new Date(Date.UTC(year, month - 1, day));
+      if (
+        parsedDate.getUTCFullYear() !== year ||
+        parsedDate.getUTCMonth() !== month - 1 ||
+        parsedDate.getUTCDate() !== day
+      ) {
+        return res.status(400).json({ success: false, message: 'Invalid calendar delivery date' });
+      }
+
+      const now = new Date();
+      const todayYear = now.getFullYear();
+      const todayMonth = String(now.getMonth() + 1).padStart(2, '0');
+      const todayDay = String(now.getDate()).padStart(2, '0');
+      const todayStr = `${todayYear}-${todayMonth}-${todayDay}`;
+
+      if (trimmedDate < todayStr) {
+        return res.status(400).json({ success: false, message: 'Delivery date cannot be earlier than today' });
+      }
+
+      cleanDeliveryDate = trimmedDate;
+    }
+
+    // Delivery time slot validation
+    let cleanDeliveryTimeSlot = null;
+    if (deliveryTimeSlot !== undefined && deliveryTimeSlot !== null && deliveryTimeSlot !== '') {
+      if (typeof deliveryTimeSlot !== 'string') {
+        return res.status(400).json({ success: false, message: 'Delivery time slot must be a string' });
+      }
+
+      const trimmedSlot = deliveryTimeSlot.trim();
+      if (!DELIVERY_TIME_SLOTS.includes(trimmedSlot)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid delivery time slot. Allowed slots: ${DELIVERY_TIME_SLOTS.join(', ')}`
+        });
+      }
+
+      cleanDeliveryTimeSlot = trimmedSlot;
+    }
+
+    // Cake message validation
+    let cleanCakeMessage = '';
+    if (cakeMessage !== undefined && cakeMessage !== null) {
+      if (typeof cakeMessage !== 'string') {
+        return res.status(400).json({ success: false, message: 'Cake message must be a string' });
+      }
+      cleanCakeMessage = cakeMessage.trim();
+      if (cleanCakeMessage.length > MAX_CAKE_MESSAGE_LENGTH) {
+        return res.status(400).json({
+          success: false,
+          message: `Cake message cannot exceed ${MAX_CAKE_MESSAGE_LENGTH} characters`
+        });
+      }
+    }
+
+    // Special instructions validation
+    let cleanSpecialInstructions = '';
+    if (specialInstructions !== undefined && specialInstructions !== null) {
+      if (typeof specialInstructions !== 'string') {
+        return res.status(400).json({ success: false, message: 'Special instructions must be a string' });
+      }
+      cleanSpecialInstructions = specialInstructions.trim();
+      if (cleanSpecialInstructions.length > MAX_SPECIAL_INSTRUCTIONS_LENGTH) {
+        return res.status(400).json({
+          success: false,
+          message: `Special instructions cannot exceed ${MAX_SPECIAL_INSTRUCTIONS_LENGTH} characters`
+        });
+      }
     }
 
     const orderItems = [];
@@ -136,7 +236,20 @@ const createCustomerOrder = async (req, res, next) => {
     }
     
     const settings = await ShopSettings.findOne({ key: 'main' });
-    const deliveryCharge = settings && settings.deliveryCharge !== undefined ? settings.deliveryCharge : 50;
+    const minimumOrderAmount = (settings && typeof settings.minimumOrderAmount === 'number' && settings.minimumOrderAmount >= 0)
+      ? settings.minimumOrderAmount
+      : 0;
+
+    if (minimumOrderAmount > 0 && subtotal < minimumOrderAmount) {
+      return res.status(400).json({
+        success: false,
+        message: `Order subtotal of ₹${subtotal} is below the minimum order amount of ₹${minimumOrderAmount}`
+      });
+    }
+
+    const deliveryCharge = (settings && typeof settings.deliveryCharge === 'number' && settings.deliveryCharge >= 0)
+      ? settings.deliveryCharge
+      : 50;
     const total = subtotal + deliveryCharge;
 
     const order = new Order({
@@ -148,7 +261,11 @@ const createCustomerOrder = async (req, res, next) => {
       items: orderItems,
       deliveryCharge: deliveryCharge,
       total: total,
-      status: 'Pending'
+      status: 'Pending',
+      deliveryDate: cleanDeliveryDate,
+      deliveryTimeSlot: cleanDeliveryTimeSlot,
+      cakeMessage: cleanCakeMessage,
+      specialInstructions: cleanSpecialInstructions
     });
 
     const createdOrder = await order.save();

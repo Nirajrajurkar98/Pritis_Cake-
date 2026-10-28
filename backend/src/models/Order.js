@@ -1,4 +1,9 @@
 const mongoose = require('mongoose');
+const {
+  DELIVERY_TIME_SLOTS,
+  MAX_CAKE_MESSAGE_LENGTH,
+  MAX_SPECIAL_INSTRUCTIONS_LENGTH
+} = require('../constants/order.constants');
 
 const orderItemSchema = new mongoose.Schema({
   cakeId: {
@@ -50,6 +55,7 @@ const orderSchema = new mongoose.Schema(
     deliveryCharge: {
       type: Number,
       required: true,
+      min: 0,
       default: 50,
     },
     total: {
@@ -60,6 +66,42 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ['Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled'],
       default: 'Pending',
+    },
+    deliveryDate: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          if (v === null || v === undefined || v === '') return true;
+          return /^\d{4}-\d{2}-\d{2}$/.test(v);
+        },
+        message: 'Delivery date must be in YYYY-MM-DD format',
+      },
+      default: null,
+    },
+    deliveryTimeSlot: {
+      type: String,
+      trim: true,
+      validate: {
+        validator: function (v) {
+          if (v === null || v === undefined || v === '') return true;
+          return DELIVERY_TIME_SLOTS.includes(v);
+        },
+        message: 'Invalid delivery time slot',
+      },
+      default: null,
+    },
+    cakeMessage: {
+      type: String,
+      trim: true,
+      maxlength: [MAX_CAKE_MESSAGE_LENGTH, `Cake message cannot exceed ${MAX_CAKE_MESSAGE_LENGTH} characters`],
+      default: '',
+    },
+    specialInstructions: {
+      type: String,
+      trim: true,
+      maxlength: [MAX_SPECIAL_INSTRUCTIONS_LENGTH, `Special instructions cannot exceed ${MAX_SPECIAL_INSTRUCTIONS_LENGTH} characters`],
+      default: '',
     },
   },
   {
