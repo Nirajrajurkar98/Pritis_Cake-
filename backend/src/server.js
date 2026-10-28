@@ -14,6 +14,8 @@ const customerRoutes = require('./routes/customer.routes');
 const settingsRoutes = require('./routes/settings.routes');
 const publicCakeRoutes = require('./routes/cake.public.routes');
 const customerOrderRoutes = require('./routes/order.customer.routes');
+const contactRoutes = require('./routes/contact.routes');
+const contactAdminRoutes = require('./routes/contact.admin.routes');
 
 // Load environment variables
 dotenv.config();
@@ -59,10 +61,12 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/cakes', publicCakeRoutes);
 app.use('/api/orders', customerOrderRoutes);
+app.use('/api/contact', contactRoutes);
 app.use('/api/admin/cakes', cakeRoutes);
 app.use('/api/admin/orders', orderRoutes);
 app.use('/api/admin/customers', customerRoutes);
 app.use('/api/admin/settings', settingsRoutes);
+app.use('/api/admin/contact-messages', contactAdminRoutes);
 app.use('/api/admin', adminRoutes);
 
 // 404 handler
