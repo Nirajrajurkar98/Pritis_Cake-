@@ -35,7 +35,10 @@ function showClientSection(id) {
     orders: 'My Orders', profile: 'My Profile'
   }[id] || 'Dashboard';
 
-  if (id === 'browse') loadBrowseCakes();
+  if (id === 'browse') {
+    loadBrowseCakes();
+    if (typeof updateDashCart === 'function') updateDashCart();
+  }
   if (id === 'orders') loadClientOrders();
   if (id === 'overview') loadClientDashboard();
   if (id === 'profile') loadProfile();

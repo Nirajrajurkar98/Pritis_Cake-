@@ -135,7 +135,10 @@ function updateCartUI() {
   const count = getCartCount();
   if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'flex' : 'none'; }
   renderCartItems();
+  if (typeof updateDashCart === 'function') updateDashCart();
 }
+
+let isPlacingOrder = false;
 
 function renderCartItems() {
   const container = document.getElementById('cartItems');
@@ -147,6 +150,16 @@ function renderCartItems() {
     return;
   }
   if (totalEl) totalEl.style.display = 'block';
+
+  const existingPhone = document.getElementById('checkoutPhone')?.value;
+  const existingAddress = document.getElementById('checkoutAddress')?.value;
+  const currentPhone = (existingPhone !== undefined && existingPhone !== null)
+    ? existingPhone
+    : (DB.currentUser?.phone || '');
+  const currentAddress = (existingAddress !== undefined && existingAddress !== null)
+    ? existingAddress
+    : '';
+
   container.innerHTML = DB.cart.map(item => `
     <div class="cart-item">
       <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}">` : item.emoji}</div>
@@ -167,8 +180,8 @@ function renderCartItems() {
   `).join('') + `
     <div class="cart-delivery-form" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
       <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Delivery Details</h4>
-      <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" style="width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" required>
-      <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 70px; font-family: inherit;" required></textarea>
+      <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" value="${currentPhone}" style="width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" required>
+      <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 70px; font-family: inherit;" required>${currentAddress}</textarea>
     </div>
   `;
   const subtotal = getCartTotal();
@@ -184,7 +197,12 @@ function toggleCart() {
 }
 
 async function placeOrder(e) {
-  if (DB.cart.length === 0) { showToast('Cart is empty!', 'error'); return false; }
+  if (isPlacingOrder) return false;
+
+  if (DB.cart.length === 0) {
+    showToast('Cart is empty! Add some cakes first 🎂', 'error');
+    return false;
+  }
   
   if (!isLoggedIn()) {
     showToast('Please login to place an order', 'error');
@@ -192,13 +210,13 @@ async function placeOrder(e) {
     return false;
   }
 
-  const phoneEl = document.getElementById('checkoutPhone');
-  const addressEl = document.getElementById('checkoutAddress');
+  const phoneEl = document.getElementById('dashPhone') || document.getElementById('checkoutPhone');
+  const addressEl = document.getElementById('dashAddress') || document.getElementById('checkoutAddress');
   
-  const phone = phoneEl ? phoneEl.value.trim() : '';
+  const phone = phoneEl ? phoneEl.value.trim() : (DB.currentUser?.phone || '').trim();
   const deliveryAddress = addressEl ? addressEl.value.trim() : '';
 
-  if (!phone || phone.length < 8) {
+  if (!phone || phone.length < 8 || phone.length > 15 || !/^[0-9+\-\s()]+$/.test(phone)) {
     showToast('Please provide a valid phone number', 'error');
     if (phoneEl) phoneEl.focus();
     return false;
@@ -210,6 +228,13 @@ async function placeOrder(e) {
     return false;
   }
 
+  if (deliveryAddress.length > 500) {
+    showToast('Delivery address is too long', 'error');
+    if (addressEl) addressEl.focus();
+    return false;
+  }
+
+  isPlacingOrder = true;
   const btn = e ? (e.currentTarget || e.target) : null;
   let originalText = '';
   if (btn) {
@@ -268,13 +293,15 @@ async function placeOrder(e) {
         </div>
       `;
     }
-    
-    return true;
+    if (typeof updateDashCart === 'function') updateDashCart();
+    showToast('Order placed successfully! 🎂', 'success');
+    return order;
   } catch (error) {
     console.error('Checkout failed', error);
     showToast(error.message || 'Checkout failed', 'error');
     return false;
   } finally {
+    isPlacingOrder = false;
     if (btn) {
       btn.innerHTML = originalText;
       btn.disabled = false;
