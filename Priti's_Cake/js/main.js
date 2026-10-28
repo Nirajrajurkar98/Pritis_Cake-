@@ -3,7 +3,11 @@ const DB = {
   cakes: [],
   users: [],
   cart: JSON.parse(localStorage.getItem('pc_cart') || '[]'),
-  currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null')
+  currentUser: JSON.parse(localStorage.getItem('pc_current_user') || 'null'),
+  settings: {
+    deliveryCharge: 50,
+    minimumOrderAmount: 0
+  }
 };
 
 // Admin credentials removed
@@ -12,6 +16,61 @@ const DB = {
 function saveData() {
   localStorage.setItem('pc_cart', JSON.stringify(DB.cart));
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
+}
+
+// ===== DELIVERY CHARGE HELPER =====
+function getDeliveryCharge() {
+  const subtotal = getCartTotal();
+  if (subtotal === 0 || DB.cart.length === 0) return 0;
+  if (DB.settings && typeof DB.settings.deliveryCharge === 'number' && DB.settings.deliveryCharge >= 0) {
+    return DB.settings.deliveryCharge;
+  }
+  return 50;
+}
+
+// ===== LOAD SETTINGS FROM API =====
+let isSettingsLoaded = false;
+let isSettingsLoading = false;
+let settingsPromise = null;
+
+async function loadSettingsFromAPI() {
+  if (isSettingsLoaded) return DB.settings;
+  if (isSettingsLoading && settingsPromise) return settingsPromise;
+
+  isSettingsLoading = true;
+  settingsPromise = (async () => {
+    try {
+      let data;
+      if (typeof api !== 'undefined' && api.get) {
+        data = await api.get('/settings');
+      } else {
+        const response = await fetch('http://localhost:5000/api/settings');
+        if (!response.ok) throw new Error('Failed to load settings');
+        data = await response.json();
+      }
+
+      if (data && data.success && data.settings) {
+        DB.settings = {
+          ...DB.settings,
+          ...data.settings,
+          deliveryCharge: (typeof data.settings.deliveryCharge === 'number' && data.settings.deliveryCharge >= 0)
+            ? data.settings.deliveryCharge
+            : 50
+        };
+      }
+      isSettingsLoaded = true;
+      window.dispatchEvent(new Event('settingsLoaded'));
+    } catch (error) {
+      console.warn('Could not load shop settings, using default fallback (₹50 delivery charge):', error.message);
+      window.dispatchEvent(new Event('settingsError'));
+    } finally {
+      isSettingsLoading = false;
+      updateCartUI();
+    }
+    return DB.settings;
+  })();
+
+  return settingsPromise;
 }
 
 // ===== LOAD CAKES FROM API =====
@@ -185,10 +244,13 @@ function renderCartItems() {
     </div>
   `;
   const subtotal = getCartTotal();
-  const delivery = subtotal > 0 ? 50 : 0;
-  document.getElementById('cartSubtotal').textContent = `₹${subtotal}`;
-  document.getElementById('cartDelivery').textContent = `₹${delivery}`;
-  document.getElementById('cartGrandTotal').textContent = `₹${subtotal + delivery}`;
+  const delivery = getDeliveryCharge();
+  const subtotalEl = document.getElementById('cartSubtotal');
+  const deliveryEl = document.getElementById('cartDelivery');
+  const grandTotalEl = document.getElementById('cartGrandTotal');
+  if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
+  if (deliveryEl) deliveryEl.textContent = `₹${delivery}`;
+  if (grandTotalEl) grandTotalEl.textContent = `₹${subtotal + delivery}`;
 }
 
 function toggleCart() {
@@ -267,7 +329,8 @@ async function placeOrder(e) {
     if (totalEl) totalEl.style.display = 'none';
     
     if (container) {
-      const subtotal = order.total - (order.deliveryCharge || 50);
+      const deliveryFee = order.deliveryCharge !== undefined ? order.deliveryCharge : getDeliveryCharge();
+      const subtotal = order.total - deliveryFee;
       container.innerHTML = `
         <div style="text-align: center; padding: 20px 10px;">
           <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
@@ -278,7 +341,7 @@ async function placeOrder(e) {
               <span>Subtotal</span><span>₹${subtotal}</span>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom: 8px; color:#666;">
-              <span>Delivery Charge</span><span>₹${order.deliveryCharge || 50}</span>
+              <span>Delivery Charge</span><span>₹${deliveryFee}</span>
             </div>
             <div style="display:flex; justify-content:space-between; border-top: 1px solid #ddd; padding-top: 10px; font-weight:bold; color:#e91e8c; font-size: 1.1rem;">
               <span>Total</span><span>₹${order.total}</span>
@@ -355,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const hamburger = document.getElementById('hamburger');
   if (hamburger) hamburger.addEventListener('click', toggleMobileNav);
   
-  // Start loading cakes for storefront
+  // Start loading settings and cakes for storefront
+  loadSettingsFromAPI();
   loadCakesFromAPI();
 });

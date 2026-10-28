@@ -96,7 +96,52 @@ const updateShopSettings = async (req, res, next) => {
   }
 };
 
+// @desc    Get public shop settings
+// @route   GET /api/settings
+// @access  Public
+const getPublicSettings = async (req, res, next) => {
+  try {
+    const settings = await ShopSettings.findOne({ key: 'main' });
+
+    const defaults = {
+      shopName: "Priti's Cake",
+      phone: '',
+      email: '',
+      address: '',
+      openingTime: '10:00',
+      closingTime: '21:00',
+      deliveryCharge: 50,
+      minimumOrderAmount: 0
+    };
+
+    if (!settings) {
+      return res.status(200).json({
+        success: true,
+        settings: defaults
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      settings: {
+        shopName: settings.shopName !== undefined ? settings.shopName : defaults.shopName,
+        phone: settings.phone !== undefined ? settings.phone : defaults.phone,
+        email: settings.email !== undefined ? settings.email : defaults.email,
+        address: settings.address !== undefined ? settings.address : defaults.address,
+        openingTime: settings.openingTime !== undefined ? settings.openingTime : defaults.openingTime,
+        closingTime: settings.closingTime !== undefined ? settings.closingTime : defaults.closingTime,
+        deliveryCharge: typeof settings.deliveryCharge === 'number' ? settings.deliveryCharge : defaults.deliveryCharge,
+        minimumOrderAmount: typeof settings.minimumOrderAmount === 'number' ? settings.minimumOrderAmount : defaults.minimumOrderAmount
+      }
+    });
+  } catch (error) {
+    console.error(`Error fetching public settings: ${error.message}`);
+    next(error);
+  }
+};
+
 module.exports = {
   getShopSettings,
-  updateShopSettings
+  updateShopSettings,
+  getPublicSettings
 };

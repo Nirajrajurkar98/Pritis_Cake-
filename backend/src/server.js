@@ -16,6 +16,7 @@ const publicCakeRoutes = require('./routes/cake.public.routes');
 const customerOrderRoutes = require('./routes/order.customer.routes');
 const contactRoutes = require('./routes/contact.routes');
 const contactAdminRoutes = require('./routes/contact.admin.routes');
+const publicSettingsRoutes = require('./routes/settings.public.routes');
 
 // Load environment variables
 dotenv.config();
@@ -62,6 +63,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/cakes', publicCakeRoutes);
 app.use('/api/orders', customerOrderRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/settings', publicSettingsRoutes);
 app.use('/api/admin/cakes', cakeRoutes);
 app.use('/api/admin/orders', orderRoutes);
 app.use('/api/admin/customers', customerRoutes);

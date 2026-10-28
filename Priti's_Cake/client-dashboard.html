@@ -229,7 +229,7 @@
         </div>
       </div>
       <div style="display:flex;justify-content:space-between;padding:15px 0 10px 0;font-weight:800;font-size:1.1rem;color:#e91e8c;border-top:1px solid #f0f0f0;">
-        <span>Total</span><span>₹${getCartTotal() + 50}</span>
+        <span>Total</span><span>₹${getCartTotal() + (typeof getDeliveryCharge === 'function' ? getDeliveryCharge() : 50)}</span>
       </div>
       <button class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem;margin-top:5px" onclick="placeOrderDash(event)">Place Order</button>
     `;
@@ -239,4 +239,3 @@
 </script>
 </body>
 </html>
-
