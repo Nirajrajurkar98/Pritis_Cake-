@@ -80,8 +80,118 @@ const getCustomerOrders = async (req, res, next) => {
   }
 };
 
+// @desc    Block customer account
+// @route   PATCH /api/admin/customers/:id/block
+// @access  Private/Admin
+const blockCustomer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid customer ID' });
+    }
+
+    if (req.user && req.user._id.toString() === id.toString()) {
+      return res.status(400).json({ success: false, message: 'Administrators cannot block their own account' });
+    }
+
+    const customer = await User.findById(id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' });
+    }
+
+    if (customer.role === 'admin') {
+      return res.status(400).json({ success: false, message: 'Cannot block an administrator account' });
+    }
+
+    customer.isBlocked = true;
+    await customer.save();
+
+    const customerData = {
+      _id: customer._id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      role: customer.role,
+      isBlocked: customer.isBlocked,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Customer has been blocked successfully',
+      isBlocked: customer.isBlocked,
+      customer: customerData,
+      data: customerData
+    });
+  } catch (error) {
+    console.error(`Error blocking customer: ${error.message}`);
+    next(error);
+  }
+};
+
+// @desc    Unblock customer account
+// @route   PATCH /api/admin/customers/:id/unblock
+// @access  Private/Admin
+const unblockCustomer = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid customer ID' });
+    }
+
+    const customer = await User.findById(id);
+    if (!customer) {
+      return res.status(404).json({ success: false, message: 'Customer not found' });
+    }
+
+    customer.isBlocked = false;
+    await customer.save();
+
+    const customerData = {
+      _id: customer._id,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      role: customer.role,
+      isBlocked: customer.isBlocked,
+      createdAt: customer.createdAt,
+      updatedAt: customer.updatedAt
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Customer has been unblocked successfully',
+      isBlocked: customer.isBlocked,
+      customer: customerData,
+      data: customerData
+    });
+  } catch (error) {
+    console.error(`Error unblocking customer: ${error.message}`);
+    next(error);
+  }
+};
+
+// @desc    Update customer block status
+// @route   PATCH /api/admin/customers/:id
+// @access  Private/Admin
+const updateCustomerBlock = async (req, res, next) => {
+  if (req.body.isBlocked === true || req.body.isBlocked === 'true' || req.body.action === 'block') {
+    return blockCustomer(req, res, next);
+  } else if (req.body.isBlocked === false || req.body.isBlocked === 'false' || req.body.action === 'unblock') {
+    return unblockCustomer(req, res, next);
+  } else {
+    return res.status(400).json({ success: false, message: 'Please specify isBlocked (true or false) or valid action' });
+  }
+};
+
 module.exports = {
   getCustomers,
   getCustomerById,
-  getCustomerOrders
+  getCustomerOrders,
+  blockCustomer,
+  unblockCustomer,
+  updateCustomerBlock
 };

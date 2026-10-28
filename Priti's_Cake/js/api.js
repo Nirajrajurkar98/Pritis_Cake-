@@ -26,7 +26,18 @@ const api = {
     
     const data = await response.json().catch(() => null);
     if (!response.ok) {
-      if (response.status === 403) throw new Error('You are not authorized to perform this action.');
+      if (response.status === 403 && data && data.isBlocked) {
+        localStorage.removeItem('pc_token');
+        localStorage.removeItem('pc_current_user');
+        if (typeof DB !== 'undefined') DB.currentUser = null;
+        if (!window.location.pathname.includes('login.html') &&
+            !window.location.pathname.includes('admin-login.html')) {
+          sessionStorage.setItem('pc_blocked_msg', data.message || 'Your account has been blocked. Please contact the bakery administrator for assistance.');
+          window.location.href = 'login.html';
+        }
+        throw new Error(data.message || 'Your account has been blocked. Please contact the bakery administrator for assistance.');
+      }
+      if (response.status === 403) throw new Error((data && data.message) || 'You are not authorized to perform this action.');
       throw new Error((data && data.message) || 'Something went wrong. Please try again.');
     }
     return data;
@@ -89,6 +100,19 @@ const api = {
         method: 'PUT',
         headers: api.getHeaders(true),
         body: formData
+      });
+      return await api.handleResponse(response);
+    } catch (err) {
+      throw err;
+    }
+  },
+
+  patch: async (endpoint, data = {}) => {
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: 'PATCH',
+        headers: api.getHeaders(),
+        body: JSON.stringify(data)
       });
       return await api.handleResponse(response);
     } catch (err) {

@@ -163,8 +163,13 @@ tr:hover td { background: #f9fafb; }
 .badge-out-for-delivery { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
 .badge-delivered { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
 .badge-cancelled { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
-.badge-active { background: #d1fae5; color: #065f46; }
+.badge-active { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .badge-inactive { background: #fee2e2; color: #b91c1c; }
+.badge-blocked { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.btn-block { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+.btn-block:hover:not(:disabled) { background: #fca5a5; }
+.btn-unblock { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.btn-unblock:hover:not(:disabled) { background: #d1fae5; }
 
 /* FORM STYLES */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }

@@ -564,9 +564,11 @@ async function viewOrder(orderId) {
 }
 
 // ===== CUSTOMERS =====
+let isProcessingCustomerBlock = false;
+
 async function loadCustomers() {
   const tbody = document.getElementById('customersBody');
-  tbody.innerHTML = '<tr><td colspan="5" class="state-loading" style="padding:30px">Loading customers...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="6" class="state-loading" style="padding:30px">Loading customers...</td></tr>';
   
   try {
     const [custRes, ordRes] = await Promise.all([
@@ -591,7 +593,7 @@ async function loadCustomers() {
     renderCustomers(allCustomers);
   } catch(err) {
     console.error('Failed to load customers:', err);
-    tbody.innerHTML = '<tr><td colspan="5" class="state-error" style="padding:30px">Unable to load customers. Please try again.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="state-error" style="padding:30px">Unable to load customers. Please try again.</td></tr>';
   }
 }
 
@@ -600,7 +602,7 @@ function renderCustomers(customersToRender) {
   if (!customersToRender || customersToRender.length === 0) {
     const isFiltered = document.getElementById('searchCustomersInput').value;
     const msg = isFiltered ? 'No customers match your search.' : 'No customers found.';
-    tbody.innerHTML = `<tr><td colspan="5" class="empty-state" style="padding:30px">${msg}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state" style="padding:30px">${msg}</td></tr>`;
     return;
   }
   
@@ -610,7 +612,7 @@ function renderCustomers(customersToRender) {
     const total = typeof formatCurrency === 'function' ? formatCurrency(c.totalSpent) : c.totalSpent;
     
     return `
-      <tr>
+      <tr id="row-customer-${c._id}">
         <td style="padding:12px">
           <div style="display:flex;align-items:center;gap:12px">
             <div style="width:36px;height:36px;background:#fdf2f8;border:1px solid #fbcfe8;color:#be185d;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:0.875rem;flex-shrink:0">${initial}</div>
@@ -624,13 +626,114 @@ function renderCustomers(customersToRender) {
         <td style="padding:12px;font-size:0.875rem;color:#4b5563">${date}</td>
         <td style="padding:12px;text-align:right;font-size:0.875rem;font-weight:500;color:#111827">${c.orderCount}</td>
         <td style="padding:12px;text-align:right;font-weight:600;color:#111827">${total}</td>
+        <td style="padding:12px;text-align:center" id="cell-status-${c._id}">
+          <span class="badge ${Boolean(c.isBlocked) ? 'badge-blocked' : 'badge-active'}" id="badge-cust-${c._id}">${Boolean(c.isBlocked) ? 'Blocked' : 'Active'}</span>
+        </td>
         <td style="padding:12px;text-align:right">
-          <button type="button" class="btn-sm btn-outline" style="border:1px solid #d1d5db;color:#374151;background:#fff" onclick="event.preventDefault(); viewCustomer('${c._id}')">View Details</button>
+          <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center">
+            <button type="button" class="btn-sm btn-outline" style="border:1px solid #d1d5db;color:#374151;background:#fff" onclick="event.preventDefault(); viewCustomer('${c._id}')">View Details</button>
+            <button type="button" class="btn-sm ${Boolean(c.isBlocked) ? 'btn-unblock' : 'btn-block'}" id="btn-block-${c._id}" data-customer-id="${c._id}" onclick="event.preventDefault(); toggleBlockCustomer('${c._id}', this)">${Boolean(c.isBlocked) ? 'Unblock' : 'Block'}</button>
+          </div>
         </td>
       </tr>
     `;
   }).join('');
 }
+
+function updateCustomerRowUI(customer) {
+  const isBlocked = Boolean(customer.isBlocked);
+
+  // Update status badge
+  const badge = document.getElementById(`badge-cust-${customer._id}`);
+  if (badge) {
+    badge.className = `badge ${isBlocked ? 'badge-blocked' : 'badge-active'}`;
+    badge.textContent = isBlocked ? 'Blocked' : 'Active';
+  }
+
+  // Update action button
+  const btn = document.getElementById(`btn-block-${customer._id}`);
+  if (btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.className = `btn-sm ${isBlocked ? 'btn-unblock' : 'btn-block'}`;
+    btn.textContent = isBlocked ? 'Unblock' : 'Block';
+  }
+}
+
+async function toggleBlockCustomer(customerId, btnEl) {
+  if (isProcessingCustomerBlock) return;
+
+  const customer = allCustomers.find(c => c._id === customerId);
+  if (!customer) return;
+
+  const currentAdmin = JSON.parse(localStorage.getItem('pc_admin') || 'null');
+  if (currentAdmin && (currentAdmin.id === customerId || currentAdmin._id === customerId)) {
+    showToast('Administrators cannot block their own account', 'error');
+    return;
+  }
+
+  const isBlocked = Boolean(customer.isBlocked);
+  const actionText = isBlocked ? 'unblock' : 'block';
+  const customerName = customer.name || 'this customer';
+  const customerEmail = customer.email ? ` (${customer.email})` : '';
+
+  const confirmMsg = isBlocked
+    ? `Are you sure you want to unblock customer "${customerName}"${customerEmail}?`
+    : `Are you sure you want to block customer "${customerName}"${customerEmail}?\n\nThey will no longer be able to log in or access protected customer features.`;
+
+  if (!window.confirm(confirmMsg)) {
+    return;
+  }
+
+  const btn = btnEl || document.getElementById(`btn-block-${customerId}`);
+  const originalText = btn ? btn.textContent : (isBlocked ? 'Unblock' : 'Block');
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = isBlocked ? 'Unblocking...' : 'Blocking...';
+    btn.style.opacity = '0.6';
+  }
+
+  isProcessingCustomerBlock = true;
+
+  try {
+    const res = await api.patch(`/admin/customers/${customerId}/${actionText}`);
+
+    // Update customer in local memory
+    customer.isBlocked = !isBlocked;
+
+    // Update row elements in place without reloading entire page
+    updateCustomerRowUI(customer);
+
+    showToast(res.message || `Customer ${isBlocked ? 'unblocked' : 'blocked'} successfully`, 'success');
+  } catch (err) {
+    console.error(`Failed to ${actionText} customer:`, err);
+    showToast(err.message || `Failed to ${actionText} customer`, 'error');
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+      btn.style.opacity = '1';
+    }
+  } finally {
+    isProcessingCustomerBlock = false;
+  }
+}
+
+function blockCustomer(customerId, btnEl) {
+  const customer = allCustomers.find(c => c._id === customerId);
+  if (customer && customer.isBlocked) return;
+  return toggleBlockCustomer(customerId, btnEl);
+}
+
+function unblockCustomer(customerId, btnEl) {
+  const customer = allCustomers.find(c => c._id === customerId);
+  if (customer && !customer.isBlocked) return;
+  return toggleBlockCustomer(customerId, btnEl);
+}
+
+window.toggleBlockCustomer = toggleBlockCustomer;
+window.blockCustomer = blockCustomer;
+window.unblockCustomer = unblockCustomer;
 
 function filterCustomers() {
   const query = (document.getElementById('searchCustomersInput').value || '').toLowerCase().trim();
@@ -643,7 +746,8 @@ function filterCustomers() {
   const filtered = allCustomers.filter(c => {
     return (c.name && c.name.toLowerCase().includes(query)) || 
            (c.email && c.email.toLowerCase().includes(query)) ||
-           (c.phone && c.phone.toLowerCase().includes(query));
+           (c.phone && c.phone.toLowerCase().includes(query)) ||
+           (c.isBlocked ? 'blocked' : 'active').includes(query);
   });
   
   renderCustomers(filtered);
@@ -711,6 +815,10 @@ async function viewCustomer(customerId) {
           <div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${escapeHtml(c.email)}</div>
           ${c.phone ? `<div style="font-size:0.875rem;color:#4b5563;margin-top:2px">${escapeHtml(c.phone)}</div>` : ''}
           <div style="font-size:0.875rem;color:#6b7280;margin-top:6px">Joined: ${dateStr}</div>
+          <div style="font-size:0.875rem;color:#4b5563;margin-top:6px;display:flex;align-items:center;gap:6px">
+            <span>Status:</span>
+            <span class="badge ${Boolean(c.isBlocked) ? 'badge-blocked' : 'badge-active'}" id="modal-status-badge-${c._id}">${Boolean(c.isBlocked) ? 'Blocked' : 'Active'}</span>
+          </div>
         </div>
         <div style="text-align:right;display:flex;flex-direction:column;justify-content:center">
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:0.05em">Total Spent</div>

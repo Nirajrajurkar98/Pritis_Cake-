@@ -8,7 +8,8 @@ const router = express.Router();
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // limit each IP to 10 login requests per windowMs
+  max: process.env.NODE_ENV === 'test' ? 1000 : 10, // limit each IP to 10 login requests per windowMs
+  skip: () => process.env.NODE_ENV === 'test',
   message: { success: false, message: 'Too many login attempts, please try again later' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -73,6 +74,14 @@ router.post('/login', loginLimiter, async (req, res, next) => {
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+      if (user.isBlocked) {
+        return res.status(403).json({
+          success: false,
+          message: 'Your account has been blocked. Please contact the bakery administrator for assistance.',
+          isBlocked: true
+        });
+      }
+
       res.status(200).json({
         success: true,
         message: 'Login successful',
