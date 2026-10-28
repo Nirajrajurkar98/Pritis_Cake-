@@ -180,7 +180,9 @@ function viewOrderDetails(orderId) {
   if (!o) return showToast('Order not found', 'error');
 
   const content = document.getElementById('orderDetailContent');
-  const subtotal = o.total - (o.deliveryCharge || 50);
+  const deliveryCharge = typeof o.deliveryCharge === 'number' ? o.deliveryCharge : 50;
+  const subtotal = o.total - deliveryCharge;
+  const safe = (val) => typeof escapeHtml === 'function' ? escapeHtml(val) : String(val || '').replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   content.innerHTML = `
     <div style="border-bottom:1px solid #eee; padding-bottom: 15px; margin-bottom: 15px;">
@@ -205,7 +207,7 @@ function viewOrderDetails(orderId) {
           <span>Subtotal</span><span>₹${subtotal.toLocaleString()}</span>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.9rem; color:#666">
-          <span>Delivery Charge</span><span>₹${(o.deliveryCharge || 50).toLocaleString()}</span>
+          <span>Delivery Charge</span><span>₹${deliveryCharge.toLocaleString()}</span>
         </div>
         <div style="display:flex; justify-content:space-between; font-weight:bold; color:#e91e8c; font-size:1.1rem; margin-top:5px;">
           <span>Total</span><span>₹${o.total.toLocaleString()}</span>
@@ -213,10 +215,15 @@ function viewOrderDetails(orderId) {
       </div>
     </div>
 
-    <h4 style="margin-bottom: 10px">Delivery Information</h4>
+    <h4 style="margin-bottom: 10px">Delivery & Scheduling</h4>
     <div style="background:#f8f9fa; border-radius:8px; padding:15px; font-size:0.9rem; color:#555;">
-      <p style="margin-bottom:5px"><strong>Phone:</strong> ${o.phone || 'N/A'}</p>
-      <p style="margin:0"><strong>Address:</strong><br/>${o.deliveryAddress ? o.deliveryAddress.replace(/</g, "&lt;").replace(/>/g, "&gt;") : 'N/A'}</p>
+      <p style="margin-bottom:5px"><strong>Phone:</strong> ${safe(o.phone || 'N/A')}</p>
+      <p style="margin-bottom:5px"><strong>Address:</strong><br/>${safe(o.deliveryAddress || 'N/A')}</p>
+      ${o.deliveryDate ? `<p style="margin-bottom:5px"><strong>Requested Delivery Date:</strong> ${safe(o.deliveryDate)}</p>` : ''}
+      ${o.deliveryTimeSlot ? `<p style="margin-bottom:5px"><strong>Delivery Time Slot:</strong> ${safe(o.deliveryTimeSlot)}</p>` : ''}
+      ${o.cakeMessage ? `<p style="margin-bottom:5px"><strong>Cake Message:</strong> "${safe(o.cakeMessage)}"</p>` : ''}
+      ${o.specialInstructions ? `<p style="margin:0"><strong>Special Instructions:</strong><br/>${safe(o.specialInstructions)}</p>` : ''}
+
     </div>
     
     <div style="margin-top: 20px;">

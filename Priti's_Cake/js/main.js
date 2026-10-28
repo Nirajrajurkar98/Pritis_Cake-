@@ -18,6 +18,17 @@ function saveData() {
   localStorage.setItem('pc_current_user', JSON.stringify(DB.currentUser));
 }
 
+// ===== ESCAPE HTML HELPER =====
+function escapeHtml(unsafe) {
+  if (unsafe === null || unsafe === undefined) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ===== DELIVERY CHARGE HELPER =====
 function getDeliveryCharge() {
   const subtotal = getCartTotal();
@@ -212,12 +223,24 @@ function renderCartItems() {
 
   const existingPhone = document.getElementById('checkoutPhone')?.value;
   const existingAddress = document.getElementById('checkoutAddress')?.value;
+  const existingDate = document.getElementById('checkoutDate')?.value;
+  const existingSlot = document.getElementById('checkoutTimeSlot')?.value;
+  const existingMessage = document.getElementById('checkoutCakeMessage')?.value;
+  const existingInstructions = document.getElementById('checkoutInstructions')?.value;
+
   const currentPhone = (existingPhone !== undefined && existingPhone !== null)
     ? existingPhone
     : (DB.currentUser?.phone || '');
   const currentAddress = (existingAddress !== undefined && existingAddress !== null)
     ? existingAddress
     : '';
+  const currentDate = (existingDate !== undefined && existingDate !== null) ? existingDate : '';
+  const currentSlot = (existingSlot !== undefined && existingSlot !== null) ? existingSlot : '';
+  const currentMessage = (existingMessage !== undefined && existingMessage !== null) ? existingMessage : '';
+  const currentInstructions = (existingInstructions !== undefined && existingInstructions !== null) ? existingInstructions : '';
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   container.innerHTML = DB.cart.map(item => `
     <div class="cart-item">
@@ -238,9 +261,40 @@ function renderCartItems() {
     </div>
   `).join('') + `
     <div class="cart-delivery-form" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
-      <h4 style="margin-bottom: 10px; font-size: 0.95rem;">Delivery Details</h4>
-      <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" value="${currentPhone}" style="width: 100%; margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit;" required>
-      <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 70px; font-family: inherit;" required>${currentAddress}</textarea>
+      <h4 style="margin-bottom: 10px; font-size: 0.95rem; color:#333;">Delivery Details</h4>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div>
+          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Phone Number (Required)</label>
+          <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" value="${escapeHtml(currentPhone)}" style="width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.9rem;" required>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Delivery Address (Required)</label>
+          <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 60px; font-family: inherit; font-size: 0.9rem;" required>${escapeHtml(currentAddress)}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+          <div>
+            <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Delivery Date</label>
+            <input type="date" id="checkoutDate" min="${todayStr}" value="${currentDate}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+          </div>
+          <div>
+            <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Time Slot</label>
+            <select id="checkoutTimeSlot" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+              <option value="">Select (Optional)</option>
+              <option value="10:00-12:00" ${currentSlot === '10:00-12:00' ? 'selected' : ''}>10:00 - 12:00</option>
+              <option value="12:00-14:00" ${currentSlot === '12:00-14:00' ? 'selected' : ''}>12:00 - 14:00</option>
+              <option value="16:00-18:00" ${currentSlot === '16:00-18:00' ? 'selected' : ''}>16:00 - 18:00</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Cake Message (Optional, max 100)</label>
+          <input type="text" id="checkoutCakeMessage" maxlength="100" placeholder="e.g. Happy Birthday!" value="${escapeHtml(currentMessage)}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+        </div>
+        <div>
+          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Special Instructions (Optional, max 500)</label>
+          <textarea id="checkoutInstructions" maxlength="500" placeholder="e.g. Please ring bell twice" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 50px; font-family: inherit; font-size: 0.85rem;">${escapeHtml(currentInstructions)}</textarea>
+        </div>
+      </div>
     </div>
   `;
   const subtotal = getCartTotal();
@@ -251,6 +305,34 @@ function renderCartItems() {
   if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
   if (deliveryEl) deliveryEl.textContent = `₹${delivery}`;
   if (grandTotalEl) grandTotalEl.textContent = `₹${subtotal + delivery}`;
+
+  // Minimum order notice
+  let minNoticeEl = document.getElementById('cartMinOrderNotice');
+  const minOrder = (DB.settings && typeof DB.settings.minimumOrderAmount === 'number') ? DB.settings.minimumOrderAmount : 0;
+  if (minOrder > 0) {
+    if (!minNoticeEl && totalEl) {
+      minNoticeEl = document.createElement('div');
+      minNoticeEl.id = 'cartMinOrderNotice';
+      minNoticeEl.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:0.85rem;margin-top:10px;text-align:center;font-weight:500;';
+      const checkoutBtn = totalEl.querySelector('button.btn-primary');
+      if (checkoutBtn) totalEl.insertBefore(minNoticeEl, checkoutBtn);
+    }
+    if (minNoticeEl) {
+      if (subtotal < minOrder) {
+        minNoticeEl.style.background = '#fff3cd';
+        minNoticeEl.style.color = '#856404';
+        minNoticeEl.style.border = '1px solid #ffeeba';
+        minNoticeEl.innerHTML = `⚠️ Minimum order is <strong>₹${minOrder}</strong>. Add ₹${minOrder - subtotal} more.`;
+      } else {
+        minNoticeEl.style.background = '#e8f5e9';
+        minNoticeEl.style.color = '#2e7d32';
+        minNoticeEl.style.border = '1px solid #c8e6c9';
+        minNoticeEl.innerHTML = `✓ Minimum order of ₹${minOrder} met`;
+      }
+    }
+  } else if (minNoticeEl) {
+    minNoticeEl.remove();
+  }
 }
 
 function toggleCart() {
@@ -272,11 +354,26 @@ async function placeOrder(e) {
     return false;
   }
 
+  const subtotal = getCartTotal();
+  const minOrder = (DB.settings && typeof DB.settings.minimumOrderAmount === 'number') ? DB.settings.minimumOrderAmount : 0;
+  if (minOrder > 0 && subtotal < minOrder) {
+    showToast(`Minimum order amount is ₹${minOrder}. Please add ₹${minOrder - subtotal} more to your cart.`, 'error');
+    return false;
+  }
+
   const phoneEl = document.getElementById('dashPhone') || document.getElementById('checkoutPhone');
   const addressEl = document.getElementById('dashAddress') || document.getElementById('checkoutAddress');
+  const dateEl = document.getElementById('dashDate') || document.getElementById('checkoutDate');
+  const slotEl = document.getElementById('dashTimeSlot') || document.getElementById('checkoutTimeSlot');
+  const msgEl = document.getElementById('dashCakeMessage') || document.getElementById('checkoutCakeMessage');
+  const instEl = document.getElementById('dashInstructions') || document.getElementById('checkoutInstructions');
   
   const phone = phoneEl ? phoneEl.value.trim() : (DB.currentUser?.phone || '').trim();
   const deliveryAddress = addressEl ? addressEl.value.trim() : '';
+  const deliveryDate = dateEl ? dateEl.value.trim() : '';
+  const deliveryTimeSlot = slotEl ? slotEl.value.trim() : '';
+  const cakeMessage = msgEl ? msgEl.value.trim() : '';
+  const specialInstructions = instEl ? instEl.value.trim() : '';
 
   if (!phone || phone.length < 8 || phone.length > 15 || !/^[0-9+\-\s()]+$/.test(phone)) {
     showToast('Please provide a valid phone number', 'error');
@@ -293,6 +390,28 @@ async function placeOrder(e) {
   if (deliveryAddress.length > 500) {
     showToast('Delivery address is too long', 'error');
     if (addressEl) addressEl.focus();
+    return false;
+  }
+
+  if (deliveryDate) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (deliveryDate < todayStr) {
+      showToast('Delivery date cannot be earlier than today', 'error');
+      if (dateEl) dateEl.focus();
+      return false;
+    }
+  }
+
+  if (cakeMessage && cakeMessage.length > 100) {
+    showToast('Cake message cannot exceed 100 characters', 'error');
+    if (msgEl) msgEl.focus();
+    return false;
+  }
+
+  if (specialInstructions && specialInstructions.length > 500) {
+    showToast('Special instructions cannot exceed 500 characters', 'error');
+    if (instEl) instEl.focus();
     return false;
   }
 
@@ -314,6 +433,10 @@ async function placeOrder(e) {
         qty: item.qty
       }))
     };
+    if (deliveryDate) payload.deliveryDate = deliveryDate;
+    if (deliveryTimeSlot) payload.deliveryTimeSlot = deliveryTimeSlot;
+    if (cakeMessage) payload.cakeMessage = cakeMessage;
+    if (specialInstructions) payload.specialInstructions = specialInstructions;
     
     const order = await api.post('/orders', payload);
     
@@ -330,7 +453,7 @@ async function placeOrder(e) {
     
     if (container) {
       const deliveryFee = order.deliveryCharge !== undefined ? order.deliveryCharge : getDeliveryCharge();
-      const subtotal = order.total - deliveryFee;
+      const orderSubtotal = order.total - deliveryFee;
       container.innerHTML = `
         <div style="text-align: center; padding: 20px 10px;">
           <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
@@ -338,7 +461,7 @@ async function placeOrder(e) {
           <p style="margin-bottom: 5px;"><strong>Order ID:</strong> #${order._id}</p>
           <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: left;">
             <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-              <span>Subtotal</span><span>₹${subtotal}</span>
+              <span>Subtotal</span><span>₹${orderSubtotal}</span>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom: 8px; color:#666;">
               <span>Delivery Charge</span><span>₹${deliveryFee}</span>
@@ -348,8 +471,12 @@ async function placeOrder(e) {
             </div>
           </div>
           <div style="text-align: left; font-size: 0.9rem; margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
-            <p style="margin-bottom:5px"><strong>Phone:</strong> ${order.phone}</p>
-            <p style="margin:0"><strong>Delivery Address:</strong><br/>${order.deliveryAddress}</p>
+            <p style="margin-bottom:5px"><strong>Phone:</strong> ${escapeHtml(order.phone)}</p>
+            <p style="margin-bottom:5px"><strong>Delivery Address:</strong><br/>${escapeHtml(order.deliveryAddress)}</p>
+            ${order.deliveryDate ? `<p style="margin-bottom:5px"><strong>Delivery Date:</strong> ${escapeHtml(order.deliveryDate)}</p>` : ''}
+            ${order.deliveryTimeSlot ? `<p style="margin-bottom:5px"><strong>Time Slot:</strong> ${escapeHtml(order.deliveryTimeSlot)}</p>` : ''}
+            ${order.cakeMessage ? `<p style="margin-bottom:5px"><strong>Cake Message:</strong> "${escapeHtml(order.cakeMessage)}"</p>` : ''}
+            ${order.specialInstructions ? `<p style="margin:0"><strong>Instructions:</strong><br/>${escapeHtml(order.specialInstructions)}</p>` : ''}
           </div>
           <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" onclick="window.location.href='client-dashboard.html'">View My Orders</button>
           <button class="btn btn-outline" style="width: 100%; padding: 12px; background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;" onclick="toggleCart(); updateCartUI();">Close</button>

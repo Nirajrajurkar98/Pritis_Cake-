@@ -506,7 +506,14 @@ async function viewOrder(orderId) {
     const orderIdStr = o._id.substring(o._id.length-6).toUpperCase();
     const dateStr = new Date(o.createdAt).toLocaleString(undefined, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute:'2-digit' });
     const badgeClass = o.status.toLowerCase().replace(/\s+/g, '-');
-    const totalAmount = typeof formatCurrency === 'function' ? formatCurrency(o.total) : o.total;
+    const deliveryCharge = typeof o.deliveryCharge === 'number' ? o.deliveryCharge : 50;
+    const subtotal = Array.isArray(o.items)
+      ? o.items.reduce((sum, item) => sum + (item.price * item.qty), 0)
+      : (o.total - deliveryCharge);
+    const formatPrice = (val) => typeof formatCurrency === 'function' ? formatCurrency(val) : '₹' + Number(val).toLocaleString();
+    const totalAmount = formatPrice(o.total);
+    const subtotalAmount = formatPrice(subtotal);
+    const deliveryAmount = formatPrice(deliveryCharge);
     
     document.getElementById('orderDetailContent').innerHTML = `
       <div style="margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
@@ -514,6 +521,7 @@ async function viewOrder(orderId) {
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Customer</div>
           <div style="font-weight:600;color:#111827">${escapeHtml(o.userName)}</div>
           <div style="font-size:0.875rem;color:#4b5563">${escapeHtml(o.userEmail)}</div>
+          <div style="font-size:0.875rem;color:#4b5563;margin-top:2px">📞 ${escapeHtml(o.phone || 'N/A')}</div>
         </div>
         <div>
           <div style="font-size:0.8125rem;color:#6b7280;margin-bottom:4px">Order Status</div>
@@ -529,6 +537,33 @@ async function viewOrder(orderId) {
         </div>
       </div>
       
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-bottom:24px">
+        <h4 style="font-size:0.875rem;font-weight:600;color:#374151;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.05em">Delivery & Scheduling</h4>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:0.875rem">
+          <div>
+            <span style="color:#6b7280">Delivery Address:</span>
+            <div style="font-weight:500;color:#111827;margin-top:2px">${escapeHtml(o.deliveryAddress || 'N/A')}</div>
+          </div>
+          <div>
+            <span style="color:#6b7280">Requested Date & Slot:</span>
+            <div style="font-weight:500;color:#111827;margin-top:2px">
+              ${o.deliveryDate ? escapeHtml(o.deliveryDate) : 'Not scheduled'}
+              ${o.deliveryTimeSlot ? ` (${escapeHtml(o.deliveryTimeSlot)})` : ''}
+            </div>
+          </div>
+          ${o.cakeMessage ? `
+          <div style="grid-column:1/-1">
+            <span style="color:#6b7280">Cake Message:</span>
+            <div style="font-weight:500;color:#e91e8c;margin-top:2px">"${escapeHtml(o.cakeMessage)}"</div>
+          </div>` : ''}
+          ${o.specialInstructions ? `
+          <div style="grid-column:1/-1">
+            <span style="color:#6b7280">Special Instructions:</span>
+            <div style="font-weight:500;color:#111827;margin-top:2px">${escapeHtml(o.specialInstructions)}</div>
+          </div>` : ''}
+        </div>
+      </div>
+
       <h4 style="font-size:1rem;font-weight:600;color:#111827;border-bottom:1px solid #e5e7eb;padding-bottom:12px;margin-bottom:16px">Order Items</h4>
       <div class="table-wrap" style="margin-bottom:24px;overflow-x:auto">
         <table style="width:100%;border-collapse:collapse;min-width:400px">
@@ -555,9 +590,17 @@ async function viewOrder(orderId) {
       
       <div style="display:flex;justify-content:flex-end">
         <div style="width:250px">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.875rem;color:#4b5563">
+            <span>Item Subtotal</span>
+            <span>${subtotalAmount}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:0.875rem;color:#4b5563">
+            <span>Delivery Charge</span>
+            <span>${deliveryAmount}</span>
+          </div>
           <div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #e5e7eb">
             <span style="font-weight:600;color:#111827">Grand Total</span>
-            <span style="font-weight:700;color:#111827;font-size:1.125rem">${totalAmount}</span>
+            <span style="font-weight:700;color:#e91e8c;font-size:1.125rem">${totalAmount}</span>
           </div>
         </div>
       </div>
