@@ -51,15 +51,20 @@ async function showSection(id) {
   if (link) link.classList.add('active');
   document.getElementById('pageTitle').textContent = {
     dashboard: 'Dashboard Overview', cakes: 'Manage Cakes',
-    orders: 'Manage Orders', customers: 'Customers', settings: 'Settings'
+    orders: 'Manage Orders', customers: 'Customers', settings: 'Settings',
+    messages: 'Contact Messages'
   }[id] || 'Dashboard';
 
   try {
     if (id === 'cakes') await loadCakes();
     if (id === 'orders') await loadOrders();
     if (id === 'customers') await loadCustomers();
-    if (id === 'dashboard') await loadDashboard();
+    if (id === 'dashboard') {
+      await loadDashboard();
+      updateUnreadBadge();
+    }
     if (id === 'settings') await loadSettings();
+    if (id === 'messages') await loadMessages();
   } catch(err) {
     showToast(err.message || 'Error loading section', 'error');
   }
@@ -921,6 +926,244 @@ async function saveSettings() {
     btn.disabled = false;
     btn.textContent = originalText;
     btn.style.opacity = '1';
+  }
+}
+
+// ===== CONTACT MESSAGES =====
+let allMessages = [];
+
+async function updateUnreadBadge() {
+  try {
+    const messages = await api.get('/admin/contact-messages');
+    if (Array.isArray(messages)) {
+      if (allMessages.length === 0) allMessages = messages;
+      const unreadCount = messages.filter(m => m.status === 'unread').length;
+      const badge = document.getElementById('unreadBadgeNav');
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+    }
+  } catch (err) {
+    // Non-blocking background fetch
+  }
+}
+
+async function loadMessages() {
+  const tbody = document.getElementById('messagesBody');
+  if (tbody && (!allMessages || allMessages.length === 0)) {
+    tbody.innerHTML = '<tr><td colspan="6" class="state-loading" style="padding:30px">Loading messages...</td></tr>';
+  }
+
+  try {
+    const messages = await api.get('/admin/contact-messages');
+    allMessages = Array.isArray(messages) ? messages : [];
+    updateMessageStats();
+    filterMessages();
+  } catch (err) {
+    console.error('Failed to load messages:', err);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="6" class="state-error" style="text-align:center">Unable to load contact messages.<br><button type="button" class="btn btn-outline" style="margin-top:10px;padding:6px 12px;font-size:0.8rem" onclick="event.preventDefault(); loadMessages()">Retry</button></td></tr>`;
+    }
+    showToast(err.message || 'Failed to load messages', 'error');
+  }
+}
+
+function updateMessageStats() {
+  const total = allMessages.length;
+  const unread = allMessages.filter(m => m.status === 'unread').length;
+  const read = allMessages.filter(m => m.status === 'read').length;
+  const archived = allMessages.filter(m => m.status === 'archived').length;
+
+  const totalEl = document.getElementById('totalMessagesCount');
+  const unreadEl = document.getElementById('unreadMessagesCount');
+  const readEl = document.getElementById('readMessagesCount');
+  const archivedEl = document.getElementById('archivedMessagesCount');
+  const badgeEl = document.getElementById('unreadBadgeNav');
+
+  if (totalEl) totalEl.textContent = total;
+  if (unreadEl) unreadEl.textContent = unread;
+  if (readEl) readEl.textContent = read;
+  if (archivedEl) archivedEl.textContent = archived;
+
+  if (badgeEl) {
+    if (unread > 0) {
+      badgeEl.textContent = unread;
+      badgeEl.style.display = 'inline-block';
+    } else {
+      badgeEl.style.display = 'none';
+    }
+  }
+}
+
+function filterMessages() {
+  const searchInput = document.getElementById('searchMessagesInput');
+  const statusFilter = document.getElementById('filterMessagesStatus');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+  const status = statusFilter ? statusFilter.value : 'all';
+
+  const filtered = allMessages.filter(m => {
+    const matchesStatus = (status === 'all') || (m.status === status);
+    const matchesQuery = !query ||
+      (m.name && m.name.toLowerCase().includes(query)) ||
+      (m.email && m.email.toLowerCase().includes(query)) ||
+      (m.subject && m.subject.toLowerCase().includes(query)) ||
+      (m.message && m.message.toLowerCase().includes(query)) ||
+      (m.phone && m.phone.toLowerCase().includes(query));
+    return matchesStatus && matchesQuery;
+  });
+
+  renderMessages(filtered);
+}
+
+function resetMessageFilters() {
+  const searchInput = document.getElementById('searchMessagesInput');
+  const statusFilter = document.getElementById('filterMessagesStatus');
+  if (searchInput) searchInput.value = '';
+  if (statusFilter) statusFilter.value = 'all';
+  filterMessages();
+}
+
+function renderMessages(messages) {
+  const tbody = document.getElementById('messagesBody');
+  if (!tbody) return;
+
+  if (!messages || messages.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No contact messages found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = messages.map(m => {
+    const dateStr = new Date(m.createdAt).toLocaleDateString();
+    const cleanName = escapeHtml(m.name);
+    const cleanEmail = escapeHtml(m.email);
+    const safeMailto = 'mailto:' + encodeURIComponent(m.email);
+    const phoneHtml = m.phone ? `<br><small style="color:#6b7280">${escapeHtml(m.phone)}</small>` : '';
+    const cleanSubject = escapeHtml(m.subject);
+    const previewText = escapeHtml(m.message.length > 50 ? m.message.substring(0, 50) + '...' : m.message);
+    const statusClass = `badge-${m.status}`;
+
+    let actions = `<button class="btn btn-sm btn-outline" type="button" onclick="event.preventDefault(); viewMessage('${m._id}')" title="View details" style="padding:4px 8px;font-size:0.75rem">View</button>`;
+
+    if (m.status === 'unread') {
+      actions += ` <button class="btn btn-sm" type="button" onclick="event.preventDefault(); markMessageStatus('${m._id}', 'read')" title="Mark as read" style="padding:4px 8px;font-size:0.75rem;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">Read</button>`;
+    }
+    if (m.status !== 'archived') {
+      actions += ` <button class="btn btn-sm" type="button" onclick="event.preventDefault(); markMessageStatus('${m._id}', 'archived')" title="Archive inquiry" style="padding:4px 8px;font-size:0.75rem;background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb">Archive</button>`;
+    }
+
+    return `
+      <tr id="msg-row-${m._id}">
+        <td style="padding:12px;font-size:0.875rem;white-space:nowrap">${dateStr}</td>
+        <td style="padding:12px;font-size:0.875rem">
+          <strong>${cleanName}</strong><br>
+          <a href="${safeMailto}" style="color:#e91e63;text-decoration:none;font-size:0.8125rem">${cleanEmail}</a>
+          ${phoneHtml}
+        </td>
+        <td style="padding:12px;font-size:0.875rem;font-weight:500">${cleanSubject}</td>
+        <td style="padding:12px;font-size:0.875rem" title="${escapeHtml(m.message)}">
+          <div class="msg-preview">${previewText}</div>
+        </td>
+        <td style="text-align:center;padding:12px"><span class="badge ${statusClass}">${escapeHtml(m.status)}</span></td>
+        <td style="text-align:right;padding:12px;white-space:nowrap">${actions}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function viewMessage(id) {
+  const m = allMessages.find(item => item._id === id);
+  if (!m) {
+    showToast('Message not found', 'error');
+    return;
+  }
+
+  const content = document.getElementById('messageDetailContent');
+  const footer = document.getElementById('messageDetailFooter');
+  if (!content || !footer) return;
+
+  const createdDate = new Date(m.createdAt).toLocaleDateString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+  const safeMailto = 'mailto:' + encodeURIComponent(m.email);
+  const cleanPhone = m.phone ? m.phone.replace(/[^0-9+\-\s()]/g, '') : '';
+  const safeTel = cleanPhone ? 'tel:' + encodeURIComponent(cleanPhone) : '';
+
+  content.innerHTML = `
+    <div class="msg-detail-grid">
+      <div>
+        <div class="msg-detail-label">Customer</div>
+        <div class="msg-detail-value">${escapeHtml(m.name)}</div>
+      </div>
+      <div>
+        <div class="msg-detail-label">Email</div>
+        <div class="msg-detail-value">
+          <a href="${safeMailto}" style="color:#e91e63;text-decoration:none">${escapeHtml(m.email)}</a>
+        </div>
+      </div>
+      <div>
+        <div class="msg-detail-label">Phone</div>
+        <div class="msg-detail-value">
+          ${m.phone ? `<a href="${safeTel}" style="color:#e91e63;text-decoration:none">${escapeHtml(m.phone)}</a>` : '<span style="color:#9ca3af">Not provided</span>'}
+        </div>
+      </div>
+      <div>
+        <div class="msg-detail-label">Submitted On</div>
+        <div class="msg-detail-value">${createdDate}</div>
+      </div>
+      <div>
+        <div class="msg-detail-label">Status</div>
+        <div class="msg-detail-value">
+          <span class="badge badge-${m.status}">${escapeHtml(m.status)}</span>
+        </div>
+      </div>
+      <div>
+        <div class="msg-detail-label">Subject</div>
+        <div class="msg-detail-value">${escapeHtml(m.subject)}</div>
+      </div>
+    </div>
+    <div>
+      <div class="msg-detail-label" style="margin-bottom:8px">Message Content</div>
+      <div class="msg-body-box">${escapeHtml(m.message)}</div>
+    </div>
+  `;
+
+  let footerButtons = '';
+  if (m.status === 'unread') {
+    footerButtons += `<button class="btn" type="button" onclick="event.preventDefault(); markMessageStatus('${m._id}', 'read')" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:10px 20px">Mark as Read</button>`;
+  }
+  if (m.status !== 'archived') {
+    footerButtons += `<button class="btn btn-outline" type="button" onclick="event.preventDefault(); markMessageStatus('${m._id}', 'archived')" style="padding:10px 20px">Archive</button>`;
+  }
+  footerButtons += `<button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('messageDetailModal')">Close</button>`;
+
+  footer.innerHTML = footerButtons;
+  openModal('messageDetailModal');
+}
+
+async function markMessageStatus(id, newStatus) {
+  try {
+    await api.patch('/admin/contact-messages/' + id, { status: newStatus });
+    const target = allMessages.find(m => m._id === id);
+    if (target) {
+      target.status = newStatus;
+    }
+    updateMessageStats();
+    filterMessages();
+
+    // If detail modal is open for this message, re-render it
+    if (activeModalId === 'messageDetailModal' && target) {
+      viewMessage(id);
+    }
+
+    showToast(`Message marked as ${newStatus}`, 'success');
+  } catch (err) {
+    console.error('Failed to update message status:', err);
+    showToast(err.message || 'Failed to update message status', 'error');
   }
 }
 

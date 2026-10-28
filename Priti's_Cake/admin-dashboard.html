@@ -34,6 +34,11 @@
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         Customers
       </button>
+      <button class="sidebar-link" id="link-messages" onclick="showSection('messages')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messages
+        <span id="unreadBadgeNav" class="badge" style="background:#fee2e2;color:#b91c1c;margin-left:auto;display:none;padding:2px 6px;font-size:0.7rem">0</span>
+      </button>
       <div class="nav-section-title">System</div>
       <button class="sidebar-link" id="link-settings" onclick="showSection('settings')">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -229,6 +234,76 @@
         </div>
       </div>
 
+      <!-- CONTACT MESSAGES -->
+      <div class="dash-section" id="sec-messages">
+        <!-- STATS CARDS -->
+        <div class="stats-row" style="margin-bottom:24px">
+          <div class="stat-card">
+            <div class="stat-info">
+              <p class="stat-label">Total Messages</p>
+              <h3 class="stat-value" id="totalMessagesCount">0</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <p class="stat-label">Unread</p>
+              <h3 class="stat-value" id="unreadMessagesCount" style="color:#b45309">0</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <p class="stat-label">Read</p>
+              <h3 class="stat-value" id="readMessagesCount" style="color:#1d4ed8">0</h3>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-info">
+              <p class="stat-label">Archived</p>
+              <h3 class="stat-value" id="archivedMessagesCount" style="color:#4b5563">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOOLBAR -->
+        <div class="orders-toolbar" style="margin-bottom:20px">
+          <div>
+            <h2 style="font-size:1.25rem;font-weight:600">Customer Messages</h2>
+            <p style="color:#6b7280;font-size:0.875rem;margin-top:4px">Manage and respond to customer inquiries</p>
+          </div>
+          <div class="orders-filters">
+            <input type="text" id="searchMessagesInput" placeholder="Search by name, email, subject, message..." onkeyup="filterMessages()" style="padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;min-width:280px;font-size:0.875rem">
+            <select id="filterMessagesStatus" onchange="filterMessages()" style="padding:8px 12px;border-radius:6px;border:1px solid #d1d5db;font-size:0.875rem;background:#fff">
+              <option value="all">All Statuses</option>
+              <option value="unread">Unread</option>
+              <option value="read">Read</option>
+              <option value="archived">Archived</option>
+            </select>
+            <button class="btn btn-outline" id="btnResetMessageFilters" style="padding:8px 12px" type="button" onclick="event.preventDefault(); resetMessageFilters()" title="Reset filters">Reset</button>
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="dash-card">
+          <div class="table-wrap">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="border-bottom:1px solid #e5e7eb">
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Date</th>
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Customer</th>
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Subject</th>
+                  <th style="text-align:left;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Message Preview</th>
+                  <th style="text-align:center;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Status</th>
+                  <th style="text-align:right;padding:12px;font-size:0.8125rem;color:#6b7280;font-weight:600">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="messagesBody">
+                <tr><td colspan="6" class="state-loading" style="padding:30px">Loading messages...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- SETTINGS -->
       <div class="dash-section" id="sec-settings">
         <div style="margin-bottom:24px">
@@ -397,6 +472,20 @@
     <div id="orderDetailContent" style="padding:24px;max-height:70vh;overflow-y:auto"></div>
     <div style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;justify-content:flex-end">
       <button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('orderDetailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGE DETAIL MODAL -->
+<div class="modal-overlay" id="messageDetailModal">
+  <div class="modal" style="max-width:640px;padding:0">
+    <div style="padding:24px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+      <h2 style="font-size:1.25rem;font-weight:600;color:#111827">Message Details</h2>
+      <button class="modal-close" aria-label="Close modal" style="position:static;font-size:1.5rem" type="button" onclick="event.preventDefault(); closeModal('messageDetailModal')">&times;</button>
+    </div>
+    <div id="messageDetailContent" style="padding:24px;max-height:70vh;overflow-y:auto"></div>
+    <div id="messageDetailFooter" style="padding:16px 24px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;gap:12px;justify-content:flex-end">
+      <button class="btn btn-outline" style="padding:10px 20px;border:1px solid #d1d5db;color:#374151;background:#fff" type="button" onclick="event.preventDefault(); closeModal('messageDetailModal')">Close</button>
     </div>
   </div>
 </div>
