@@ -26,10 +26,18 @@ const generateToken = (id, role) => {
 // @route   POST /api/auth/register
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, phone, password } = req.body;
     
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
+    }
+
+    let cleanPhone = '';
+    if (phone && typeof phone === 'string') {
+      cleanPhone = phone.trim();
+      if (cleanPhone.length > 0 && (cleanPhone.length < 8 || cleanPhone.length > 15 || !/^[0-9+\-\s()]+$/.test(cleanPhone))) {
+        return res.status(400).json({ success: false, message: 'Invalid phone number format' });
+      }
     }
 
     const userExists = await User.findOne({ email });
@@ -40,6 +48,7 @@ router.post('/register', async (req, res, next) => {
     const user = await User.create({
       name,
       email,
+      phone: cleanPhone,
       password,
       role: 'customer' // ensure defaults to customer
     });
@@ -52,6 +61,7 @@ router.post('/register', async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
+          phone: user.phone || '',
           role: user.role,
         }
       });
@@ -90,6 +100,7 @@ router.post('/login', loginLimiter, async (req, res, next) => {
           id: user._id,
           name: user.name,
           email: user.email,
+          phone: user.phone || '',
           role: user.role,
         }
       });
