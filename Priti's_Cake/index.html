@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Priti's Cake - Artisanal Bakery</title>
+  <title>Priti's Cake - Artisanal Bakery &amp; Bespoke Cakes</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -38,108 +38,208 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-text">
-    <h1>Artisanal Cakes,<br>Baked with Love</h1>
-    <p>Handcrafted custom cakes for every occasion — birthdays, weddings, anniversaries and more. Made fresh with premium ingredients, delivered to your door.</p>
-    <div class="hero-btns">
-      <a href="catalog.html" class="btn btn-primary">Order Now</a>
-      <a href="gallery.html" class="btn btn-outline">View Gallery</a>
+  <div class="hero-container">
+    <div class="hero-text">
+      <div class="hero-eyebrow">
+        <span class="hero-badge-dot" aria-hidden="true"></span>
+        <span>Artisanal Patisserie • Rahuri</span>
+      </div>
+      <h1>Celebration Cakes &amp;<br><em>Bespoke Creations</em></h1>
+      <p>Handcrafted with passion using wholesome, premium ingredients. From grand multi-tier wedding centerpieces to intimate celebration cakes, baked fresh to order and delivered to your doorstep in Rahuri.</p>
+      <div class="hero-btns">
+        <a href="catalog.html" class="btn btn-primary">Shop Cakes</a>
+        <a href="gallery.html" class="btn btn-outline">Explore Collections</a>
+      </div>
+      <div class="hero-highlights" aria-label="Bakery highlights">
+        <div class="hero-highlight-item">
+          <span class="hero-highlight-icon" aria-hidden="true">✨</span>
+          <span>Bespoke Personalization</span>
+        </div>
+        <div class="hero-highlight-item">
+          <span class="hero-highlight-icon" aria-hidden="true">🌿</span>
+          <span>Wholesome Ingredients</span>
+        </div>
+        <div class="hero-highlight-item">
+          <span class="hero-highlight-icon" aria-hidden="true">📅</span>
+          <span>Scheduled Delivery</span>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="hero-img">
-    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=800" alt="Beautifully decorated artisanal cake with fresh berries" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
-    <div class="hero-cake-placeholder" style="display:none">
-      🎂
-      <p>Priti's Special</p>
+    <div class="hero-img">
+      <div class="hero-img-frame">
+        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=800" alt="Beautifully decorated artisanal celebration cake with fresh berries and cream" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="hero-cake-placeholder" style="display:none" aria-hidden="true">
+          <div class="placeholder-monogram">P</div>
+          <p>Priti's Artisanal Bakery</p>
+        </div>
+      </div>
+      <div class="hero-floating-badge" aria-hidden="true">
+        <span class="badge-title">Handcrafted to Order</span>
+        <span class="badge-sub">Fresh Delivery Across Rahuri</span>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- CATEGORIES -->
-<section class="categories">
+<section class="categories" id="categoriesSection">
   <div class="section-title">
+    <span class="section-eyebrow">Curated Collections</span>
     <h2>Shop by Category</h2>
-    <p>Find the perfect handcrafted cake for every occasion</p>
+    <p>Discover the perfect handcrafted cake tailored for your special occasion</p>
   </div>
   <div class="cat-grid">
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Birthday'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Birthday'">
-      <div class="icon">🎂</div><h3>Birthday</h3>
-    </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Wedding'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Wedding'">
-      <div class="icon">💍</div><h3>Wedding</h3>
-    </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Anniversary'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Anniversary'">
-      <div class="icon">💕</div><h3>Anniversary</h3>
-    </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Kids'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Kids'">
-      <div class="icon">🦄</div><h3>Kids</h3>
-    </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Custom'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Custom'">
-      <div class="icon">📸</div><h3>Custom</h3>
-    </div>
-    <div class="cat-card" onclick="window.location.href='catalog.html?cat=Seasonal'" role="button" tabindex="0" onkeypress="if(event.key==='Enter') window.location.href='catalog.html?cat=Seasonal'">
-      <div class="icon">🌸</div><h3>Seasonal</h3>
-    </div>
+    <a href="catalog.html?cat=Birthday" class="cat-card" aria-label="Browse Birthday Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">🎂</span></div>
+      <h3>Birthday</h3>
+      <span class="cat-subtitle">Milestones &amp; Celebrations</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
+    <a href="catalog.html?cat=Wedding" class="cat-card" aria-label="Browse Wedding Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">💍</span></div>
+      <h3>Wedding</h3>
+      <span class="cat-subtitle">Multi-Tiered Centerpieces</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
+    <a href="catalog.html?cat=Anniversary" class="cat-card" aria-label="Browse Anniversary Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">💕</span></div>
+      <h3>Anniversary</h3>
+      <span class="cat-subtitle">Romantic &amp; Floral Designs</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
+    <a href="catalog.html?cat=Kids" class="cat-card" aria-label="Browse Kids Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">🦄</span></div>
+      <h3>Kids</h3>
+      <span class="cat-subtitle">Fun &amp; Themed Creations</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
+    <a href="catalog.html?cat=Custom" class="cat-card" aria-label="Browse Custom Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">📸</span></div>
+      <h3>Custom</h3>
+      <span class="cat-subtitle">Photo &amp; Bespoke Inscriptions</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
+    <a href="catalog.html?cat=Seasonal" class="cat-card" aria-label="Browse Seasonal Cakes">
+      <div class="cat-icon-wrap" aria-hidden="true"><span class="cat-icon">🌸</span></div>
+      <h3>Seasonal</h3>
+      <span class="cat-subtitle">Fresh Fruit &amp; Festive Specials</span>
+      <span class="cat-link-label">Explore <span aria-hidden="true">→</span></span>
+    </a>
   </div>
 </section>
 
 <!-- FEATURED CAKES -->
-<section>
+<section class="featured-section" id="featuredSection">
   <div class="section-title">
-    <h2>Our Bestsellers</h2>
-    <p>Most loved artisanal creations by our customers</p>
+    <span class="section-eyebrow">Customer Favorites</span>
+    <h2>Our Bestselling Cakes</h2>
+    <p>Most loved artisanal creations, freshly baked for your celebrations</p>
   </div>
   <div class="cakes-grid" id="featuredCakes"></div>
-  <div style="text-align:center;margin-top:50px">
+  <div class="section-cta-wrap">
     <a href="catalog.html" class="btn btn-outline">View All Cakes</a>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section style="background: var(--bg-color);">
+<!-- BRAND STORY -->
+<section class="brand-story-section">
+  <div class="brand-story-container">
+    <div class="brand-story-content">
+      <span class="section-eyebrow">Our Story &amp; Craft</span>
+      <h2>Baked with Passion in Rahuri Since 2025</h2>
+      <p class="brand-story-lead">What began as a home kitchen passion project has grown into a cherished local bakery, bringing joy to celebrations across Rahuri.</p>
+      <p>Founded by Priti Chuttarwith recipes perfected over years, our bakery combines time-honored baking techniques with modern, elegant aesthetics. Every cake that leaves our kitchen is baked fresh to order using wholesome, locally sourced ingredients — no shortcuts and no compromises.</p>
+      <div class="brand-story-actions">
+        <a href="about.html" class="btn btn-outline">Read Our Full Story</a>
+        <a href="catalog.html" class="btn btn-primary">Order a Custom Cake</a>
+      </div>
+    </div>
+    <div class="brand-story-visual">
+      <div class="brand-story-frame">
+        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=800" alt="Artisan baker crafting celebration cake with berries" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+        <div class="brand-story-fallback" style="display:none" aria-hidden="true">
+          <div class="fallback-emblem">P</div>
+          <p>Handcrafted with Passion</p>
+        </div>
+      </div>
+      <div class="brand-story-stat-card" aria-hidden="true">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Fresh &amp; Made to Order</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY CHOOSE US / BOUTIQUE STANDARDS -->
+<section class="quality-standards-section">
   <div class="section-title">
+    <span class="section-eyebrow">The Priti's Standard</span>
+    <h2>Why Celebrate With Us</h2>
+    <p>Our commitment to quality, freshness, and memorable celebration moments</p>
+  </div>
+  <div class="quality-grid">
+    <div class="quality-card">
+      <div class="quality-icon-wrap" aria-hidden="true">🌿</div>
+      <h3>Fresh Ingredients</h3>
+      <p>We use only the finest, freshest ingredients sourced locally. Pure dairy cream, rich chocolate, and fresh fruit with no unnecessary preservatives.</p>
+    </div>
+    <div class="quality-card">
+      <div class="quality-icon-wrap" aria-hidden="true">👩‍🍳</div>
+      <h3>Artisanal Craftsmanship</h3>
+      <p>Each recipe is meticulously tested and perfected. Sponges are baked moist, fillings balanced in sweetness, and frostings sculpted by skilled hands.</p>
+    </div>
+    <div class="quality-card">
+      <div class="quality-icon-wrap" aria-hidden="true">🎨</div>
+      <h3>Bespoke Personalization</h3>
+      <p>Add custom edible photo prints, personalized pipe inscriptions, or request custom design notes right at checkout to suit your celebration theme.</p>
+    </div>
+    <div class="quality-card">
+      <div class="quality-icon-wrap" aria-hidden="true">🚚</div>
+      <h3>Scheduled Delivery</h3>
+      <p>Select your preferred delivery date and time slot with confidence. Packaged in protective cake boxes and hand-delivered fresh across Rahuri.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works-section">
+  <div class="section-title">
+    <span class="section-eyebrow">Effortless Ordering</span>
     <h2>How It Works</h2>
-    <p>Order your dream cake in 4 simple steps</p>
+    <p>Order your dream cake online in 4 simple steps</p>
   </div>
   <div class="steps-grid">
-    <div class="step-card"><div class="step-num">1</div><h3>Browse Cakes</h3><p>Explore our wide range of handcrafted cakes by category, occasion or price.</p></div>
-    <div class="step-card"><div class="step-num">2</div><h3>Place Order</h3><p>Select your cake, choose quantity and place your order online securely.</p></div>
-    <div class="step-card"><div class="step-num">3</div><h3>We Bake Fresh</h3><p>Our expert bakers prepare your cake fresh with premium quality ingredients.</p></div>
-    <div class="step-card"><div class="step-num">4</div><h3>Delivered to You</h3><p>Your cake is carefully packed and delivered fresh to your doorstep.</p></div>
+    <div class="step-card">
+      <div class="step-num-badge" aria-hidden="true">01</div>
+      <h3>Choose Your Cake</h3>
+      <p>Explore our curated artisanal collection by category, occasion, flavor, or price range.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num-badge" aria-hidden="true">02</div>
+      <h3>Personalize Details</h3>
+      <p>Select your delivery date, choose a time window, and add your custom cake message.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num-badge" aria-hidden="true">03</div>
+      <h3>Baked Fresh</h3>
+      <p>Our kitchen prepares your cake fresh to order using wholesome ingredients and loving care.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num-badge" aria-hidden="true">04</div>
+      <h3>Doorstep Delivery</h3>
+      <p>Carefully boxed and safely delivered to your doorstep in Rahuri, on time for your celebration.</p>
+    </div>
   </div>
 </section>
 
-<!-- STATS -->
-<section class="stats">
-  <div class="stats-grid">
-    <div class="stat-item"><h2>5000+</h2><p>Happy Customers</p></div>
-    <div class="stat-item"><h2>50+</h2><p>Cake Varieties</p></div>
-    <div class="stat-item"><h2>8+</h2><p>Years Experience</p></div>
-    <div class="stat-item"><h2>4.9★</h2><p>Average Rating</p></div>
-  </div>
-</section>
-
-<!-- TESTIMONIALS -->
-<section class="testimonials">
-  <div class="section-title">
-    <h2>What Our Customers Say</h2>
-    <p>Real reviews from real cake lovers</p>
-  </div>
-  <div class="test-grid">
-    <div class="test-card">
-      <div class="stars">★★★★★</div>
-      <p>"The Strawberry Dream cake was absolutely divine! My daughter's birthday was made extra special. Will definitely order again!"</p>
-      <div class="reviewer"><div class="reviewer-avatar">P</div><div class="reviewer-info"><h4>Priya Sharma</h4><span>Birthday Cake</span></div></div>
-    </div>
-    <div class="test-card">
-      <div class="stars">★★★★★</div>
-      <p>"Ordered the Royal Wedding Cake and it was beyond our expectations. Beautiful design, amazing taste. All guests loved it!"</p>
-      <div class="reviewer"><div class="reviewer-avatar">R</div><div class="reviewer-info"><h4>Rahul & Sneha</h4><span>Wedding Cake</span></div></div>
-    </div>
-    <div class="test-card">
-      <div class="stars">★★★★★</div>
-      <p>"The custom photo cake was perfect! The edible print was so clear and the cake was moist and delicious. Highly recommend!"</p>
-      <div class="reviewer"><div class="reviewer-avatar">A</div><div class="reviewer-info"><h4>Anjali Mehta</h4><span>Custom Cake</span></div></div>
+<!-- CALL TO ACTION BANNER -->
+<section class="cta-banner">
+  <div class="cta-banner-content">
+    <h2>Make Your Next Celebration Unforgettable</h2>
+    <p>Browse our signature handcrafted cakes or explore our gallery to find inspiration for your special day.</p>
+    <div class="cta-banner-btns">
+      <a href="catalog.html" class="btn btn-primary">Shop Cakes</a>
+      <a href="contact.html" class="btn btn-outline">Get in Touch</a>
     </div>
   </div>
 </section>
@@ -175,9 +275,9 @@
       <div class="footer-col">
         <h4>Contact Us</h4>
         <ul class="footer-contact-list">
-          <li><span>📍</span> <span>123 Sweet Street, Pune, Maharashtra 411001</span></li>
-          <li><span>📞</span> <a href="tel:+919876543210">+91 98765 43210</a></li>
-          <li><span>✉️</span> <a href="mailto:hello@priticake.com">hello@priticake.com</a></li>
+          <li><span>📍</span> <span>Pritiscakes, 18 acres Rahuri Maharashtra 413705</span></li>
+          <li><span>📞</span> <a href="tel:+918446463499">+91 8446463499</a></li>
+          <li><span>✉️</span> <a href="mailto:pritichuttar1@gmail.com">pritichuttar1@gmail.com</a></li>
           <li><span>🕐</span> <span>Mon - Sun: 8:00 AM - 9:00 PM</span></li>
         </ul>
       </div>
@@ -187,6 +287,14 @@
     </div>
   </div>
 </footer>
+
+<!-- CAKE DETAIL MODAL -->
+<div class="modal-overlay" id="cakeModal" role="dialog" aria-modal="true" aria-labelledby="modalCakeName">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
 
 <!-- CART SIDEBAR -->
 <div class="cart-sidebar" id="cartSidebar">
@@ -208,17 +316,20 @@
 <script src="js/api.js"></script>
 <script src="js/main.js"></script>
 <script>
-  // Load featured cakes
+  let currentQty = 1;
+  let currentCakeId = null;
+
   function renderFeaturedCakes() {
     const container = document.getElementById('featuredCakes');
+    if (!container) return;
     
     if (cakesError) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--pink)">Unable to load cakes. Please try again.</div>';
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--rose-primary);font-weight:600;">Unable to load cakes. Please try refreshing or check back shortly.</div>';
       return;
     }
     
-    if (DB.cakes.length === 0) {
-      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray)">No cakes are available at the moment.</div>';
+    if (!DB.cakes || DB.cakes.length === 0) {
+      container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);">No cakes are available at the moment. Please check back soon!</div>';
       return;
     }
 
@@ -227,25 +338,92 @@
     
     container.innerHTML = cakes.map(cake => `
       <div class="cake-card">
-        <div class="cake-img">
+        <div class="cake-img" style="cursor:pointer" onclick="openCakeModal('${cake.id}')" tabindex="0" role="button" aria-label="View details for ${escapeHtml(cake.name)}" onkeypress="if(event.key==='Enter') openCakeModal('${cake.id}')">
           ${cakeMedia(cake)}
-          ${cake.tag ? `<span class="cake-badge">${cake.tag}</span>` : ''}
+          ${cake.tag ? `<span class="cake-badge">${escapeHtml(cake.tag)}</span>` : ''}
         </div>
         <div class="cake-info">
-          <h3>${cake.name}</h3>
-          <p>${cake.desc ? cake.desc.substring(0, 80) + '...' : ''}</p>
+          <h3 style="cursor:pointer" onclick="openCakeModal('${cake.id}')">${escapeHtml(cake.name)}</h3>
+          <p>${cake.desc ? escapeHtml(cake.desc.substring(0, 80)) + (cake.desc.length > 80 ? '...' : '') : ''}</p>
           <div class="cake-footer">
             <span class="price">₹${cake.price}</span>
-            <span class="rating">⭐ ${cake.rating || 0} (${cake.reviews || 0})</span>
+            <span class="rating" aria-label="Rated ${cake.rating || 0} out of 5 stars with ${cake.reviews || 0} reviews">⭐ ${cake.rating || 0} <span style="font-weight:400;color:var(--text-muted);">(${cake.reviews || 0})</span></span>
           </div>
-          <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="addToCart('${cake.id}')">Add to Cart</button>
+          <div class="cake-actions">
+            <button class="btn btn-outline" onclick="openCakeModal('${cake.id}')" aria-label="View details for ${escapeHtml(cake.name)}">Details</button>
+            <button class="btn btn-primary" onclick="addToCart('${cake.id}')" aria-label="Add ${escapeHtml(cake.name)} to cart">Add to Cart</button>
+          </div>
         </div>
       </div>
     `).join('');
   }
 
+  function openCakeModal(id) {
+    const cake = DB.cakes.find(c => c.id === id);
+    if (!cake) return;
+    currentCakeId = id;
+    currentQty = 1;
+    document.getElementById('modalContent').innerHTML = `
+      <div class="modal-cake-img">${cakeMedia(cake)}</div>
+      <h2 id="modalCakeName">${escapeHtml(cake.name)}</h2>
+      <div style="font-size:0.9rem;color:var(--rose-primary);margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">${escapeHtml(cake.category || '')}</div>
+      <div class="price" style="margin-bottom:15px">₹${cake.price}</div>
+      <p>${escapeHtml(cake.desc || '')}</p>
+      <div class="modal-details">
+        <div class="detail-item"><span>Weight</span><p>${escapeHtml(cake.weight || 'Standard')}</p></div>
+        <div class="detail-item"><span>Serves</span><p>${escapeHtml(cake.serves || '4-6 people')}</p></div>
+        <div class="detail-item"><span>Prep Time</span><p>${escapeHtml(cake.time || '2-4 hours')}</p></div>
+        <div class="detail-item"><span>Rating</span><p>⭐ ${cake.rating || 0} (${cake.reviews || 0} reviews)</p></div>
+      </div>
+      <div class="qty-control">
+        <span style="font-weight:600;color:var(--text-cocoa)">Quantity:</span>
+        <button class="qty-btn" onclick="changeQty(-1)" aria-label="Decrease quantity">−</button>
+        <span class="qty-num" id="qtyNum" aria-live="polite">1</span>
+        <button class="qty-btn" onclick="changeQty(1)" aria-label="Increase quantity">+</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1.05rem" onclick="addToCartModal()">Add to Cart</button>
+    `;
+    document.getElementById('cakeModal').classList.add('active');
+  }
+
+  function changeQty(d) {
+    currentQty = Math.max(1, currentQty + d);
+    const numEl = document.getElementById('qtyNum');
+    if (numEl) numEl.textContent = currentQty;
+  }
+
+  function addToCartModal() {
+    if (currentCakeId) {
+      addToCart(currentCakeId, currentQty);
+      closeModal();
+    }
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('cakeModal');
+    if (modal) modal.classList.remove('active');
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('featuredCakes').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray)">Loading cakes...</div>';
+    const cakeModal = document.getElementById('cakeModal');
+    if (cakeModal) {
+      cakeModal.addEventListener('click', e => {
+        if (e.target === cakeModal) closeModal();
+      });
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('cakeModal');
+        if (modal && modal.classList.contains('active')) closeModal();
+      }
+    });
+
+    const cakesContainer = document.getElementById('featuredCakes');
+    if (cakesContainer) {
+      cakesContainer.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px;color:var(--text-muted);font-size:1rem;">Loading artisanal cakes...</div>';
+    }
+
     if (isCakesLoaded || cakesError) {
       renderFeaturedCakes();
     } else {
