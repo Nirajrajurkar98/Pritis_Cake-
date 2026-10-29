@@ -3,168 +3,350 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Dashboard - Priti's Cake</title>
-  <link rel="stylesheet" href="css/dashboard.css">
+  <title>Customer Dashboard - Priti's Cake</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/client-dashboard.css">
 </head>
 <body>
 
 <div class="dash-layout">
 
-  <!-- SIDEBAR -->
-  <aside class="dash-sidebar" id="dashSidebar">
+  <!-- SIDEBAR BACKDROP ON MOBILE -->
+  <div class="dash-backdrop" id="dashBackdrop" onclick="toggleSidebar()" aria-hidden="true"></div>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="dash-sidebar" id="dashSidebar" aria-label="Customer Navigation">
     <div class="sidebar-logo">
       <a href="index.html" class="logo">Priti's <span>Cake</span></a>
-      <p>My Account</p>
+      <p>Customer Portal</p>
     </div>
+
     <nav class="sidebar-nav">
-      <div class="nav-section-title">Menu</div>
-      <button class="sidebar-link" id="clink-overview" onclick="showClientSection('overview')"><span class="icon">🏠</span> Overview</button>
-      <button class="sidebar-link" id="clink-browse" onclick="showClientSection('browse')"><span class="icon">🎂</span> Browse Cakes</button>
-      <button class="sidebar-link" id="clink-orders" onclick="showClientSection('orders')"><span class="icon">📦</span> My Orders</button>
-      <button class="sidebar-link" id="clink-profile" onclick="showClientSection('profile')"><span class="icon">👤</span> My Profile</button>
-      <div class="nav-section-title">More</div>
-      <button class="sidebar-link" onclick="window.location.href='catalog.html'"><span class="icon">🛍️</span> Full Catalog</button>
-      <button class="sidebar-link" onclick="logout()"><span class="icon">🚪</span> Logout</button>
+      <div class="nav-section-title">Navigation</div>
+      <button type="button" class="sidebar-link active" id="clink-overview" onclick="showClientSection('overview')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span>Overview</span>
+      </button>
+
+      <button type="button" class="sidebar-link" id="clink-browse" onclick="showClientSection('browse')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9z"/>
+          <path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/>
+          <circle cx="12" cy="7" r="1.5"/>
+        </svg>
+        <span>Browse Cakes</span>
+      </button>
+
+      <button type="button" class="sidebar-link" id="clink-orders" onclick="showClientSection('orders')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span>My Orders</span>
+      </button>
+
+      <button type="button" class="sidebar-link" id="clink-profile" onclick="showClientSection('profile')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span>My Profile</span>
+      </button>
+
+      <div class="nav-section-title">Bakery</div>
+      <button type="button" class="sidebar-link" onclick="window.location.href='catalog.html'">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+        <span>Full Catalog</span>
+      </button>
+
+      <button type="button" class="sidebar-link" onclick="logout()">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Sign Out</span>
+      </button>
     </nav>
+
     <div class="sidebar-footer">
       <div class="user-info">
-        <div class="user-avatar" id="clientInitial">U</div>
-        <div class="user-details"><h4 id="clientName">User</h4><p>Customer</p></div>
+        <div class="user-avatar" id="clientInitial" aria-hidden="true">C</div>
+        <div class="user-details">
+          <h4 id="clientName">Customer</h4>
+          <p>Patron Account</p>
+        </div>
       </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
+  <!-- MAIN VIEWPORT -->
   <main class="dash-main">
-    <div class="dash-topbar">
-      <div style="display:flex;align-items:center;gap:15px">
-        <button class="hamburger-dash" onclick="toggleSidebar()">☰</button>
+
+    <!-- TOPBAR -->
+    <header class="dash-topbar">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button type="button" class="hamburger-dash" onclick="toggleSidebar()" aria-label="Toggle navigation drawer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
         <div class="topbar-left">
-          <h1 id="pageTitle">My Dashboard</h1>
-          <p>Manage your orders and profile</p>
+          <h1 id="pageTitle">Overview</h1>
+          <p>Manage your cake orders and delivery details</p>
         </div>
       </div>
-      <div class="topbar-right">
-        <button class="topbar-btn" onclick="showClientSection('browse')" title="Browse Cakes">🎂</button>
-        <a href="index.html" class="topbar-btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center" title="Home">🏠</a>
-      </div>
-    </div>
 
+      <div class="topbar-right">
+        <button type="button" class="topbar-btn" onclick="showClientSection('browse')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9z"/>
+            <path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/>
+            <circle cx="12" cy="7" r="1.5"/>
+          </svg>
+          <span>Order Cakes</span>
+        </button>
+        <a href="index.html" class="topbar-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span>Storefront</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- CONTENT SECTIONS -->
     <div class="dash-content">
 
-      <!-- OVERVIEW -->
-      <div class="dash-section active" id="csec-overview">
+      <!-- SECTION 1: OVERVIEW -->
+      <section class="dash-section active" id="csec-overview" aria-labelledby="clink-overview">
+        <!-- Personalized Welcome Banner -->
+        <div class="dash-welcome">
+          <h2>Welcome back, <span id="welcomeUserName">Customer</span></h2>
+          <p>Track your celebration orders and discover artisanal cakes baked fresh to order in Rahuri.</p>
+        </div>
+
+        <!-- Metric Stat Cards -->
         <div class="stats-row">
           <div class="stat-card">
-            <div class="stat-icon pink">📦</div>
-            <div class="stat-info"><h3 id="myOrderCount">0</h3><p>Total Orders</p></div>
+            <div class="stat-icon pink" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3 id="myOrderCount">0</h3>
+              <p>Total Orders</p>
+            </div>
           </div>
+
           <div class="stat-card">
-            <div class="stat-icon green">💰</div>
-            <div class="stat-info"><h3 id="mySpent">₹0</h3><p>Total Spent</p></div>
+            <div class="stat-icon green" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M15 8H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8"/>
+                <path d="M12 6v2m0 8v2"/>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3 id="mySpent">₹0</h3>
+              <p>Total Spent</p>
+            </div>
           </div>
+
           <div class="stat-card">
-            <div class="stat-icon orange">⏳</div>
-            <div class="stat-info"><h3 id="myPending">0</h3><p>Active Orders</p></div>
+            <div class="stat-icon orange" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="stat-info">
+              <h3 id="myPending">0</h3>
+              <p>Active Orders</p>
+            </div>
           </div>
         </div>
 
+        <!-- Featured Cakes -->
         <div class="dash-card">
           <div class="card-header">
-            <h3>🎂 Featured Cakes</h3>
-            <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="showClientSection('browse')">Browse All</button>
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9z"/>
+                <path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/>
+                <circle cx="12" cy="7" r="1.5"/>
+              </svg>
+              Featured Confectionery
+            </h3>
+            <button type="button" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;" onclick="showClientSection('browse')">Browse All</button>
           </div>
           <div class="client-cakes-grid" id="featuredCakesGrid"></div>
         </div>
 
+        <!-- Recent Orders -->
         <div class="dash-card">
           <div class="card-header">
-            <h3>📋 Recent Orders</h3>
-            <button class="btn btn-outline" style="padding:8px 16px;font-size:0.85rem" onclick="showClientSection('orders')">View All</button>
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="16" rx="2"/>
+                <line x1="7" y1="9" x2="17" y2="9"/>
+                <line x1="7" y1="13" x2="13" y2="13"/>
+              </svg>
+              Recent Order History
+            </h3>
+            <button type="button" class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;" onclick="showClientSection('orders')">View All</button>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>Order ID</th><th>Items</th><th>Amount</th><th>Status</th><th>Date</th><th></th></tr></thead>
-              <tbody id="clientRecentOrders"><tr><td colspan="6" style="text-align:center;color:#999;padding:30px">No orders yet</td></tr></tbody>
+              <thead>
+                <tr>
+                  <th>Order Ref</th>
+                  <th>Items Summary</th>
+                  <th>Total Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th style="text-align:right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="clientRecentOrders">
+                <tr>
+                  <td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px;">Loading recent orders...</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- BROWSE CAKES -->
-      <div class="dash-section" id="csec-browse">
-        <div style="margin-bottom:20px">
-          <h2 style="font-size:1.3rem;margin-bottom:15px">🎂 Browse Cakes</h2>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn cat-filter-btn active" data-cat="All" onclick="loadBrowseCakes('All')">All</button>
-            <button class="btn cat-filter-btn" data-cat="Birthday" onclick="loadBrowseCakes('Birthday')">🎂 Birthday</button>
-            <button class="btn cat-filter-btn" data-cat="Wedding" onclick="loadBrowseCakes('Wedding')">💍 Wedding</button>
-            <button class="btn cat-filter-btn" data-cat="Anniversary" onclick="loadBrowseCakes('Anniversary')">💕 Anniversary</button>
-            <button class="btn cat-filter-btn" data-cat="Kids" onclick="loadBrowseCakes('Kids')">🦄 Kids</button>
-            <button class="btn cat-filter-btn" data-cat="Custom" onclick="loadBrowseCakes('Custom')">📸 Custom</button>
-            <button class="btn cat-filter-btn" data-cat="Seasonal" onclick="loadBrowseCakes('Seasonal')">🌸 Seasonal</button>
+      <!-- SECTION 2: BROWSE CAKES -->
+      <section class="dash-section" id="csec-browse" aria-labelledby="clink-browse">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-family:var(--font-serif);font-size:1.55rem;color:var(--text-cocoa);margin-bottom:12px;">Browse Our Cakes</h2>
+          <div class="cat-filter-wrap">
+            <button type="button" class="cat-filter-btn active" data-cat="All" onclick="loadBrowseCakes('All')">All Cakes</button>
+            <button type="button" class="cat-filter-btn" data-cat="Birthday" onclick="loadBrowseCakes('Birthday')">Birthday</button>
+            <button type="button" class="cat-filter-btn" data-cat="Wedding" onclick="loadBrowseCakes('Wedding')">Wedding</button>
+            <button type="button" class="cat-filter-btn" data-cat="Anniversary" onclick="loadBrowseCakes('Anniversary')">Anniversary</button>
+            <button type="button" class="cat-filter-btn" data-cat="Kids" onclick="loadBrowseCakes('Kids')">Kids</button>
+            <button type="button" class="cat-filter-btn" data-cat="Custom" onclick="loadBrowseCakes('Custom')">Custom Bespoke</button>
+            <button type="button" class="cat-filter-btn" data-cat="Seasonal" onclick="loadBrowseCakes('Seasonal')">Seasonal</button>
           </div>
         </div>
+
         <div class="client-cakes-grid" id="browseCakesGrid"></div>
 
-        <!-- CART SUMMARY -->
-        <div class="dash-card" style="margin-top:25px" id="cartSummaryCard">
+        <!-- CART DRAWER / SUMMARY INSIDE DASHBOARD -->
+        <div class="dash-card" style="margin-top:32px;" id="cartSummaryCard">
           <div class="card-header">
-            <h3>🛒 Your Cart</h3>
-            <button class="btn btn-primary" style="padding:8px 16px;font-size:0.85rem" onclick="placeOrderDash(event)">Place Order</button>
+            <h3>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="9" cy="21" r="1"/>
+                <circle cx="20" cy="21" r="1"/>
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              </svg>
+              Your Shopping Cart
+            </h3>
+            <button type="button" class="btn btn-primary" style="padding:8px 18px;font-size:0.85rem;" onclick="placeOrderDash(event)">Place Order</button>
           </div>
           <div id="dashCartItems"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- MY ORDERS -->
-      <div class="dash-section" id="csec-orders">
-        <div style="margin-bottom:20px">
-          <h2 style="font-size:1.3rem">📦 My Orders</h2>
-          <p style="color:#999;font-size:0.85rem">Track all your cake orders</p>
+      <!-- SECTION 3: MY ORDERS -->
+      <section class="dash-section" id="csec-orders" aria-labelledby="clink-orders">
+        <div style="margin-bottom:24px;">
+          <h2 style="font-family:var(--font-serif);font-size:1.55rem;color:var(--text-cocoa);margin-bottom:4px;">My Order History</h2>
+          <p style="color:var(--text-muted);font-size:0.92rem;">Review your celebration cake orders, scheduled deliveries, and item breakdowns.</p>
         </div>
         <div id="clientOrdersList"></div>
-      </div>
+      </section>
 
-      <!-- PROFILE -->
-      <div class="dash-section" id="csec-profile">
-        <div class="profile-header">
-          <div class="profile-avatar-lg" id="profileInitial">U</div>
-          <div>
-            <h2 id="profileName">User</h2>
-            <p id="profileEmail">email@example.com</p>
+      <!-- SECTION 4: MY PROFILE -->
+      <section class="dash-section" id="csec-profile" aria-labelledby="clink-profile">
+        <div class="profile-card">
+          <div class="profile-avatar-row">
+            <div class="profile-avatar-lg" id="profileInitial" aria-hidden="true">C</div>
+            <div class="profile-avatar-info">
+              <h2 id="profileName">Customer</h2>
+              <p id="profileEmail">email@example.com</p>
+            </div>
           </div>
+
+          <h3 style="font-family:var(--font-serif);font-size:1.3rem;color:var(--text-cocoa);margin-bottom:18px;">Edit Account Information</h3>
+
+          <form onsubmit="event.preventDefault(); saveProfile();" novalidate>
+            <div class="form-group">
+              <label for="editName">Full Name</label>
+              <input type="text" id="editName" autocomplete="name" required>
+            </div>
+
+            <div class="form-group">
+              <label for="editEmail">Email Address</label>
+              <input type="email" id="editEmail" disabled aria-describedby="emailHint">
+              <span id="emailHint" style="font-size:0.75rem;color:var(--text-light);margin-top:4px;display:block;">Email address cannot be changed directly. Contact support if needed.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="editPhone">Phone Number</label>
+              <input type="tel" id="editPhone" autocomplete="tel" placeholder="+91 98765 43210" aria-describedby="phoneHint">
+              <span id="phoneHint" style="font-size:0.75rem;color:var(--text-light);margin-top:4px;display:block;">Used for delivery coordination in Rahuri.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="editPassword">New Password</label>
+              <input type="password" id="editPassword" autocomplete="new-password" placeholder="Leave blank to keep your current password">
+            </div>
+
+            <div class="profile-actions">
+              <button type="submit" class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
+              <button type="button" class="btn btn-outline" onclick="cancelProfileEdit()">Cancel</button>
+            </div>
+          </form>
         </div>
-        <div class="dash-card" style="max-width:600px">
-          <h3 style="margin-bottom:25px">✏️ Edit Profile</h3>
-          <div class="form-group"><label>Full Name</label><input type="text" id="editName"></div>
-          <div class="form-group"><label>Email Address</label><input type="email" id="editEmail" disabled style="background:#f5f5f5;cursor:not-allowed"></div>
-          <div class="form-group"><label>Phone Number</label><input type="tel" id="editPhone"></div>
-          <div class="form-group">
-            <label>New Password</label>
-            <input type="password" id="editPassword" placeholder="Leave blank to keep current">
-          </div>
-          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
-        </div>
-      </div>
+      </section>
 
     </div>
   </main>
 </div>
 
 <!-- CAKE DETAIL MODAL -->
-<div class="modal-overlay" id="cakeDetailModal">
+<div class="modal-overlay" id="cakeDetailModal" role="dialog" aria-modal="true" aria-labelledby="detailContent">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal('cakeDetailModal')">✕</button>
+    <button type="button" class="modal-close" onclick="closeModal('cakeDetailModal')" aria-label="Close cake details">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
     <div id="detailContent"></div>
   </div>
 </div>
 
 <!-- ORDER DETAIL MODAL -->
-<div class="modal-overlay" id="orderDetailModal">
+<div class="modal-overlay" id="orderDetailModal" role="dialog" aria-modal="true" aria-labelledby="orderDetailContent">
   <div class="modal" style="max-width: 600px;">
-    <button class="modal-close" onclick="closeModal('orderDetailModal')">✕</button>
-    <div id="orderDetailContent" style="padding: 10px 0;"></div>
+    <button type="button" class="modal-close" onclick="closeModal('orderDetailModal')" aria-label="Close order details">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+    <div id="orderDetailContent"></div>
   </div>
 </div>
 
@@ -174,12 +356,7 @@
 <script src="js/main.js"></script>
 <script src="js/client.js"></script>
 <script>
-  // Style filter buttons
-  document.querySelectorAll('.cat-filter-btn').forEach(btn => {
-    btn.style.cssText = 'padding:8px 18px;border-radius:25px;border:2px solid #e91e8c;background:transparent;color:#e91e8c;cursor:pointer;font-weight:600;font-size:0.85rem;transition:all 0.3s';
-  });
-  document.querySelector('.cat-filter-btn.active').style.cssText += 'background:#e91e8c;color:#fff';
-
+  // Unified dashboard order placement integration
   async function placeOrderDash(e) {
     const order = await placeOrder(e);
     if (order) {
@@ -189,11 +366,18 @@
     }
   }
 
+  // Real-time cart rendering inside the dashboard
   function updateDashCart() {
     const el = document.getElementById('dashCartItems');
     if (!el) return;
-    if (DB.cart.length === 0) {
-      el.innerHTML = '<p style="color:#999;text-align:center;padding:20px">Cart is empty. Add some cakes!</p>';
+
+    if (!DB.cart || DB.cart.length === 0) {
+      el.innerHTML = `
+        <div style="text-align:center;padding:30px 10px;color:var(--text-muted);">
+          <p style="font-size:0.95rem;margin-bottom:12px;">Your shopping cart is currently empty.</p>
+          <button class="btn btn-outline" style="padding:6px 14px;font-size:0.85rem;" onclick="showClientSection('browse')">Browse Cakes</button>
+        </div>
+      `;
       return;
     }
 
@@ -219,69 +403,98 @@
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
     const subtotal = getCartTotal();
+    const delivery = typeof getDeliveryCharge === 'function' ? getDeliveryCharge() : 50;
     const minOrder = (DB.settings && typeof DB.settings.minimumOrderAmount === 'number') ? DB.settings.minimumOrderAmount : 0;
+
     let minNoticeHtml = '';
     if (minOrder > 0) {
       if (subtotal < minOrder) {
-        minNoticeHtml = `<div style="background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:6px;padding:8px 12px;font-size:0.85rem;margin-top:10px;text-align:center;font-weight:500;">⚠️ Minimum order is <strong>₹${minOrder}</strong>. Add ₹${minOrder - subtotal} more.</div>`;
+        minNoticeHtml = `<div style="background:#fffbeb;color:#b45309;border:1px solid #fde68a;border-radius:var(--radius-sm);padding:8px 12px;font-size:0.85rem;margin-top:12px;text-align:center;font-weight:600;">Minimum order is <strong>₹${minOrder}</strong>. Please add ₹${minOrder - subtotal} more.</div>`;
       } else {
-        minNoticeHtml = `<div style="background:#e8f5e9;color:#2e7d32;border:1px solid #c8e6c9;border-radius:6px;padding:6px 12px;font-size:0.8rem;margin-top:10px;text-align:center;font-weight:500;">✓ Minimum order of ₹${minOrder} met</div>`;
+        minNoticeHtml = `<div style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;border-radius:var(--radius-sm);padding:8px 12px;font-size:0.85rem;margin-top:12px;text-align:center;font-weight:600;">Minimum order requirement of ₹${minOrder} is met.</div>`;
       }
     }
 
     el.innerHTML = DB.cart.map(i => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0">
-        <span>${i.emoji || '🎂'} ${i.name} ×${i.qty}</span>
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-weight:700;color:#e91e8c">₹${i.price * i.qty}</span>
-          <button onclick="removeFromCart('${i.cakeId}')" style="background:none;border:none;color:#ccc;cursor:pointer;font-size:1rem" title="Remove item">✕</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border-warm);">
+        <div>
+          <strong style="color:var(--text-cocoa);font-size:0.95rem;">${escapeHtml(i.name)}</strong>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:2px;">₹${Number(i.price).toLocaleString('en-IN')} each</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div class="cart-qty-stepper">
+            <button type="button" class="cart-qty-btn" onclick="updateCartItemQty('${i.cakeId}', -1)" aria-label="Decrease quantity for ${escapeHtml(i.name)}">−</button>
+            <span class="cart-qty-val" aria-live="polite">${i.qty}</span>
+            <button type="button" class="cart-qty-btn" onclick="updateCartItemQty('${i.cakeId}', 1)" aria-label="Increase quantity for ${escapeHtml(i.name)}">+</button>
+          </div>
+          <span style="font-weight:800;color:var(--rose-primary);font-size:1.05rem;min-width:65px;text-align:right;">₹${Number(i.price * i.qty).toLocaleString('en-IN')}</span>
+          <button type="button" class="cart-item-remove-btn" onclick="removeFromCart('${i.cakeId}')" title="Remove cake" aria-label="Remove ${escapeHtml(i.name)}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
         </div>
       </div>
     `).join('') + `
-      <div style="margin-top:15px;padding-top:15px;border-top:1px solid #f0f0f0;">
-        <h4 style="margin-bottom:10px;font-size:0.95rem;color:#333;">Delivery Details</h4>
-        <div style="display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:12px;">
+      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border-warm);">
+        <h4 style="margin-bottom:12px;font-size:0.95rem;color:var(--text-cocoa);font-weight:700;">Delivery &amp; Coordination Details</h4>
+        <div style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:14px;">
           <div>
-            <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Phone Number (Required)</label>
-            <input type="tel" id="dashPhone" placeholder="Phone Number (10 digits)" value="${typeof escapeHtml === 'function' ? escapeHtml(currentPhone) : currentPhone}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:0.9rem;" required>
+            <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Phone Number (Required)</label>
+            <input type="tel" id="dashPhone" placeholder="10-digit mobile number" value="${escapeHtml(currentPhone)}" style="width:100%;padding:10px 12px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);font-family:inherit;font-size:0.9rem;" required>
           </div>
           <div>
-            <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Delivery Address (Required)</label>
-            <textarea id="dashAddress" placeholder="Complete Delivery Address" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;resize:vertical;min-height:60px;font-family:inherit;font-size:0.9rem;" required>${typeof escapeHtml === 'function' ? escapeHtml(currentAddress) : currentAddress}</textarea>
+            <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Complete Delivery Address (Required)</label>
+            <textarea id="dashAddress" placeholder="Street, landmark, Rahuri destination" style="width:100%;padding:10px 12px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);resize:vertical;min-height:60px;font-family:inherit;font-size:0.9rem;" required>${escapeHtml(currentAddress)}</textarea>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
             <div>
-              <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Delivery Date</label>
-              <input type="date" id="dashDate" min="${todayStr}" value="${currentDate}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+              <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Delivery Date</label>
+              <input type="date" id="dashDate" min="${todayStr}" value="${currentDate}" style="width:100%;padding:8px 10px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;">
             </div>
             <div>
-              <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Time Slot</label>
-              <select id="dashTimeSlot" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+              <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Time Window</label>
+              <select id="dashTimeSlot" style="width:100%;padding:8px 10px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;">
                 <option value="">Select (Optional)</option>
-                <option value="10:00-12:00" ${currentSlot === '10:00-12:00' ? 'selected' : ''}>10:00 - 12:00</option>
-                <option value="12:00-14:00" ${currentSlot === '12:00-14:00' ? 'selected' : ''}>12:00 - 14:00</option>
-                <option value="16:00-18:00" ${currentSlot === '16:00-18:00' ? 'selected' : ''}>16:00 - 18:00</option>
+                <option value="10:00-12:00" ${currentSlot === '10:00-12:00' ? 'selected' : ''}>10:00 AM - 12:00 PM</option>
+                <option value="12:00-14:00" ${currentSlot === '12:00-14:00' ? 'selected' : ''}>12:00 PM - 02:00 PM</option>
+                <option value="16:00-18:00" ${currentSlot === '16:00-18:00' ? 'selected' : ''}>04:00 PM - 06:00 PM</option>
               </select>
             </div>
           </div>
           <div>
-            <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Cake Message (Optional, max 100)</label>
-            <input type="text" id="dashCakeMessage" maxlength="100" placeholder="e.g. Happy Birthday!" value="${typeof escapeHtml === 'function' ? escapeHtml(currentMessage) : currentMessage}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:0.85rem;">
+            <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Cake Inscription Message (Optional, max 100)</label>
+            <input type="text" id="dashCakeMessage" maxlength="100" placeholder="e.g. Happy Birthday Sarah!" value="${escapeHtml(currentMessage)}" style="width:100%;padding:8px 10px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;">
           </div>
           <div>
-            <label style="display:block;font-size:0.8rem;color:#666;margin-bottom:4px;font-weight:600;">Special Instructions (Optional, max 500)</label>
-            <textarea id="dashInstructions" maxlength="500" placeholder="e.g. Please ring bell twice" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;resize:vertical;min-height:50px;font-family:inherit;font-size:0.85rem;">${typeof escapeHtml === 'function' ? escapeHtml(currentInstructions) : currentInstructions}</textarea>
+            <label style="display:block;font-size:0.8rem;color:var(--text-cocoa);margin-bottom:4px;font-weight:600;">Special Instructions (Optional, max 500)</label>
+            <textarea id="dashInstructions" maxlength="500" placeholder="e.g. Ring bell twice upon arrival" style="width:100%;padding:8px 10px;border:1px solid var(--border-warm);border-radius:var(--radius-sm);resize:vertical;min-height:50px;font-family:inherit;font-size:0.85rem;">${escapeHtml(currentInstructions)}</textarea>
           </div>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;padding:15px 0 10px 0;font-weight:800;font-size:1.1rem;color:#e91e8c;border-top:1px solid #f0f0f0;">
-        <span>Total</span><span>₹${getCartTotal() + (typeof getDeliveryCharge === 'function' ? getDeliveryCharge() : 50)}</span>
+
+      <div style="padding:14px 0 10px;border-top:1px solid var(--border-warm);">
+        <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:6px;">
+          <span>Subtotal</span>
+          <span>₹${Number(subtotal).toLocaleString('en-IN')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:8px;">
+          <span>Delivery Charge</span>
+          <span>₹${Number(delivery).toLocaleString('en-IN')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:1.25rem;font-weight:800;color:var(--rose-primary);border-top:1px solid var(--border-warm);padding-top:10px;">
+          <span>Total</span>
+          <span>₹${Number(subtotal + delivery).toLocaleString('en-IN')}</span>
+        </div>
       </div>
+
       ${minNoticeHtml}
-      <button class="btn btn-primary" style="width:100%;padding:12px;font-size:0.95rem;margin-top:10px" onclick="placeOrderDash(event)">Place Order</button>
+      <button type="button" class="btn btn-primary" style="width:100%;padding:13px;font-size:1rem;margin-top:14px;" onclick="placeOrderDash(event)">Place Order</button>
     `;
   }
 
+  // Initial dashboard cart sync
   updateDashCart();
 </script>
 </body>

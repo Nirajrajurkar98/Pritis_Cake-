@@ -168,37 +168,58 @@ function isAdmin() {
   return !!(token && apiAdmin && apiAdmin.role === 'admin');
 }
 
-// ===== CART =====
+// ===== CART & CHECKOUT SYSTEM =====
 function addToCart(cakeId, qty = 1) {
-  const cake = DB.cakes.find(c => c.id === cakeId);
+  const cake = DB.cakes.find(c => String(c.id) === String(cakeId));
   if (!cake) return;
-  const existing = DB.cart.find(i => i.cakeId === cakeId);
-  if (existing) existing.qty += qty;
-  else DB.cart.push({ cakeId, qty, name: cake.name, price: cake.price, emoji: cake.emoji, image: cake.image || '' });
+  const existing = DB.cart.find(i => String(i.cakeId) === String(cakeId));
+  if (existing) {
+    showToast('This cake is already in your cart!', 'info');
+    return;
+  }
+  const cleanQty = Math.max(1, parseInt(qty, 10) || 1);
+  DB.cart.push({
+    cakeId: cake.id,
+    qty: cleanQty,
+    name: cake.name,
+    price: cake.price,
+    emoji: cake.emoji,
+    image: cake.image || ''
+  });
   saveData();
   updateCartUI();
-  showToast(`${cake.name} added to cart! 🎂`, 'success');
+  showToast('Cake added to your cart successfully!', 'success');
 }
 
 function removeFromCart(cakeId) {
-  DB.cart = DB.cart.filter(i => i.cakeId !== cakeId);
+  const item = DB.cart.find(i => String(i.cakeId) === String(cakeId));
+  const itemName = item ? item.name : 'Cake';
+  DB.cart = DB.cart.filter(i => String(i.cakeId) !== String(cakeId));
   saveData();
   updateCartUI();
+  showToast(`${itemName} removed from your cart.`, 'info');
 }
 
 function updateCartItemQty(cakeId, delta) {
-  const item = DB.cart.find(i => i.cakeId === cakeId);
+  const item = DB.cart.find(i => String(i.cakeId) === String(cakeId));
   if (!item) return;
   const newQty = item.qty + delta;
   if (newQty >= 1) {
     item.qty = newQty;
     saveData();
     updateCartUI();
+  } else if (newQty === 0) {
+    removeFromCart(cakeId);
   }
 }
 
-function getCartTotal() { return DB.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); }
-function getCartCount() { return DB.cart.reduce((sum, i) => sum + i.qty, 0); }
+function getCartTotal() {
+  return DB.cart.reduce((sum, i) => sum + (Number(i.price) * Number(i.qty)), 0);
+}
+
+function getCartCount() {
+  return DB.cart.reduce((sum, i) => sum + Number(i.qty), 0);
+}
 
 function updateCartUI() {
   const count = getCartCount();
@@ -211,17 +232,52 @@ function updateCartUI() {
   if (typeof updateDashCart === 'function') updateDashCart();
 }
 
+function getCartItemMedia(item) {
+  if (item && item.image) {
+    const src = item.image.startsWith('http') || item.image.startsWith('data:')
+      ? item.image
+      : `http://localhost:5000${item.image}`;
+    return `<img src="${src}" alt="${escapeHtml(item.name)}" loading="lazy">`;
+  }
+  return `
+    <div class="cart-cloche-placeholder" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9z"/>
+        <path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/>
+        <circle cx="12" cy="7" r="1.5"/>
+      </svg>
+    </div>
+  `;
+}
+
 let isPlacingOrder = false;
 
 function renderCartItems() {
   const container = document.getElementById('cartItems');
   const totalEl = document.getElementById('cartTotal');
   if (!container) return;
+
   if (DB.cart.length === 0) {
-    container.innerHTML = `<div class="cart-empty"><p>Your cart is empty</p></div>`;
+    container.innerHTML = `
+      <div class="cart-empty-state">
+        <div class="cart-empty-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a9 9 0 0 1 9 9v1H3v-1a9 9 0 0 1 9-9z"/>
+            <path d="M3 12h18v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7z"/>
+            <circle cx="12" cy="7" r="1.5"/>
+          </svg>
+        </div>
+        <h3 class="cart-empty-title">Your Cart is Empty</h3>
+        <p class="cart-empty-text">Your artisanal selection is empty. Discover freshly baked celebration cakes handcrafted to order in Rahuri.</p>
+        <button type="button" class="btn btn-primary cart-empty-btn" onclick="toggleCart(); window.location.href='catalog.html';">
+          Browse Cakes
+        </button>
+      </div>
+    `;
     if (totalEl) totalEl.style.display = 'none';
     return;
   }
+
   if (totalEl) totalEl.style.display = 'block';
 
   const existingPhone = document.getElementById('checkoutPhone')?.value;
@@ -245,69 +301,125 @@ function renderCartItems() {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  container.innerHTML = DB.cart.map(item => `
+  const itemsHtml = DB.cart.map(item => `
     <div class="cart-item">
-      <div class="cart-item-img">${item.image ? `<img src="${item.image}" alt="${item.name}">` : item.emoji}</div>
+      <div class="cart-item-img">${getCartItemMedia(item)}</div>
       <div class="cart-item-info">
-        <h4>${item.name}</h4>
-        <div class="price">₹${item.price}</div>
-        <div style="display:flex; align-items:center; gap:10px; margin-top:6px;">
-          <div style="display:flex; align-items:center; border:1px solid #ddd; border-radius:4px; overflow:hidden;">
-            <button onclick="updateCartItemQty('${item.cakeId}', -1)" style="padding:2px 10px; background:#f8f9fa; border:none; border-right:1px solid #ddd; cursor:pointer;" aria-label="Decrease quantity">−</button>
-            <span style="padding:2px 12px; font-size:0.9rem; min-width:1ch; text-align:center;">${item.qty}</span>
-            <button onclick="updateCartItemQty('${item.cakeId}', 1)" style="padding:2px 10px; background:#f8f9fa; border:none; border-left:1px solid #ddd; cursor:pointer;" aria-label="Increase quantity">+</button>
+        <div class="cart-item-top">
+          <h4 class="cart-item-title">${escapeHtml(item.name)}</h4>
+          <button type="button" class="cart-item-remove-btn" onclick="removeFromCart('${item.cakeId}')" title="Remove ${escapeHtml(item.name)}" aria-label="Remove ${escapeHtml(item.name)} from cart">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+        <div class="cart-item-price-unit">₹${Number(item.price).toLocaleString('en-IN')} each</div>
+        <div class="cart-item-bottom">
+          <div class="cart-qty-stepper">
+            <button type="button" class="cart-qty-btn" onclick="updateCartItemQty('${item.cakeId}', -1)" aria-label="Decrease quantity for ${escapeHtml(item.name)}">−</button>
+            <span class="cart-qty-val" aria-live="polite">${item.qty}</span>
+            <button type="button" class="cart-qty-btn" onclick="updateCartItemQty('${item.cakeId}', 1)" aria-label="Increase quantity for ${escapeHtml(item.name)}">+</button>
           </div>
-          <div style="font-weight:700;color:#e91e8c">₹${item.price * item.qty}</div>
+          <div class="cart-item-line-total">₹${Number(item.price * item.qty).toLocaleString('en-IN')}</div>
         </div>
       </div>
-      <button class="cart-item-remove" onclick="removeFromCart('${item.cakeId}')">✕</button>
     </div>
-  `).join('') + `
-    <div class="cart-delivery-form" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f0f0f0;">
-      <h4 style="margin-bottom: 10px; font-size: 0.95rem; color:#333;">Delivery Details</h4>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div>
-          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Phone Number (Required)</label>
-          <input type="tel" id="checkoutPhone" placeholder="Phone Number (10 digits)" value="${escapeHtml(currentPhone)}" style="width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.9rem;" required>
+  `).join('');
+
+  const authNoticeHtml = isLoggedIn()
+    ? `
+      <div class="checkout-auth-badge">
+        <div class="checkout-auth-avatar" aria-hidden="true">${escapeHtml((DB.currentUser?.name || 'C').charAt(0).toUpperCase())}</div>
+        <div class="checkout-auth-details">
+          <span class="checkout-auth-label">Ordering as</span>
+          <strong class="checkout-auth-name">${escapeHtml(DB.currentUser?.name || 'Customer')}</strong>
         </div>
+      </div>
+    `
+    : `
+      <div class="checkout-guest-notice">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
         <div>
-          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Delivery Address (Required)</label>
-          <textarea id="checkoutAddress" placeholder="Complete Delivery Address" style="width: 100%; padding: 9px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 60px; font-family: inherit; font-size: 0.9rem;" required>${escapeHtml(currentAddress)}</textarea>
+          <strong>Customer account recommended</strong>
+          <p>Please <a href="login.html" onclick="toggleCart()">Sign In</a> or <a href="login.html?tab=register" onclick="toggleCart()">Register</a> to place and track your order.</p>
         </div>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-          <div>
-            <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Delivery Date</label>
-            <input type="date" id="checkoutDate" min="${todayStr}" value="${currentDate}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+      </div>
+    `;
+
+  const deliveryFormHtml = `
+    <div class="cart-delivery-section">
+      <div class="cart-section-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="1" y="3" width="15" height="13"/>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+        <span>Delivery &amp; Celebration Details</span>
+      </div>
+
+      ${authNoticeHtml}
+
+      <div class="cart-form-fields">
+        <div class="cart-field-group">
+          <label for="checkoutPhone" class="cart-field-label">Recipient Phone Number <span class="required" aria-hidden="true">*</span></label>
+          <input type="tel" id="checkoutPhone" autocomplete="tel" placeholder="10-digit mobile number" value="${escapeHtml(currentPhone)}" class="cart-field-input" required aria-describedby="checkoutPhoneHint">
+          <span id="checkoutPhoneHint" class="cart-field-hint">Required for delivery coordination across Rahuri</span>
+        </div>
+
+        <div class="cart-field-group">
+          <label for="checkoutAddress" class="cart-field-label">Delivery Destination Address <span class="required" aria-hidden="true">*</span></label>
+          <textarea id="checkoutAddress" autocomplete="street-address" placeholder="House/Flat number, street, landmark, Rahuri destination" class="cart-field-textarea" required aria-describedby="checkoutAddressHint">${escapeHtml(currentAddress)}</textarea>
+          <span id="checkoutAddressHint" class="cart-field-hint">Include landmark for accurate dispatch</span>
+        </div>
+
+        <div class="cart-field-row">
+          <div class="cart-field-group">
+            <label for="checkoutDate" class="cart-field-label">Delivery Date</label>
+            <input type="date" id="checkoutDate" min="${todayStr}" value="${currentDate}" class="cart-field-input">
           </div>
-          <div>
-            <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Time Slot</label>
-            <select id="checkoutTimeSlot" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+          <div class="cart-field-group">
+            <label for="checkoutTimeSlot" class="cart-field-label">Time Window</label>
+            <select id="checkoutTimeSlot" class="cart-field-select">
               <option value="">Select (Optional)</option>
-              <option value="10:00-12:00" ${currentSlot === '10:00-12:00' ? 'selected' : ''}>10:00 - 12:00</option>
-              <option value="12:00-14:00" ${currentSlot === '12:00-14:00' ? 'selected' : ''}>12:00 - 14:00</option>
-              <option value="16:00-18:00" ${currentSlot === '16:00-18:00' ? 'selected' : ''}>16:00 - 18:00</option>
+              <option value="10:00-12:00" ${currentSlot === '10:00-12:00' ? 'selected' : ''}>10:00 AM - 12:00 PM</option>
+              <option value="12:00-14:00" ${currentSlot === '12:00-14:00' ? 'selected' : ''}>12:00 PM - 02:00 PM</option>
+              <option value="16:00-18:00" ${currentSlot === '16:00-18:00' ? 'selected' : ''}>04:00 PM - 06:00 PM</option>
             </select>
           </div>
         </div>
-        <div>
-          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Cake Message (Optional, max 100)</label>
-          <input type="text" id="checkoutCakeMessage" maxlength="100" placeholder="e.g. Happy Birthday!" value="${escapeHtml(currentMessage)}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.85rem;">
+
+        <div class="cart-field-group">
+          <label for="checkoutCakeMessage" class="cart-field-label">Cake Inscription Message</label>
+          <input type="text" id="checkoutCakeMessage" maxlength="100" placeholder="e.g. Happy 25th Anniversary!" value="${escapeHtml(currentMessage)}" class="cart-field-input" aria-describedby="checkoutMessageHint">
+          <span id="checkoutMessageHint" class="cart-field-hint">Optional personalized piping on cake (max 100 chars)</span>
         </div>
-        <div>
-          <label style="display:block; font-size:0.75rem; color:#666; margin-bottom:3px; font-weight:600;">Special Instructions (Optional, max 500)</label>
-          <textarea id="checkoutInstructions" maxlength="500" placeholder="e.g. Please ring bell twice" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; min-height: 50px; font-family: inherit; font-size: 0.85rem;">${escapeHtml(currentInstructions)}</textarea>
+
+        <div class="cart-field-group">
+          <label for="checkoutInstructions" class="cart-field-label">Special Delivery Instructions</label>
+          <textarea id="checkoutInstructions" maxlength="500" placeholder="e.g. Handle with delicate care, ring bell twice" class="cart-field-textarea" style="min-height:54px;" aria-describedby="checkoutInstHint">${escapeHtml(currentInstructions)}</textarea>
+          <span id="checkoutInstHint" class="cart-field-hint">Optional dietary or delivery coordination notes (max 500 chars)</span>
         </div>
       </div>
     </div>
   `;
+
+  container.innerHTML = `<div class="cart-items-list">${itemsHtml}</div>` + deliveryFormHtml;
+
   const subtotal = getCartTotal();
   const delivery = getDeliveryCharge();
+  const grandTotal = subtotal + delivery;
+
   const subtotalEl = document.getElementById('cartSubtotal');
   const deliveryEl = document.getElementById('cartDelivery');
   const grandTotalEl = document.getElementById('cartGrandTotal');
-  if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
-  if (deliveryEl) deliveryEl.textContent = `₹${delivery}`;
-  if (grandTotalEl) grandTotalEl.textContent = `₹${subtotal + delivery}`;
+  if (subtotalEl) subtotalEl.textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+  if (deliveryEl) deliveryEl.textContent = `₹${delivery.toLocaleString('en-IN')}`;
+  if (grandTotalEl) grandTotalEl.textContent = `₹${grandTotal.toLocaleString('en-IN')}`;
 
   // Minimum order notice
   let minNoticeEl = document.getElementById('cartMinOrderNotice');
@@ -316,51 +428,98 @@ function renderCartItems() {
     if (!minNoticeEl && totalEl) {
       minNoticeEl = document.createElement('div');
       minNoticeEl.id = 'cartMinOrderNotice';
-      minNoticeEl.style.cssText = 'padding:8px 12px;border-radius:6px;font-size:0.85rem;margin-top:10px;text-align:center;font-weight:500;';
+      minNoticeEl.className = 'cart-min-order-notice';
       const checkoutBtn = totalEl.querySelector('button.btn-primary');
       if (checkoutBtn) totalEl.insertBefore(minNoticeEl, checkoutBtn);
     }
     if (minNoticeEl) {
       if (subtotal < minOrder) {
-        minNoticeEl.style.background = '#fff3cd';
-        minNoticeEl.style.color = '#856404';
-        minNoticeEl.style.border = '1px solid #ffeeba';
-        minNoticeEl.innerHTML = `⚠️ Minimum order is <strong>₹${minOrder}</strong>. Add ₹${minOrder - subtotal} more.`;
+        minNoticeEl.className = 'cart-min-order-notice warning';
+        minNoticeEl.innerHTML = `Minimum celebration order is <strong>₹${minOrder.toLocaleString('en-IN')}</strong>. Please add ₹${(minOrder - subtotal).toLocaleString('en-IN')} more.`;
       } else {
-        minNoticeEl.style.background = '#e8f5e9';
-        minNoticeEl.style.color = '#2e7d32';
-        minNoticeEl.style.border = '1px solid #c8e6c9';
-        minNoticeEl.innerHTML = `✓ Minimum order of ₹${minOrder} met`;
+        minNoticeEl.className = 'cart-min-order-notice success';
+        minNoticeEl.innerHTML = `Minimum order requirement of ₹${minOrder.toLocaleString('en-IN')} is met.`;
       }
     }
   } else if (minNoticeEl) {
     minNoticeEl.remove();
   }
+
+  // Update checkout button dynamic text
+  const checkoutBtn = totalEl ? totalEl.querySelector('button.btn-primary') : null;
+  if (checkoutBtn && !isPlacingOrder) {
+    checkoutBtn.className = 'btn btn-primary cart-checkout-btn';
+    checkoutBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;margin-right:4px;" aria-hidden="true">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+      Place Order • ₹${grandTotal.toLocaleString('en-IN')}
+    `;
+  }
 }
 
 function toggleCart() {
   const sidebar = document.getElementById('cartSidebar');
-  if (sidebar) sidebar.classList.toggle('open');
+  if (!sidebar) return;
+
+  let backdrop = document.getElementById('cartBackdrop');
+  if (!backdrop) {
+    backdrop = document.createElement('div');
+    backdrop.id = 'cartBackdrop';
+    backdrop.className = 'cart-backdrop';
+    backdrop.setAttribute('aria-hidden', 'true');
+    backdrop.onclick = toggleCart;
+    document.body.appendChild(backdrop);
+  }
+
+  const willOpen = !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', willOpen);
+  backdrop.classList.toggle('active', willOpen);
+  document.body.classList.toggle('cart-open', willOpen);
+
+  if (willOpen) {
+    updateCartUI();
+  }
 }
+
+function closeCart() {
+  const sidebar = document.getElementById('cartSidebar');
+  const backdrop = document.getElementById('cartBackdrop');
+  if (sidebar && sidebar.classList.contains('open')) {
+    sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
+    document.body.classList.remove('cart-open');
+  }
+}
+
+// Global escape key to dismiss cart drawer
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeCart();
+  }
+});
 
 async function placeOrder(e) {
   if (isPlacingOrder) return false;
 
   if (DB.cart.length === 0) {
-    showToast('Cart is empty! Add some cakes first 🎂', 'error');
+    showToast('Your cart is empty. Add celebration cakes first.', 'error');
     return false;
   }
 
   if (!isLoggedIn()) {
-    showToast('Please login to place an order', 'error');
-    setTimeout(() => window.location.href = 'login.html', 1500);
+    showToast('Please sign in to place and track your order', 'error');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1200);
     return false;
   }
 
   const subtotal = getCartTotal();
   const minOrder = (DB.settings && typeof DB.settings.minimumOrderAmount === 'number') ? DB.settings.minimumOrderAmount : 0;
   if (minOrder > 0 && subtotal < minOrder) {
-    showToast(`Minimum order amount is ₹${minOrder}. Please add ₹${minOrder - subtotal} more to your cart.`, 'error');
+    showToast(`Minimum order amount is ₹${minOrder.toLocaleString('en-IN')}. Please add ₹${(minOrder - subtotal).toLocaleString('en-IN')} more to your cart.`, 'error');
     return false;
   }
 
@@ -379,19 +538,19 @@ async function placeOrder(e) {
   const specialInstructions = instEl ? instEl.value.trim() : '';
 
   if (!phone || phone.length < 8 || phone.length > 15 || !/^[0-9+\-\s()]+$/.test(phone)) {
-    showToast('Please provide a valid phone number', 'error');
+    showToast('Please provide a valid 10-digit phone number', 'error');
     if (phoneEl) phoneEl.focus();
     return false;
   }
 
   if (!deliveryAddress) {
-    showToast('Please provide a delivery address', 'error');
+    showToast('Please provide a complete delivery address', 'error');
     if (addressEl) addressEl.focus();
     return false;
   }
 
   if (deliveryAddress.length > 500) {
-    showToast('Delivery address is too long', 'error');
+    showToast('Delivery address cannot exceed 500 characters', 'error');
     if (addressEl) addressEl.focus();
     return false;
   }
@@ -420,10 +579,16 @@ async function placeOrder(e) {
 
   isPlacingOrder = true;
   const btn = e ? (e.currentTarget || e.target) : null;
-  let originalText = '';
+  let originalHtml = '';
   if (btn) {
-    originalText = btn.innerHTML;
-    btn.innerHTML = 'Placing Order...';
+    originalHtml = btn.innerHTML;
+    btn.innerHTML = `
+      <svg class="spin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;animation:spin 1s linear infinite;" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" stroke-opacity="0.25"/>
+        <path d="M12 2a10 10 0 0 1 10 10"/>
+      </svg>
+      Placing Your Order...
+    `;
     btn.disabled = true;
   }
 
@@ -448,7 +613,10 @@ async function placeOrder(e) {
     saveData();
 
     const badges = document.querySelectorAll('.cart-badge');
-    badges.forEach(badge => { badge.textContent = 0; badge.style.display = 'none'; });
+    badges.forEach(badge => {
+      badge.textContent = 0;
+      badge.style.display = 'none';
+    });
 
     const container = document.getElementById('cartItems');
     const totalEl = document.getElementById('cartTotal');
@@ -457,59 +625,95 @@ async function placeOrder(e) {
     if (container) {
       const deliveryFee = order.deliveryCharge !== undefined ? order.deliveryCharge : getDeliveryCharge();
       const orderSubtotal = order.total - deliveryFee;
+      const orderRef = order._id ? `#${order._id.substring(order._id.length - 6).toUpperCase()}` : '#ORDER';
+
       container.innerHTML = `
-        <div style="text-align: center; padding: 20px 10px;">
-          <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
-          <h3 style="color: #4CAF50; margin-bottom: 15px;">Order Placed Successfully</h3>
-          <p style="margin-bottom: 5px;"><strong>Order ID:</strong> #${order._id}</p>
-          <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: left;">
-            <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
-              <span>Subtotal</span><span>₹${orderSubtotal}</span>
+        <div class="cart-success-view">
+          <div class="cart-success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <h3 class="cart-success-title">Order Confirmed!</h3>
+          <p class="cart-success-sub">Thank you for choosing Priti's Cake. Your artisanal confectionery order has been received and scheduled.</p>
+
+          <div class="cart-receipt-card">
+            <div class="receipt-header">
+              <span class="receipt-ref-label">Order Reference</span>
+              <span class="receipt-ref-num">${orderRef}</span>
             </div>
-            <div style="display:flex; justify-content:space-between; margin-bottom: 8px; color:#666;">
-              <span>Delivery Charge</span><span>₹${deliveryFee}</span>
+
+            <div class="receipt-breakdown">
+              <div class="receipt-row">
+                <span>Items Subtotal</span>
+                <span>₹${Number(orderSubtotal).toLocaleString('en-IN')}</span>
+              </div>
+              <div class="receipt-row">
+                <span>Delivery Fee</span>
+                <span>₹${Number(deliveryFee).toLocaleString('en-IN')}</span>
+              </div>
+              <div class="receipt-row total">
+                <span>Grand Total</span>
+                <span>₹${Number(order.total).toLocaleString('en-IN')}</span>
+              </div>
             </div>
-            <div style="display:flex; justify-content:space-between; border-top: 1px solid #ddd; padding-top: 10px; font-weight:bold; color:#e91e8c; font-size: 1.1rem;">
-              <span>Total</span><span>₹${order.total}</span>
+
+            <div class="receipt-details">
+              <p><strong>Contact:</strong> ${escapeHtml(order.phone)}</p>
+              <p><strong>Destination:</strong> ${escapeHtml(order.deliveryAddress)}</p>
+              ${order.deliveryDate ? `<p><strong>Scheduled Date:</strong> ${escapeHtml(order.deliveryDate)}</p>` : ''}
+              ${order.deliveryTimeSlot ? `<p><strong>Time Window:</strong> ${escapeHtml(order.deliveryTimeSlot)}</p>` : ''}
+              ${order.cakeMessage ? `<p><strong>Cake Inscription:</strong> "${escapeHtml(order.cakeMessage)}"</p>` : ''}
+              ${order.specialInstructions ? `<p><strong>Instructions:</strong> ${escapeHtml(order.specialInstructions)}</p>` : ''}
             </div>
           </div>
-          <div style="text-align: left; font-size: 0.9rem; margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 8px;">
-            <p style="margin-bottom:5px"><strong>Phone:</strong> ${escapeHtml(order.phone)}</p>
-            <p style="margin-bottom:5px"><strong>Delivery Address:</strong><br/>${escapeHtml(order.deliveryAddress)}</p>
-            ${order.deliveryDate ? `<p style="margin-bottom:5px"><strong>Delivery Date:</strong> ${escapeHtml(order.deliveryDate)}</p>` : ''}
-            ${order.deliveryTimeSlot ? `<p style="margin-bottom:5px"><strong>Time Slot:</strong> ${escapeHtml(order.deliveryTimeSlot)}</p>` : ''}
-            ${order.cakeMessage ? `<p style="margin-bottom:5px"><strong>Cake Message:</strong> "${escapeHtml(order.cakeMessage)}"</p>` : ''}
-            ${order.specialInstructions ? `<p style="margin:0"><strong>Instructions:</strong><br/>${escapeHtml(order.specialInstructions)}</p>` : ''}
+
+          <div class="cart-success-actions">
+            <a href="client-dashboard.html" class="btn btn-primary" style="width:100%;margin-bottom:10px;">
+              View in Customer Dashboard
+            </a>
+            <button type="button" class="btn btn-outline" style="width:100%;" onclick="toggleCart(); updateCartUI();">
+              Continue Browsing
+            </button>
           </div>
-          <button class="btn btn-primary" style="width: 100%; padding: 12px; margin-bottom: 10px;" onclick="window.location.href='client-dashboard.html'">View My Orders</button>
-          <button class="btn btn-outline" style="width: 100%; padding: 12px; background: none; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;" onclick="toggleCart(); updateCartUI();">Close</button>
         </div>
       `;
     }
+
     if (typeof updateDashCart === 'function') updateDashCart();
-    showToast('Order placed successfully! 🎂', 'success');
+    showToast('Your order has been placed successfully!', 'success');
     return order;
   } catch (error) {
     console.error('Checkout failed', error);
-    showToast(error.message || 'Checkout failed', 'error');
+    showToast(error.message || 'Checkout failed. Please try again.', 'error');
     return false;
   } finally {
     isPlacingOrder = false;
     if (btn) {
-      btn.innerHTML = originalText;
+      btn.innerHTML = originalHtml;
       btn.disabled = false;
     }
   }
 }
 
 // ===== TOAST =====
+let toastTimer = null;
 function showToast(msg, type = '') {
   let toast = document.getElementById('toast');
-  if (!toast) { toast = document.createElement('div'); toast.id = 'toast'; toast.className = 'toast'; document.body.appendChild(toast); }
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  if (toastTimer) clearTimeout(toastTimer);
   toast.textContent = msg;
-  toast.className = `toast ${type}`;
+  toast.className = `toast ${type}`.trim();
   setTimeout(() => toast.classList.add('show'), 10);
-  setTimeout(() => toast.classList.remove('show'), 3000);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    toastTimer = null;
+  }, 3000);
 }
 
 // ===== NAV AUTH BUTTONS =====
@@ -518,10 +722,18 @@ function updateNavAuth() {
   const mobileNavBtns = document.getElementById('mobileNavBtns');
   if (!navBtns && !mobileNavBtns) return;
 
+  const cartSvg = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:16px;height:16px;display:inline-block;vertical-align:-2px;margin-right:4px;">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" y1="6" x2="21" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </svg>
+  `;
+
   const cartHTMLDesktop = `
     <div class="cart-btn-wrap">
       <button class="btn btn-outline cart-btn" onclick="toggleCart()" aria-label="Shopping Cart">
-        <span class="cart-btn-icon" aria-hidden="true">🛒</span> Cart
+        ${cartSvg}<span>Cart</span>
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
       </button>
     </div>
@@ -530,7 +742,7 @@ function updateNavAuth() {
   const cartHTMLMobile = `
     <div class="cart-btn-wrap">
       <button class="btn btn-outline cart-btn" onclick="toggleCart(); closeMobileNav();" aria-label="Shopping Cart">
-        <span class="cart-btn-icon" aria-hidden="true">🛒</span> Cart
+        ${cartSvg}<span>Cart</span>
         <span class="cart-badge" style="display:none">0</span>
       </button>
     </div>
