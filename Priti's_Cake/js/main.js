@@ -99,7 +99,7 @@ async function loadCakesFromAPI() {
       if (!response.ok) throw new Error('Failed to load cakes');
       data = await response.json();
     }
-    
+
     // Convert _id to id so we don't break existing frontend code
     DB.cakes = data.map(cake => ({
       ...cake,
@@ -107,7 +107,7 @@ async function loadCakesFromAPI() {
       // Fix relative image paths if necessary
       image: cake.image ? (cake.image.startsWith('http') ? cake.image : `http://localhost:5000${cake.image}`) : ''
     }));
-    
+
     isCakesLoaded = true;
     window.dispatchEvent(new Event('cakesLoaded'));
   } catch (error) {
@@ -162,7 +162,7 @@ function logout() {
 }
 
 function isLoggedIn() { return DB.currentUser !== null; }
-function isAdmin() { 
+function isAdmin() {
   const apiAdmin = JSON.parse(localStorage.getItem('pc_admin') || 'null');
   const token = localStorage.getItem('pc_token');
   return !!(token && apiAdmin && apiAdmin.role === 'admin');
@@ -201,9 +201,12 @@ function getCartTotal() { return DB.cart.reduce((sum, i) => sum + (i.price * i.q
 function getCartCount() { return DB.cart.reduce((sum, i) => sum + i.qty, 0); }
 
 function updateCartUI() {
-  const badge = document.getElementById('cartBadge');
   const count = getCartCount();
-  if (badge) { badge.textContent = count; badge.style.display = count > 0 ? 'flex' : 'none'; }
+  const badges = document.querySelectorAll('.cart-badge');
+  badges.forEach(badge => {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? 'flex' : 'none';
+  });
   renderCartItems();
   if (typeof updateDashCart === 'function') updateDashCart();
 }
@@ -347,7 +350,7 @@ async function placeOrder(e) {
     showToast('Cart is empty! Add some cakes first 🎂', 'error');
     return false;
   }
-  
+
   if (!isLoggedIn()) {
     showToast('Please login to place an order', 'error');
     setTimeout(() => window.location.href = 'login.html', 1500);
@@ -367,7 +370,7 @@ async function placeOrder(e) {
   const slotEl = document.getElementById('dashTimeSlot') || document.getElementById('checkoutTimeSlot');
   const msgEl = document.getElementById('dashCakeMessage') || document.getElementById('checkoutCakeMessage');
   const instEl = document.getElementById('dashInstructions') || document.getElementById('checkoutInstructions');
-  
+
   const phone = phoneEl ? phoneEl.value.trim() : (DB.currentUser?.phone || '').trim();
   const deliveryAddress = addressEl ? addressEl.value.trim() : '';
   const deliveryDate = dateEl ? dateEl.value.trim() : '';
@@ -380,7 +383,7 @@ async function placeOrder(e) {
     if (phoneEl) phoneEl.focus();
     return false;
   }
-  
+
   if (!deliveryAddress) {
     showToast('Please provide a delivery address', 'error');
     if (addressEl) addressEl.focus();
@@ -437,20 +440,20 @@ async function placeOrder(e) {
     if (deliveryTimeSlot) payload.deliveryTimeSlot = deliveryTimeSlot;
     if (cakeMessage) payload.cakeMessage = cakeMessage;
     if (specialInstructions) payload.specialInstructions = specialInstructions;
-    
+
     const order = await api.post('/orders', payload);
-    
+
     // Clear cart on success
     DB.cart = [];
     saveData();
-    
-    const badge = document.getElementById('cartBadge');
-    if (badge) { badge.textContent = 0; badge.style.display = 'none'; }
-    
+
+    const badges = document.querySelectorAll('.cart-badge');
+    badges.forEach(badge => { badge.textContent = 0; badge.style.display = 'none'; });
+
     const container = document.getElementById('cartItems');
     const totalEl = document.getElementById('cartTotal');
     if (totalEl) totalEl.style.display = 'none';
-    
+
     if (container) {
       const deliveryFee = order.deliveryCharge !== undefined ? order.deliveryCharge : getDeliveryCharge();
       const orderSubtotal = order.total - deliveryFee;
@@ -512,40 +515,146 @@ function showToast(msg, type = '') {
 // ===== NAV AUTH BUTTONS =====
 function updateNavAuth() {
   const navBtns = document.getElementById('navBtns');
-  if (!navBtns) return;
-  
-  const cartHTML = `
-      <div class="cart-btn-wrap">
-        <button class="btn btn-outline" onclick="toggleCart()">Cart</button>
+  const mobileNavBtns = document.getElementById('mobileNavBtns');
+  if (!navBtns && !mobileNavBtns) return;
+
+  const cartHTMLDesktop = `
+    <div class="cart-btn-wrap">
+      <button class="btn btn-outline cart-btn" onclick="toggleCart()" aria-label="Shopping Cart">
+        <span class="cart-btn-icon" aria-hidden="true">🛒</span> Cart
         <span class="cart-badge" id="cartBadge" style="display:none">0</span>
-      </div>
+      </button>
+    </div>
   `;
 
-  if (isLoggedIn()) {
-    navBtns.innerHTML = cartHTML + `
-      <a href="${isAdmin() ? 'admin-dashboard.html' : 'client-dashboard.html'}" class="btn btn-primary">Dashboard</a>
-    `;
-  } else {
-    navBtns.innerHTML = cartHTML + `
-      <a href="login.html" class="btn btn-outline">Login</a>
-    `;
-  }
+  const cartHTMLMobile = `
+    <div class="cart-btn-wrap">
+      <button class="btn btn-outline cart-btn" onclick="toggleCart(); closeMobileNav();" aria-label="Shopping Cart">
+        <span class="cart-btn-icon" aria-hidden="true">🛒</span> Cart
+        <span class="cart-badge" style="display:none">0</span>
+      </button>
+    </div>
+  `;
+
+  const authHTML = isLoggedIn()
+    ? `<a href="${isAdmin() ? 'admin-dashboard.html' : 'client-dashboard.html'}" class="btn btn-primary">Dashboard</a>`
+    : `<a href="login.html" class="btn btn-outline">Login</a>`;
+
+  if (navBtns) navBtns.innerHTML = cartHTMLDesktop + authHTML;
+  if (mobileNavBtns) mobileNavBtns.innerHTML = cartHTMLMobile + authHTML;
+
   updateCartUI();
 }
 
-// ===== HAMBURGER =====
+// ===== MOBILE NAVIGATION =====
+function openMobileNav() {
+  const drawer = document.getElementById('navDrawer');
+  const hamburger = document.getElementById('hamburger');
+  const backdrop = document.getElementById('navBackdrop');
+  if (drawer) drawer.classList.add('open');
+  if (hamburger) {
+    hamburger.classList.add('active');
+    hamburger.setAttribute('aria-expanded', 'true');
+  }
+  if (backdrop) backdrop.classList.add('active');
+  document.body.classList.add('nav-open');
+}
+
+function closeMobileNav() {
+  const drawer = document.getElementById('navDrawer');
+  const hamburger = document.getElementById('hamburger');
+  const backdrop = document.getElementById('navBackdrop');
+  if (drawer) drawer.classList.remove('open');
+  if (hamburger) {
+    hamburger.classList.remove('active');
+    hamburger.setAttribute('aria-expanded', 'false');
+  }
+  if (backdrop) backdrop.classList.remove('active');
+  document.body.classList.remove('nav-open');
+}
+
 function toggleMobileNav() {
-  const nav = document.getElementById('navLinks');
-  if (nav) nav.classList.toggle('open');
+  const drawer = document.getElementById('navDrawer');
+  if (drawer && drawer.classList.contains('open')) {
+    closeMobileNav();
+  } else {
+    openMobileNav();
+  }
+}
+
+// ===== ACTIVE NAVIGATION LINK HIGHLIGHTING =====
+function setActiveNavLink() {
+  const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+  const links = document.querySelectorAll('.nav-links a');
+  links.forEach(link => {
+    const href = link.getAttribute('href');
+    if (!href) return;
+    const linkPath = href.split('?')[0].split('#')[0];
+    if (linkPath === currentPath || (currentPath === '' && linkPath === 'index.html')) {
+      link.setAttribute('aria-current', 'page');
+      link.classList.add('active');
+    } else {
+      link.removeAttribute('aria-current');
+      link.classList.remove('active');
+    }
+  });
+}
+
+function initNavigationEvents() {
+  const hamburger = document.getElementById('hamburger');
+  if (hamburger) {
+    hamburger.addEventListener('click', toggleMobileNav);
+  }
+
+  const backdrop = document.getElementById('navBackdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', closeMobileNav);
+  }
+
+  // Close mobile nav on navigation link click
+  const drawer = document.getElementById('navDrawer');
+  if (drawer) {
+    const links = drawer.querySelectorAll('a');
+    links.forEach(link => {
+      link.addEventListener('click', closeMobileNav);
+    });
+  }
+
+  // Close on Escape key press
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const currentDrawer = document.getElementById('navDrawer');
+      if (currentDrawer && currentDrawer.classList.contains('open')) {
+        closeMobileNav();
+        const currentHamburger = document.getElementById('hamburger');
+        if (currentHamburger) currentHamburger.focus();
+      }
+    }
+  });
+
+  // Close if viewport is resized to desktop width
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      closeMobileNav();
+    }
+  });
+
+  // Set active link on load
+  setActiveNavLink();
 }
 
 // ===== INIT =====
-document.addEventListener('DOMContentLoaded', () => {
+function initStorefrontApp() {
   updateNavAuth();
-  const hamburger = document.getElementById('hamburger');
-  if (hamburger) hamburger.addEventListener('click', toggleMobileNav);
-  
+  initNavigationEvents();
+
   // Start loading settings and cakes for storefront
   loadSettingsFromAPI();
   loadCakesFromAPI();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initStorefrontApp);
+} else {
+  initStorefrontApp();
+}
